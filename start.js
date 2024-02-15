@@ -1,9 +1,8 @@
-const { spawn } = require('child_process');
+import { spawn } from 'child_process';
 
 // Define an array of projects with their paths and start commands
 const projects = [
-  { path: '/JsScraper', startCommand: 'npm start' },
-  { path: '/Server', startCommand: 'npm start' },
+  { path: '/src', startCommand: 'npm start' },
   // Add more projects as needed
 ];
 
