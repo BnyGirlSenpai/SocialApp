@@ -1,23 +1,36 @@
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import React from 'react';
+import Protected from './components/Protected';
+import { AuthContextProvider } from './context/AuthContext';
+import HomePage from './Pages/HomePage';
+import Signin from './Pages/SignInPage';
+import Eventpage from './Pages/EventPage';
+import Friendpage from './Pages/FriendPage';
+import Mappage from './Pages/MapPage';
+import Calenderpage from './Pages/CalenderPage';
+import Profilepage from './Pages/ProfilePage';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="App">    
+      <AuthContextProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path='/' element={<Signin />} />
+            <Route path='/EventPage' element={<Eventpage />} />
+            <Route path='/FriendPage' element={<Friendpage />} />
+            <Route path='/MapPage' element={<Mappage />} />
+            <Route path='/CalenderPage' element={<Calenderpage />} />
+            <Route path='/ProfilePage' element={<Profilepage />} />
+            <Route path='/HomePage'element={
+                <Protected>
+                  <HomePage />
+                </Protected>
+              }
+            />
+          </Routes>
+        </BrowserRouter>
+      </AuthContextProvider>   
     </div>
   );
 }
