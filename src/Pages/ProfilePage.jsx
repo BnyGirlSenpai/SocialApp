@@ -2,13 +2,13 @@ import React from 'react'
 import Profile from '../components/Profile'
 import Navbar from '../components/Navbar'
 
-const Profilepage = () => {
+const ProfilePage = () => {
   return (
-    <div className='Main'>
-    <Navbar />
-    <Profile />
- </div>
+    <div>
+        <Navbar />
+        <Profile />
+    </div>
   )
 }
 
-export default Profilepage
+export default ProfilePage

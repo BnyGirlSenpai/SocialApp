@@ -8,6 +8,7 @@ import Eventpage from './Pages/EventPage';
 import Friendpage from './Pages/FriendPage';
 import Mappage from './Pages/MapPage';
 import Calenderpage from './Pages/CalenderPage';
+import Settingspage from './Pages/SettingsPage';
 import Profilepage from './Pages/ProfilePage';
 
 function App() {
@@ -21,7 +22,8 @@ function App() {
             <Route path='/FriendPage' element={<Friendpage />} />
             <Route path='/MapPage' element={<Mappage />} />
             <Route path='/CalenderPage' element={<Calenderpage />} />
-            <Route path='/ProfilePage' element={<Profilepage />} />
+            <Route path='/SettingsPage' element={<Settingspage />} />
+           <Route path='/ProfilePage' element={<Profilepage />} />
             <Route path='/HomePage'element={
                 <Protected>
                   <HomePage />

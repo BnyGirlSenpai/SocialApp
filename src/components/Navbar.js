@@ -42,6 +42,8 @@ function Navbar() {
           </form>
           <ul className="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
             <li><a href="/ProfilePage" className="nav-link px-2 link-body-emphasis">Profile</a></li>
+            <li><a href="/SettingsPage" className="nav-link px-2 link-body-emphasis">Settings</a></li>
+
           </ul>
           <div className="dropdown text-end">
             {user?.displayName ? (
