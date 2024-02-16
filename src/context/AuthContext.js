@@ -21,11 +21,11 @@ export const AuthContextProvider = ({ children }) => {
   
       if (docs.docs.length === 0) {
         await addDoc(collectionUserRef ,{
+          authprovider: popup?.providerId,
           uid: user?.uid,
           name: user?.displayName,
           email: user?.email,
           image: user?.photoURL,
-          authprovider: popup?.providerId,
         });
       } else {
         console.log("User allready exists!");
