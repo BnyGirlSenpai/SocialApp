@@ -23,10 +23,9 @@ const Signin = () => {
 
   return (
     <div>
-      <h1 className='text-center text-3xl font-bold py-8'>Sign in</h1>
-      <div className='max-w-[240px] m-auto py-4'>
+      <h2>Look like you're lost in space</h2>
+      <img src="//images01.nicepage.com/c461c07a441a5d220e8feb1a/912e8a6d1ca35b4e9771774e/4566.png" alt="png"/>
         <GoogleButton onClick={handleGoogleSignIn} />
-      </div>
     </div>
   );
 };
