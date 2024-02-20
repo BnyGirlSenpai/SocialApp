@@ -20,14 +20,18 @@ const Map = () => {
         attributionControl: false 
     });
     
-    map.current.addControl(
-      new maplibregl.GeolocateControl({
+    let geoControls = new maplibregl.GeolocateControl({
           positionOptions: {
               enableHighAccuracy: true
           },
           trackUserLocation: true
       })
-    );
+
+    map.current.addControl(geoControls)
+
+    map.current.on('load', () => {
+      geoControls.trigger()
+    })
   },[]);
 
   return (
