@@ -7,7 +7,8 @@ const Settings = () => {
     
     const { user } = UserAuth();
     const collectionUserRef = collection(db, "users");
-
+    const [isButtonClicked, setIsButtonClicked] = useState(false);
+    
     const [profileData, setProfileData] = useState({
         username: '',
         email: '',
@@ -45,24 +46,30 @@ const Settings = () => {
         }
       };
   
-    const handleSaveProfile = async () => {
+      const handleSaveProfile = async () => {
         try {
             const q = query(collectionUserRef, where("uid", "==", user.uid));
             const docs = await getDocs(q);
 
-        if (docs.docs.length !== 0) {
-            const userDocRef = docs.docs[0].ref;
+            if (docs.docs.length !== 0) {
+                const userDocRef = docs.docs[0].ref;
 
-            // Extract fields that are not empty from profileData
-            const updatedProfileData = Object.fromEntries(
-                Object.entries(profileData)
-            );
+                // Extract fields that are not empty from profileData
+                const updatedProfileData = Object.fromEntries(
+                    Object.entries(profileData)
+                );
 
-            await updateDoc(userDocRef, updatedProfileData);
-            console.log('Profile data updated successfully');
-        } else {
-            console.log("User not found!");
-        }
+                await updateDoc(userDocRef, updatedProfileData);
+                console.log('Profile data updated successfully');
+
+                // Set the button clicked state to true for 1 second
+                setIsButtonClicked(true);
+                setTimeout(() => {
+                    setIsButtonClicked(false);
+                }, 1000);
+            } else {
+                console.log("User not found!");
+            }
         } catch (error) {
             console.error('Error updating profile data:', error);
         }
@@ -135,9 +142,13 @@ return (
             </div>
             </div>
             <div className="mt-5 text-center">
-            <button className="btn btn-primary profile-button" type="button" onClick={handleSaveProfile}>
-                Save Profile
-            </button>
+            <button
+                    className={`btn ${isButtonClicked ? 'btn-success' : 'btn-primary'} profile-button`}
+                    type="button"
+                    onClick={handleSaveProfile}
+                >
+                    {isButtonClicked ? 'Profile Saved' : 'Save Profile'}
+                </button>
             </div>
         </div>
     </div>
