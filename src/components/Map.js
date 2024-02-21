@@ -4,13 +4,16 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 
 const Map = () => {
 
+  const MAPTILER_KEY = 'get_your_own_OpIi9ZULNHzrESv6T2vL';
+
   const mapContainer = useRef(null);
   const map = useRef(null)
+
   useEffect(() => {
     if(map.curernt) return;
 
     map.current = new maplibregl.Map({
-        style: 'https://pmtiles.hstin.de/styles/EhJTD6e07ZdL5IxT8EcM7A8F',
+        style: `https://api.maptiler.com/maps/basic-v2/style.json?key=${MAPTILER_KEY}`,
         center: [12.550343, 55.665957],
         zoom: 15.5,
         pitch: 45,
@@ -42,3 +45,5 @@ const Map = () => {
 };
 
 export default Map;
+
+
