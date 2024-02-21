@@ -1,5 +1,5 @@
 {
-  "name": "ocialapp",
+  "name": "my-app",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -14,14 +14,14 @@
     "express": "^4.18.2",
     "firebase": "^10.8.0",
     "firestore": "^1.1.6",
-    "maplibre-gl": "^4.0.2",
+    "maplibre-gl": "^4.0.1",
     "mysql2": "^3.9.1",
     "promise": "^8.3.0",
-    "puppeteer": "^22.1.0",
+    "puppeteer": "^22.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-google-button": "^0.7.2",
-    "react-router-dom": "^6.22.1",
+    "react-router-dom": "^6.22.0",
     "react-scripts": "^5.0.1",
     "web-vitals": "^2.1.4"
   },
@@ -48,5 +48,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
+  "main": "index.js",
+  "author": "",
+  "license": "ISC"
 }

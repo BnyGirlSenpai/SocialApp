@@ -1,85 +1,42 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 
 const Map = () => {
+
+  const mapContainer = useRef(null);
+  const map = useRef(null)
   useEffect(() => {
+    if(map.curernt) return;
 
-    const map = new maplibregl.Map({
-      style: `https://cdn.better-weather.com/themes/light_complete_3d.json`,
-      center: [-74.0066, 40.7135],
-      zoom: 15.5,
-      pitch: 45,
-      bearing: -17.6,
-      container: 'map',
-      antialias: true
+    map.current = new maplibregl.Map({
+        style: 'https://pmtiles.hstin.de/styles/EhJTD6e07ZdL5IxT8EcM7A8F',
+        center: [12.550343, 55.665957],
+        zoom: 15.5,
+        pitch: 45,
+        bearing: -17.6,
+        container: mapContainer.current,
+        antialias: true,   
+        attributionControl: false 
     });
-
-    map.addControl(
-      new maplibregl.GeolocateControl({
+    
+    let geoControls = new maplibregl.GeolocateControl({
           positionOptions: {
               enableHighAccuracy: true
           },
           trackUserLocation: true
       })
-    );
 
-    map.on('load', () => {
+    map.current.addControl(geoControls)
+
+    map.current.on('load', () => {
+      geoControls.trigger()
     })
-
-    /*map.on('load', () => {
-      const layers = map.getStyle().layers;
-
-      let labelLayerId;
-      for (let i = 0; i < layers.length; i++) {
-        if (layers[i].type === 'symbol' && layers[i].layout['text-field']) {
-          labelLayerId = layers[i].id;
-          break;
-        }
-      }
-
-      map.addSource('openmaptiles', {
-        url: `https://cdn.better-weather.com/themes/dark_complete_3d.json`,
-        type: 'vector'
-      });
-
-      map.addLayer(
-        {
-          id: '3d-buildings',
-          source: 'openmaptiles',
-          'source-layer': 'building',
-          type: 'fill-extrusion',
-          minzoom: 15,
-          paint: {
-            'fill-extrusion-color': [
-              'interpolate',
-              ['linear'],
-              ['get', 'render_height'], 0, 'lightgray', 200, 'royalblue', 400, 'lightblue'
-            ],
-            'fill-extrusion-height': [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              15,
-              0,
-              16,
-              ['get', 'render_height']
-            ],
-            'fill-extrusion-base': [
-              'case',
-              ['>=', ['get', 'zoom'], 16],
-              ['get', 'render_min_height'],
-              0
-            ]
-          }
-        },
-        labelLayerId
-      );
-    });*/
-  }, []);
+  },[]);
 
   return (
     <div style={{ height: '100vh' }}>
-      <div id="map" style={{ height: '100%' }}></div>
+      <div ref={mapContainer} style={{ height: '100%' }}></div>
     </div>
   );
 };
