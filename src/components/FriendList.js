@@ -1,7 +1,4 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { UserAuth } from '../context/AuthContext';
-import { auth, db, onAuthStateChanged } from '../firebase';
-import { collection, query, where, getDocs, addDoc, doc, updateDoc } from "firebase/firestore";
 
 
 const FriendList = () => {
@@ -10,13 +7,10 @@ const FriendList = () => {
 
   }
 
-  const searchUser = () => {
-    
-  }
-
-  const addFriend= async () => {
+  const showAllFriends =() =>{
 
   }
+
   return (
     <div>FriendList</div>
   )
