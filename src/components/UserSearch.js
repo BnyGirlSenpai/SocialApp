@@ -93,8 +93,6 @@ const UserSearch = () => {
                           </div>
                           <div className="col-md-7 col-sm-7">
                             <h5><a href="#" className="profile-link">{user.username}</a></h5>
-                            <p>Software Engineer</p>
-                            <p className="text-muted">500m away</p>
                           </div>
                           <div className="col-md-3 col-sm-3">
                             <button className="btn btn-primary pull-right" onClick={() => handleSendFriendRequest(user.username)}>Add Friend</button>

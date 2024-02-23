@@ -14,8 +14,8 @@ const AcceptRejectFriendRequest = () => {
             const querySnapshot = await getDocs(q);
             // Assuming each document has a field called 'friendRequests'
             const userData = querySnapshot.docs[0].data();
-            const friendRequests = userData.friendRequests || [];
-            setPendingFriendRequests(friendRequests);
+            const PendingFriendRequests = userData.PendingFriendRequests|| [];
+            setPendingFriendRequests(PendingFriendRequests);
         } catch (error) {
             console.error('Error querying Firestore:', error);
         }
@@ -32,44 +32,44 @@ const AcceptRejectFriendRequest = () => {
         };
     }, [collectionUserRef, user]);
 
-    return (
-        <div>
-            <div className="container">
-                <div className="row">
-                    <div className="col-md-8">
-                        <div>
-                            {pendingFriendRequests.length > 0 ? (
-                                <div>
-                                    <h2>Pending Friend Requests</h2>
-                                    <ul>
-                                        {pendingFriendRequests.map((friendRequest) => (
-                                            <div key={friendRequest.id} className="nearby-user">
-                                                <div className="row">
-                                                    <div className="col-md-2 col-sm-2">
-                                                        <img src={friendRequest.image} alt="friend" className="profile-photo-lg" />
-                                                    </div>
-                                                    <div className="col-md-7 col-sm-7">
-                                                        <h5>
-                                                            <a href="#" className="profile-link">
-                                                                {friendRequest.name}
-                                                            </a>
-                                                        </h5>
-                                                    </div>
-                                                    <div className="col-md-3 col-sm-3">{/* Additional actions if needed */}</div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </ul>
+return (
+  <div>
+    <div className="container">
+        <div className="row">
+          <div className="col-md-8">
+            <div>
+            {pendingFriendRequests.length > 0 ? (
+                <div>
+                    <h2>Pending Friend Requests</h2>
+                    <ul>
+                        {pendingFriendRequests.map((PendingFriendRequests) => (
+                            <div key={PendingFriendRequests.uid} className="nearby-user">
+                                <div className="row">
+                                    <div className="col-md-2 col-sm-2">
+                                        <img src={PendingFriendRequests.image} alt="friend" className="profile-photo-lg" />
+                                    </div>
+                                    <div className="col-md-7 col-sm-7">
+                                        <h5>
+                                            <a href="#" className="profile-link">
+                                                {PendingFriendRequests.name}
+                                            </a>
+                                        </h5>
+                                    </div>
+                                    <div className="col-md-3 col-sm-3">{/* Additional actions if needed */}</div>
                                 </div>
-                            ) : (
-                                <p>No Requests!.</p>
-                            )}
-                        </div>
-                    </div>
+                            </div>
+                        ))}
+                    </ul>
                 </div>
+            ) : (
+                <p>No Requests!.</p>
+            )}
             </div>
+          </div>
         </div>
-    );
+    </div>
+ </div>
+);
 };
 
 export default AcceptRejectFriendRequest;
