@@ -143,12 +143,11 @@ return (
             </div>
             <div className="mt-5 text-center">
             <button
-                    className={`btn ${isButtonClicked ? 'btn-success' : 'btn-primary'} profile-button`}
-                    type="button"
-                    onClick={handleSaveProfile}
-                >
-                    {isButtonClicked ? 'Profile Saved' : 'Save Profile'}
-                </button>
+                className={`btn ${isButtonClicked ? 'btn-success' : 'btn-primary'} profile-button`}
+                type="button"
+                onClick={handleSaveProfile}>
+                {isButtonClicked ? 'Profile Saved' : 'Save Profile'}
+            </button>
             </div>
         </div>
     </div>

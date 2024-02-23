@@ -75,9 +75,6 @@ const AcceptRejectFriendRequest = () => {
 export default AcceptRejectFriendRequest;
 
 
-
-
-
 /* <button className="btn btn-primary pull-right" onClick={() => rejectFriendRequest(friend.id)}>Reject</button>
 <button className="btn btn-primary pull-right" onClick={() => acceptFriendRequest(friend.id)}>Accept</button>*/
 
