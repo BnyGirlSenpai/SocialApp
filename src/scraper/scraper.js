@@ -40,6 +40,7 @@ async function run() {
     await browser.close();
   }
 }
+
 // DataScraper
 async function ScrapData(page, url, eventnamediv, eventdatediv, locationname) {
   // Navigate to the website you want to scrape
@@ -56,6 +57,8 @@ async function ScrapData(page, url, eventnamediv, eventdatediv, locationname) {
 
   return { eventnames, eventdates, location };
 }
+
+
 // Save the data to MySQL
 async function ConnectToDatabase(host, user, pw, dbname) {
   // Save the data to MySQL
