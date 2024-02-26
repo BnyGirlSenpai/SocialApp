@@ -48,13 +48,12 @@ const AcceptRejectFriendRequest = () => {
           status: 'accepted',
           acceptedAt: serverTimestamp(), // Include a timestamp if needed
         };
-
-        const targetUserDataToDelete = querySnapshot.docs[0].data();
-
+    
          // Remove the accepted friend request data from the PendingFriendRequests array
+         //Not working!
         await updateDoc(targetUserData.ref, {
             
-            PendingFriendRequests: arrayRemove({targetUserDataToDelete}),
+            PendingFriendRequests: arrayRemove({acceptedFriendRequestData}),
         });
     
         // Add the accepted friend request data to a new document in the acceptedFriendRequests collection

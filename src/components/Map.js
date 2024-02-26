@@ -13,7 +13,7 @@ const Map = () => {
     if(map.curernt) return;
 
     map.current = new maplibregl.Map({
-        style: `https://api.maptiler.com/maps/basic-v2/style.json?key=${MAPTILER_KEY}`,
+        style: `https://maps.hstin.de/styles/hstin-dark-3d-v0`,
         center: [12.550343, 55.665957],
         zoom: 15.5,
         pitch: 45,
