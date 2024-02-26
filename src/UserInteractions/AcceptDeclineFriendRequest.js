@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from '../firebase';
 import { UserAuth } from '../context/AuthContext';
-import { collection, query, where, getDocs,updateDoc,arrayUnion } from 'firebase/firestore';
+import { collection, query, where, getDocs,updateDoc,arrayUnion,doc,setDoc,arrayRemove, addDoc,serverTimestamp } from 'firebase/firestore';
 
 const AcceptRejectFriendRequest = () => {
     const { user } = UserAuth();
@@ -33,20 +33,38 @@ const AcceptRejectFriendRequest = () => {
       try {
         const q = query(collectionUserRef, where('uid', '==', uid));
         const querySnapshot = await getDocs(q);
-     
+    
         if (querySnapshot.empty) {
-            console.log("Failed to accept Friend Request");
+          console.log("Failed to accept Friend Request");
           return;
         }
+    
         const targetUserData = querySnapshot.docs[0];
+    
+        // Get the data to add to the acceptedFriendRequests collection
+        const acceptedFriendRequestData = {
+          uid: targetUserData.data().uid,
+          // Include other relevant data from targetUserData if needed
+          status: 'accepted',
+          acceptedAt: serverTimestamp(), // Include a timestamp if needed
+        };
+
+        const targetUserDataToDelete = querySnapshot.docs[0].data();
+
+         // Remove the accepted friend request data from the PendingFriendRequests array
         await updateDoc(targetUserData.ref, {
-          PendingFriendRequests: arrayUnion({status: 'accepted'}),
+            
+            PendingFriendRequests: arrayRemove({targetUserDataToDelete}),
         });
+    
+        // Add the accepted friend request data to a new document in the acceptedFriendRequests collection
+        const acceptedFriendRequestsDocRef = doc(db, 'acceptedFriendRequests', targetUserData.id);
+        await setDoc(acceptedFriendRequestsDocRef, acceptedFriendRequestData);
       } catch (error) {
         console.error('Error accepting friend request:', error);
       }
     };
-
+    
     const rejectFriendRequest = async (uid) => {
       try {
         const q = query(collectionUserRef, where('uid', '==', uid));
@@ -80,7 +98,7 @@ const AcceptRejectFriendRequest = () => {
                                 <div key={PendingFriendRequests.uid} className="nearby-user">
                                     <div className="row">
                                         <div className="col-md-2 col-sm-2">
-                                            <img src={PendingFriendRequests.image} alt="friend" className="profile-photo-lg" />
+                                            <img src={PendingFriendRequests.image} alt="user" className="profile-photo-lg" />
                                         </div>
                                         <div className="col-md-7 col-sm-7">
                                             <h5>
