@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { db, auth } from '../firebase';
+import { db } from '../firebase';
 import { UserAuth } from '../context/AuthContext';
-import { collection, query, where, getDocs,updateDoc,arrayUnion,doc,setDoc,arrayRemove, addDoc,serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, updateDoc, doc, setDoc, arrayRemove, serverTimestamp } from 'firebase/firestore';
 
 const AcceptRejectFriendRequest = () => {
     const { user } = UserAuth();
@@ -33,31 +33,31 @@ const AcceptRejectFriendRequest = () => {
       try {
         const q = query(collectionUserRef, where('uid', '==', uid));
         const querySnapshot = await getDocs(q);
-    
+        const targetFriendRequest = querySnapshot.docs[0];
+
+        await updateDoc(targetFriendRequest.ref, {
+            PendingFriendRequests: arrayRemove({
+              uid: user.uid,
+              image: user.photoURL,
+              name: user.displayName,
+            })
+        })
+
         if (querySnapshot.empty) {
           console.log("Failed to accept Friend Request");
           return;
         }
     
-        const targetUserData = querySnapshot.docs[0];
-    
         // Get the data to add to the acceptedFriendRequests collection
         const acceptedFriendRequestData = {
-          uid: targetUserData.data().uid,
+          uid: targetFriendRequest.data().uid,
           // Include other relevant data from targetUserData if needed
           status: 'accepted',
           acceptedAt: serverTimestamp(), // Include a timestamp if needed
         };
     
-         // Remove the accepted friend request data from the PendingFriendRequests array
-         //Not working!
-        await updateDoc(targetUserData.ref, {
-            
-            PendingFriendRequests: arrayRemove({acceptedFriendRequestData}),
-        });
-    
         // Add the accepted friend request data to a new document in the acceptedFriendRequests collection
-        const acceptedFriendRequestsDocRef = doc(db, 'acceptedFriendRequests', targetUserData.id);
+        const acceptedFriendRequestsDocRef = doc(db, 'acceptedFriendRequests', targetFriendRequest.id);
         await setDoc(acceptedFriendRequestsDocRef, acceptedFriendRequestData);
       } catch (error) {
         console.error('Error accepting friend request:', error);
@@ -65,23 +65,39 @@ const AcceptRejectFriendRequest = () => {
     };
     
     const rejectFriendRequest = async (uid) => {
-      try {
-        const q = query(collectionUserRef, where('uid', '==', uid));
-        const querySnapshot = await getDocs(q);
-       
-        if (querySnapshot.empty) {
-          console.log("Failed to reject Friend Request");
-          return;
+        try {
+          const q = query(collectionUserRef, where('uid', '==', uid));
+          const querySnapshot = await getDocs(q);
+          const targetFriendRequest = querySnapshot.docs[0];
+  
+          await updateDoc(targetFriendRequest.ref, {
+              PendingFriendRequests: arrayRemove({
+                uid: user.uid,
+                image: user.photoURL,
+                name: user.displayName,
+              })
+          })
+  
+          if (querySnapshot.empty) {
+            console.log("Failed to reject Friend Request");
+            return;
+          }
+      
+          // Get the data to add to the acceptedFriendRequests collection
+          const rejectedFriendRequestData = {
+            uid: targetFriendRequest.data().uid,
+            // Include other relevant data from targetUserData if needed
+            status: 'rejected',
+            acceptedAt: serverTimestamp(), // Include a timestamp if needed
+          };
+      
+          // Add the accepted friend request data to a new document in the acceptedFriendRequests collection
+          const rejectedFriendRequestsDocRef = doc(db, 'rejectedFriendRequests', targetFriendRequest.id);
+          await setDoc(rejectedFriendRequestsDocRef, rejectedFriendRequestData);
+        } catch (error) {
+          console.error('Error accepting friend request:', error);
         }
-        const targetUserData = querySnapshot.docs[0];
-
-        await updateDoc(targetUserData.ref, {
-          PendingFriendRequests: arrayUnion({status: 'rejected'}),
-        });
-      } catch (error) {
-        console.error('Error rejecting friend request:', error);
-      }
-    };
+      };
 
     return (
     <div>
