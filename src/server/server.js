@@ -17,7 +17,6 @@ const pool = createPool({
   connectionLimit: 10, // Adjust the limit based on your needs
 });
 
-// WorkDatabase('Localhost','app','fiberline','app');
 // API endpoint to get titles from the database
 app.get('/api/events', async (req, res) => {
     try {
