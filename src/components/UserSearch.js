@@ -59,7 +59,7 @@ const UserSearch = () => {
               uid: user.user.uid,
               image: user.user.photoURL,
               name: user.user.displayName,
-              //username: currentUsername,
+              //username: currentUsername, 
             })
           });
           console.log("Friend request sent!");
