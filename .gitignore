@@ -1,2 +1,8 @@
 /.env
-/node_modules
+# .gitignore
+
+# Node.js dependencies
+node_modules/
+
+# Environment variables
+.env
