@@ -3,7 +3,6 @@ import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 dotenv.config();
 
-//!!!!!!!!!!!! ENV DATEI FÜR PASSWÖRTER BENUTZEN !!!!!!!!!!!!//
 run();
 
 async function run() {
@@ -95,9 +94,6 @@ async function CreateEventTable(connection, eventnames, eventdates, location) {
     console.log('Data saved to MySQL.');
   } catch (error) {
     console.error('Error in CreateEventTable:', error);
-  } finally {
-    // Close the MySQL connection
-    await connection.end();
-  }
+  } 
 }
 
