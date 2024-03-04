@@ -1,6 +1,8 @@
 import express from 'express';
 import { createPool } from 'mysql2/promise';
+import dotenv from 'dotenv';
 import cors from 'cors';
+dotenv.config();
 
 const app = express();
 const PORT = 3001;
@@ -16,8 +18,8 @@ app.use(cors());
 const pool = createPool({
   host: host,
   user: user,
-  password: pw,
-  database: dbname,
+  password: password,
+  database: database,
   connectionLimit: 10, // Adjust the limit based on your needs
 });
 
@@ -33,8 +35,8 @@ app.get('/api/events', async (req, res) => {
     } catch (error) {
       console.error('Error fetching Events from the database:', error);
       res.status(500).json({ error: 'Internal Server Error' });
-    }
-  });
+  }
+});
   
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
