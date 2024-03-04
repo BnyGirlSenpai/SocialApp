@@ -63,7 +63,6 @@ async function ScrapData(page, url, eventnamediv, eventdatediv, locationname) {
   return { eventnames, eventdates, location };
 }
 
-
 // Save the data to MySQL
 async function ConnectToDatabase(host, user, pw, dbname) {
   // Save the data to MySQL
@@ -73,15 +72,15 @@ async function ConnectToDatabase(host, user, pw, dbname) {
     password: pw,
     database: dbname,
   });
-
   return connection;
 }
+
 // Create EventTable and insert data
 async function CreateEventTable(connection, eventnames, eventdates, location) {
   try {
     // Create a table if it doesn't exist
     await connection.execute(`
-      CREATE TABLE IF NOT EXISTS Events (
+      CREATE TABLE IF NOT EXISTS events (
         id INT AUTO_INCREMENT PRIMARY KEY,
         eventname VARCHAR(255), eventdate VARCHAR(255), location VARCHAR(255)
       )
@@ -89,15 +88,12 @@ async function CreateEventTable(connection, eventnames, eventdates, location) {
 
     // Insert data into the table
     for (let i = 0; i < eventnames.length; i++) {
-      await connection.execute('INSERT INTO Events (eventname, eventdate, location) VALUES (?, ?, ?)', [eventnames[i], eventdates[i], location]);
+      await connection.execute('INSERT INTO events (eventname, eventdate, location) VALUES (?, ?, ?)', [eventnames[i], eventdates[i], location]);
     }
 
     console.log('Data saved to MySQL.');
   } catch (error) {
     console.error('Error in CreateEventTable:', error);
-  } finally {
-    // Close the MySQL connection
-    await connection.end();
-  }
+  } 
 }
 
