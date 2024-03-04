@@ -1,20 +1,23 @@
 import puppeteer from 'puppeteer';
 import mysql from 'mysql2/promise';
-//require('dotenv').config();
+import dotenv from 'dotenv';
+dotenv.config();
+
+//!!!!!!!!!!!! ENV DATEI FÜR PASSWÖRTER BENUTZEN !!!!!!!!!!!!//
 run();
 
 async function run() {
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
-  const dbHost = '49.13.129.183'; //process.env.DB_HOST;
-  const dbName = 'socialapp'; //process.env.DB_NAME;
-  const dbUser = 'admin'; //process.env.DB_USER;
-  const dbPassword = 'InT2qw88tHtL'; //process.env.DB_PASSWORD;
+  const host = process.env.DB_HOST;
+  const user = process.env.DB_USER;
+  const password = process.env.DB_PASSWORD;
+  const database = process.env.DB_NAME;
 
   try {
     // Retrieve data from the Event-Location-database
-    const connection = await ConnectToDatabase(dbHost,dbUser,dbPassword,dbName);
-    const [rows, fields] = await connection.execute('SELECT url, titleSelector, dateSelector, name FROM eventsites');
+    const connection = await ConnectToDatabase(host, user, password, database);// hier
+    const [rows, fields] = await connection.execute('SELECT url, titleSelector, dateSelector, name FROM eventsites');//nicht vergessen
 
     if (rows.length > 0) {
       // Log the retrieved data
@@ -56,7 +59,7 @@ async function ScrapData(page, url, eventnamediv, eventdatediv, locationname) {
   // Extract the data from the page
   const eventnames = await page.$$eval(eventnameSelector, eventnames => eventnames.map(eventname => eventname.textContent.trim()));
   const eventdates = await page.$$eval(eventdateSelector, eventdates => eventdates.map(eventdate => eventdate.textContent.trim()));
-  
+
   return { eventnames, eventdates, location };
 }
 
@@ -70,11 +73,9 @@ async function ConnectToDatabase(host, user, pw, dbname) {
     password: pw,
     database: dbname,
   });
-  console.log('Connected to MySQL');
 
   return connection;
 }
-
 // Create EventTable and insert data
 async function CreateEventTable(connection, eventnames, eventdates, location) {
   try {
