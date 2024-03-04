@@ -3,7 +3,6 @@ import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 dotenv.config();
 
-//!!!!!!!!!!!! ENV DATEI FÜR PASSWÖRTER BENUTZEN !!!!!!!!!!!!//
 run();
 
 async function run() {
