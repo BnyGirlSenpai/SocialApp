@@ -62,7 +62,6 @@ async function ScrapData(page, url, eventnamediv, eventdatediv, locationname) {
   return { eventnames, eventdates, location };
 }
 
-
 // Save the data to MySQL
 async function ConnectToDatabase(host, user, pw, dbname) {
   // Save the data to MySQL
