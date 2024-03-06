@@ -26,7 +26,7 @@ const pool = createPool({
 // API endpoint to get titles from the database
 app.get('/api/events', async (req, res) => {
     try {
-      const [rows] = await pool.execute('SELECT * FROM Events');
+      const [rows] = await pool.execute('SELECT * FROM events');
       if (rows.length === 0) {
         res.status(404).json({ error: 'No events found' });
       } else {
