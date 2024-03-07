@@ -1,45 +1,46 @@
 import express from 'express';
+import axios from 'axios';
 import { createPool } from 'mysql2/promise';
 import dotenv from 'dotenv';
 import cors from 'cors';
 dotenv.config();
 
 const app = express();
-const PORT = 3001;
-const host = process.env.DB_HOST;
-const user = process.env.DB_USER;
-const password = process.env.DB_PASSWORD;
-const database = process.env.DB_NAME;
+const port = 3001;
 
-// Enable CORS for all routes
-app.use(cors());
+app.use(express.json());
 
-// MySQL connection pool
-const pool = createPool({
-  host: host,
-  user: user,
-  password: password,
-  database: database,
-  connectionLimit: 10, // Adjust the limit based on your needs
-});
+// Define the main function for fetching data from the Ticketmaster API
+async function fetchEventData() {
+    const page = 3;
+    const classificationName = 'music';
+    const countryCode = 'DE';
+    const city = 'Cologne';
+    const apikey = 'RvNP3xZdMOWs8v90WbFLbQIg17B6BODj';
+    const size = 4;
 
-// API endpoint to get titles from the database
+    const apiUrl = `https://app.ticketmaster.com/discovery/v2/events.json?classificationName=${encodeURIComponent(classificationName)}&countryCode=${encodeURIComponent(countryCode)}&city=${encodeURIComponent(city)}&apikey=${encodeURIComponent(apikey)}&size=${size}&page=${page}`;
+
+    try {
+        const response = await axios.get(apiUrl);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching events from Ticketmaster API:', error);
+        throw error;
+    }
+}
+
+// API endpoint to get events from the Ticketmaster API
 app.get('/api/events', async (req, res) => {
     try {
-      const [rows] = await pool.execute('SELECT * FROM events');
-      if (rows.length === 0) {
-        res.status(404).json({ error: 'No events found' });
-      } else {
-        res.json(rows);
-      }
+        const eventData = await fetchEventData();
+        res.json(eventData);
     } catch (error) {
-      console.error('Error fetching Events from the database:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-  
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 
-
+// Start the server
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+});
