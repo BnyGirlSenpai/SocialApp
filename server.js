@@ -16,7 +16,7 @@ async function fetchEventData() {
     const classificationName = 'music';
     const countryCode = 'DE';
     const city = 'Cologne';
-    const apikey = 'RvNP3xZdMOWs8v90WbFLbQIg17B6BODj';
+    const apikey = process.env.API_KEY;
     const size = 4;
 
     const apiUrl = `https://app.ticketmaster.com/discovery/v2/events.json?classificationName=${encodeURIComponent(classificationName)}&countryCode=${encodeURIComponent(countryCode)}&city=${encodeURIComponent(city)}&apikey=${encodeURIComponent(apikey)}&size=${size}&page=${page}`;
