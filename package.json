@@ -16,7 +16,7 @@
     "firebase": "^10.8.0",
     "firestore": "^1.1.6",
     "maplibre-gl": "^4.0.1",
-    "mysql2": "^3.9.1",
+    "mysql2": "^3.9.2",
     "promise": "^8.3.0",
     "puppeteer": "^22.0.0",
     "react": "^18.2.0",
