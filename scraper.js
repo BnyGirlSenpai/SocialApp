@@ -15,8 +15,8 @@ async function run() {
 
   try {
     // Retrieve data from the Event-Location-database
-    const connection = await ConnectToDatabase(host, user, password, database);// hier
-    const [rows, fields] = await connection.execute('SELECT url, titleSelector, dateSelector, name FROM eventsites');//nicht vergessen
+    const connection = await ConnectToDatabase(host, user, password, database);
+    const [rows, fields] = await connection.execute('SELECT url, titleSelector, dateSelector, name FROM eventsites');
 
     if (rows.length > 0) {
       // Log the retrieved data
