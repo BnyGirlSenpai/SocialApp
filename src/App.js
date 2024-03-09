@@ -23,7 +23,7 @@ function App() {
             <Route path='/MapPage' element={<Mappage />} />
             <Route path='/CalenderPage' element={<Calenderpage />} />
             <Route path='/SettingsPage' element={<Settingspage />} />
-           <Route path='/ProfilePage' element={<Profilepage />} />
+            <Route path='/ProfilePage' element={<Profilepage />} />
             <Route path='/HomePage'element={
                 <Protected>
                   <HomePage />

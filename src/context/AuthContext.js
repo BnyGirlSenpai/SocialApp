@@ -1,15 +1,11 @@
 import { useContext, createContext, useEffect, useState } from 'react';
-import { GoogleAuthProvider, signInWithPopup, /*signInWithEmailAndPassword ,createUserWithEmailAndPassword ,signInWithRedirect,*/ signOut} from 'firebase/auth';
-import { auth, db, onAuthStateChanged } from '../firebase';
-import { collection, query, where, getDocs, addDoc } from "firebase/firestore";
-import mysql from 'mysql2/promise';
+import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import { auth, onAuthStateChanged } from '../firebase';
 
-export const AuthContext = createContext();
+const AuthContext = createContext();
 
 export const AuthContextProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  //const [userData, setUserData] = useState();
-  const collectionUserRef =  collection(db, "users");
 
   const googleSignIn = async () => {
     try {
@@ -17,50 +13,44 @@ export const AuthContextProvider = ({ children }) => {
       const popup = await signInWithPopup(auth, provider)
       const user = popup.user;
 
-      // SQL Logic:
-      await storeUserInSQL(user);
+      console.log(user);
+
+      // Call a server-side API endpoint to handle database interaction 
+      await fetch('/api/store-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(user)
+      });
 
     } catch (error) {
       console.log(error);
     }
   }
 
-  const storeUserInSQL = async (user) => {
-    try {
-      // Replace with the connection logic for your SQL database
-      const connection = await establishSQLConnection(); 
-
-      // Replace with your SQL query syntax
-      const query = "INSERT INTO users (uid, authprovider, name, email, image) VALUES (?, ?, ?, ?, ?)";
-      const values = [user.uid, popup?.providerId, user?.displayName, user?.email, user?.photoURL];
-      await connection.query(query, values);
-
-    } catch(error) {
-      console.error("Error storing user in SQL:", error);
-    }
+  const logOut = () => {
+    signOut(auth)
   }
 
-  async function establishSQLConnection() {
-    // Replace with your database details
-    const connectionConfig = {
-      host: 'your_database_host', 
-      port: your_database_port, // e.g., 3306 for MySQL, 5432 for PostgreSQL
-      user: 'your_database_username',
-      password: 'your_database_password',
-      database: 'your_database_name'
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      console.log(currentUser)
+    });
+    return () => {
+      unsubscribe();
     };
-  
+  }, []);
 
-  
-    try {
-      const connection = await library.createConnection(connectionConfig); 
-      return connection;
-    } catch (error) {
-        console.error("Error connecting to SQL database:", error);
-        throw error; // Re-throw the error to allow for error handling
-    }
-  }
+  return (
+    <AuthContext.Provider value={{ googleSignIn, logOut, user }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
 
+export const UserAuth = () => {
+  return useContext(AuthContext);
+};
 
   /*const loginWithUserAndEmail = async(email, password) =>{
     try {
@@ -90,28 +80,3 @@ export const AuthContextProvider = ({ children }) => {
       console.log(error);
     }
   }*/
-
-  const logOut = () => {
-      signOut(auth)
-  }
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      console.log(currentUser)
-    });
-    return () => {
-      unsubscribe();
-    };
-  }, []);
-
-  return (
-    <AuthContext.Provider value={{ googleSignIn, logOut, user }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
-
-export const UserAuth = () => {
-  return useContext(AuthContext);
-};
