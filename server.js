@@ -40,6 +40,20 @@ app.get('/api/events', async (req, res) => {
     }
 });
 
+// API endpoint to get events from the UserAuth 
+app.post('/api/store-user', async (req, res) => {
+    try {
+      const user = req.body;
+      const query = "INSERT INTO users (uid, authprovider, name, email, image) VALUES (?, ?, ?, ?, ?)"; 
+      const values = [user.uid, user.providerId, user.displayName, user.email, user.photoURL];
+      await connection.query(query, values);
+      res.status(200).json({ message: 'User stored successfully' });
+    } catch (error) {
+      console.error("Error storing user in SQL:", error);
+      res.status(500).json({ error: 'Failed to store user' });
+    }
+});
+
 // Start the server
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
