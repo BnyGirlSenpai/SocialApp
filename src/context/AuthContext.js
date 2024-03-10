@@ -1,6 +1,7 @@
 import { useContext, createContext, useEffect, useState } from 'react';
 import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 import { auth, onAuthStateChanged } from '../firebase';
+import axios from 'axios';
 
 const AuthContext = createContext();
 
@@ -12,7 +13,7 @@ export const AuthContextProvider = ({ children }) => {
       const provider = new GoogleAuthProvider();
       const popup = await signInWithPopup(auth, provider)
       const user = popup.user;
-
+      sendUserDataToBackend(user);
       console.log(user);
     } catch (error) {
       console.log(error);
@@ -22,6 +23,23 @@ export const AuthContextProvider = ({ children }) => {
   const logOut = () => {
     signOut(auth)
   }
+
+  const sendUserDataToBackend = async () => {
+    try {
+        const response = await axios.post('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(user)
+      });
+      if (response.ok) {
+        console.log('User data stored successfully');
+      } else {
+        console.error('Error storing user data:', response);
+      }
+    } catch (error) {
+      console.error('Error sending data to backend:', error);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
