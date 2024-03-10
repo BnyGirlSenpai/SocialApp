@@ -14,14 +14,6 @@ export const AuthContextProvider = ({ children }) => {
       const user = popup.user;
 
       console.log(user);
-
-      // Call a server-side API endpoint to handle database interaction 
-      await fetch('/api/store-user', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(user)
-      });
-
     } catch (error) {
       console.log(error);
     }

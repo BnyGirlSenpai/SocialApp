@@ -10,7 +10,6 @@ import Mappage from './Pages/MapPage';
 import Calenderpage from './Pages/CalenderPage';
 import Settingspage from './Pages/SettingsPage';
 import Profilepage from './Pages/ProfilePage';
-
 function App() {
   return (
     <div className="App">    
