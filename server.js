@@ -16,7 +16,7 @@ async function fetchEventData() {
     const classificationName = 'music';
     const countryCode = 'DE';
     const city = 'Cologne';
-    const apikey = process.env.API_KEY;
+    const apikey = process.env.API_KEY; //missing in .env
     const size = 4;
 
     const apiUrl = `https://app.ticketmaster.com/discovery/v2/events.json?classificationName=${encodeURIComponent(classificationName)}&countryCode=${encodeURIComponent(countryCode)}&city=${encodeURIComponent(city)}&apikey=${encodeURIComponent(apikey)}&size=${size}&page=${page}`;
@@ -37,20 +37,6 @@ app.get('/api/events', async (req, res) => {
         res.json(eventData);
     } catch (error) {
         res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-// API endpoint to get events from the UserAuth 
-app.post('/api/store-user', async (req, res) => {
-    try {
-      const user = req.body;
-      const query = "INSERT INTO users (uid, authprovider, name, email, image) VALUES (?, ?, ?, ?, ?)"; 
-      const values = [user.uid, user.providerId, user.displayName, user.email, user.photoURL];
-      await connection.query(query, values);
-      res.status(200).json({ message: 'User stored successfully' });
-    } catch (error) {
-      console.error("Error storing user in SQL:", error);
-      res.status(500).json({ error: 'Failed to store user' });
     }
 });
 
