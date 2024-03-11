@@ -24,7 +24,7 @@ export const AuthContextProvider = ({ children }) => {
     signOut(auth)
   }
 
-  const sendUserDataToBackend = async () => {
+  const sendUserDataToBackend = async (user) => {
     try {
         const response = await axios.post('http://localhost:3001/api/users', {
         method: 'POST',
