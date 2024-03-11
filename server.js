@@ -8,11 +8,6 @@ dotenv.config();
 
 const app = express();
 const port = 3001;
-<<<<<<< HEAD
-const corsOptions = {origin: 'http://localhost:3000'};
-
-app.use(cors(corsOptions));app.use(express.json());
-=======
 const pool = createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER, 
@@ -24,7 +19,6 @@ app.use(cors({
     origin: 'http://localhost:3000', // Allow requests from your frontend's origin
     credentials: true // Optional, to allow cookies if needed
 }));
->>>>>>> 0e2a34c32d5084796134b8c692b324f0944afa53
 
 // Define the main function for fetching data from the Ticketmaster API
 async function fetchEventData() {
