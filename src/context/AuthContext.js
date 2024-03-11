@@ -26,7 +26,7 @@ export const AuthContextProvider = ({ children }) => {
 
   const sendUserDataToBackend = async () => {
     try {
-        const response = await axios.post('/api/users', {
+        const response = await axios.post('http://localhost:3001/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(user)
