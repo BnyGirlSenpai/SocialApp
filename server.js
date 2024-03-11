@@ -7,8 +7,9 @@ dotenv.config();
 
 const app = express();
 const port = 3001;
+const corsOptions = {origin: 'http://localhost:3000'};
 
-app.use(express.json());
+app.use(cors(corsOptions));app.use(express.json());
 
 // Define the main function for fetching data from the Ticketmaster API
 async function fetchEventData() {
