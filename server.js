@@ -53,12 +53,19 @@ app.get('/api/events', async (req, res) => {
 // API endpoint to receive data
 app.post('/api/users', async (req, res) => {
     const receivedData = req.body;
+    const userData =  JSON.parse(receivedData.body);
+    const insertQuery = 'INSERT INTO users (uid, authprovider, email, displayName, photoURL) VALUES (?, ?, ?, ?, ?)';
     try {
-        const connection = pool.getConnection();
-        const [result] = await connection.execute(
-            'INSERT INTO user_data (googleId, email, name, imageUrl) VALUES (?, ?, ?, ?)',
-            [receivedData.googleId, receivedData.email, receivedData.name, receivedData.imageUrl]
-        );
+        console.log(userData);
+        const connection = await pool.getConnection();
+        connection.query(insertQuery, [userData.uid, userData.providerData.providerId, userData.email, userData.displayName, userData.photoURL], (error) => {
+            if (error) {
+                console.error("Database error:", error);
+                res.status(500).send("Error saving data"); 
+            } else {
+                res.status(201).send("User data saved"); 
+            }
+        });
 
         // Release connection back to the pool
         connection.release();
