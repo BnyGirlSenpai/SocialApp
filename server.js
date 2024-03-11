@@ -1,15 +1,30 @@
 import express from 'express';
 import axios from 'axios';
-import { createPool } from 'mysql2/promise';
+import { createPool} from 'mysql2/promise';
 import dotenv from 'dotenv';
 import cors from 'cors';
+
 dotenv.config();
 
 const app = express();
 const port = 3001;
+<<<<<<< HEAD
 const corsOptions = {origin: 'http://localhost:3000'};
 
 app.use(cors(corsOptions));app.use(express.json());
+=======
+const pool = createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER, 
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME
+});
+app.use(express.json());
+app.use(cors({
+    origin: 'http://localhost:3000', // Allow requests from your frontend's origin
+    credentials: true // Optional, to allow cookies if needed
+}));
+>>>>>>> 0e2a34c32d5084796134b8c692b324f0944afa53
 
 // Define the main function for fetching data from the Ticketmaster API
 async function fetchEventData() {
@@ -17,7 +32,7 @@ async function fetchEventData() {
     const classificationName = 'music';
     const countryCode = 'DE';
     const city = 'Cologne';
-    const apikey = process.env.API_KEY;
+    const apikey = process.env.API_KEY; //missing in .env
     const size = 4;
 
     const apiUrl = `https://app.ticketmaster.com/discovery/v2/events.json?classificationName=${encodeURIComponent(classificationName)}&countryCode=${encodeURIComponent(countryCode)}&city=${encodeURIComponent(city)}&apikey=${encodeURIComponent(apikey)}&size=${size}&page=${page}`;
@@ -38,6 +53,26 @@ app.get('/api/events', async (req, res) => {
         res.json(eventData);
     } catch (error) {
         res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// API endpoint to receive data
+app.post('/api/users', async (req, res) => {
+    const receivedData = req.body;
+    try {
+        const connection = pool.getConnection();
+        const [result] = await connection.execute(
+            'INSERT INTO user_data (googleId, email, name, imageUrl) VALUES (?, ?, ?, ?)',
+            [receivedData.googleId, receivedData.email, receivedData.name, receivedData.imageUrl]
+        );
+
+        // Release connection back to the pool
+        connection.release();
+
+        res.status(200).json({ message: 'Data received successfully' });
+    } catch (error) {
+        console.error('Error processing data:', error);
+        res.status(500).json({ error: 'Failed to process data' });
     }
 });
 
