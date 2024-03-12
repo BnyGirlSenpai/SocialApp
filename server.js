@@ -59,7 +59,7 @@ app.post('/api/users', async (req, res) => {
     try {
         console.log(providerData);
         const connection = await pool.getConnection();
-        connection.query(insertQuery, [userData.uid, providerData.providerId, userData.email, userData.displayName, userData.photoURL], (error) => {
+        connection.query(insertQuery, [userData.uid, providerData?.[0]?.providerId, userData.email, userData.displayName, userData.photoURL], (error) => {
             if (error) {
                 console.error("Database error:", error);
                 res.status(500).send("Error saving data"); 
