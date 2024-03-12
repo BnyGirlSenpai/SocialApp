@@ -55,11 +55,11 @@ app.post('/api/users', async (req, res) => {
     const receivedData = req.body;
     const userData =  JSON.parse(receivedData.body);
     const providerData = userData.providerData
-    const insertQuery = 'INSERT INTO users (uid, authprovider, email, displayName, photoURL) VALUES (?, ?, ?, ?, ?)';
+    const insertQuery = 'INSERT INTO users (uid, authprovider, email, phoneNumber, displayName, photoURL) VALUES (?, ?, ?, ?, ?)';
     try {
         console.log(providerData);
         const connection = await pool.getConnection();
-        connection.query(insertQuery, [userData.uid, providerData.providerId, userData.email, userData.displayName, userData.photoURL], (error) => {
+        connection.query(insertQuery, [providerData.uid, providerData?.[0]?.providerId, providerData?.email, providerData?.displayName, providerData?.photoURL, providerData?.phoneNumber], (error) => {
             if (error) {
                 console.error("Database error:", error);
                 res.status(500).send("Error saving data"); 
