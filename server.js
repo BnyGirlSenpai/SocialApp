@@ -53,25 +53,36 @@ app.get('/api/events', async (req, res) => {
 // API endpoint to receive data
 app.post('/api/users', async (req, res) => {
     const receivedData = req.body;
-    const userData =  JSON.parse(receivedData.body);
-    const providerData = userData.providerData
-    const insertQuery = 'INSERT INTO users (uid, authprovider, email, phoneNumber, displayName, photoURL) VALUES (?, ?, ?, ?, ?)';
+    const userData = JSON.parse(receivedData.body);
+    const providerData = userData.providerData;
+    const uid = userData.uid;
+
+    // Check if uid already exists in the database
+    const selectQuery = 'SELECT COUNT(*) AS count FROM users WHERE uid = ?';
+
     try {
-        console.log(providerData);
         const connection = await pool.getConnection();
-        connection.query(insertQuery, [userData.uid, providerData?.[0]?.providerId, userData.email, userData.displayName, userData.photoURL], (error) => {
-            if (error) {
-                console.error("Database error:", error);
-                res.status(500).send("Error saving data"); 
-            } else {
-                res.status(201).send("User data saved"); 
-            }
-        });
+
+        // Use async/await for the SELECT query
+        const [results] = await connection.query(selectQuery, [uid]);
+
+        const userCount = results[0].count;
+
+        if (userCount > 0) {
+            // User already exists, do nothing
+            console.error('User already exists!');
+        } else {
+            // User does not exist, insert data
+            const insertQuery = 'INSERT INTO users (uid, authprovider, email, displayName, photoURL) VALUES (?, ?, ?, ?, ?)';
+
+            // Use async/await for the INSERT query
+            await connection.query(insertQuery, [uid, providerData?.[0]?.providerId, userData?.email, userData?.displayName, userData?.photoURL]);
+
+            res.status(201).send("User data saved");
+        }
 
         // Release connection back to the pool
         connection.release();
-
-        res.status(200).json({ message: 'Data received successfully' });
     } catch (error) {
         console.error('Error processing data:', error);
         res.status(500).json({ error: 'Failed to process data' });
