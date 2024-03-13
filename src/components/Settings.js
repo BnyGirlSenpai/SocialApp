@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { UserAuth } from '../context/AuthContext';
-import { auth, db, onAuthStateChanged } from '../firebase';
-import { collection, query, where, getDocs, updateDoc } from "firebase/firestore";
+import { auth, onAuthStateChanged } from '../firebase';
+import { getDataFromBackend }  from '../apis/UserDataApi';
 
 const Settings = () => {
-    
     const { user } = UserAuth();
-    const collectionUserRef = collection(db, "users");
     const [isButtonClicked, setIsButtonClicked] = useState(false);
     
+    /*
     const [profileData, setProfileData] = useState({
         username: '',
         email: '',
@@ -18,35 +17,35 @@ const Settings = () => {
         country: '',
         region: '',
     });
+    */
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged( auth, user => {
           if (user) {
-            loadProfile(user.uid);
+            getDataFromBackend(user.uid) 
+            //loadProfile(user.uid);
           }
         });
-    
         return () => unsubscribe();
-      }, []);
-    
-      const loadProfile = async (uid) => {
-        try {
-          const q = query(collectionUserRef, where('uid', '==', uid));
-          const querySnapshot = await getDocs(q);
-    
-          if (!querySnapshot.empty) {
-            const userData = querySnapshot.docs[0].data();
-            setProfileData(userData);
-            console.log('Loaded profile data:', userData);
-          } else {
-            console.log('No matching documents for the user');
-          }
-        } catch (error) {
-          console.error('Error loading profile data:', error);
+    }, []);
+
+    /*
+    const loadProfile = async (uid) => {
+    try {
+
+        if (!data) {
+        const userData = data.docs[0].data();
+        setProfileData(userData);
+        console.log('Loaded profile data:', userData);
+        } else {
+        console.log('No matching documents for the user');
         }
-      };
+    } catch (error) {
+        console.log('Error loading profile data:', error);
+    }
+    };
   
-      const handleSaveProfile = async () => {
+    const handleSaveProfile = async () => {
         try {
             const q = query(collectionUserRef, where("uid", "==", user.uid));
             const docs = await getDocs(q);
@@ -74,7 +73,9 @@ const Settings = () => {
             console.error('Error updating profile data:', error);
         }
     };
-  
+    */
+
+    /*
     const handleInputChange = (e) => {
             const { name, value } = e.target;
             setProfileData((prevData) => ({
@@ -82,9 +83,10 @@ const Settings = () => {
             [name]: value,
         }));
     };
+    */
 
 return (
-    <div className="container d-flex justify-content-center align-items-center">
+   /* <div className="container d-flex justify-content-center align-items-center">
         <div className="card">
             <div className="upper">
         </div>
@@ -151,7 +153,8 @@ return (
             </div>
         </div>
     </div>
-</div>
-)};
+</div> */
+null
+)}; 
 
 export default Settings;

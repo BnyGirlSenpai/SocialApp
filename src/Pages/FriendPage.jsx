@@ -2,7 +2,7 @@ import React from 'react';
 import FriendList from '../components/FriendList';
 import Navbar from '../components/Navbar';
 import UserSearch from '../components/UserSearch';
-import AcceptRejectFriendRequest from '../UserInteractions/AcceptDeclineFriendRequest';
+import AcceptRejectFriendRequest from '../userInteractions/AcceptDeclineFriendRequest';
 
 function Friendpage() {
   return (

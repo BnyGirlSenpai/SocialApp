@@ -1,5 +1,5 @@
 import React from 'react'
-import Post from '../Forms/PostForms/PostForm';
+import Post from '../forms/PostForms/PostForm';
 
 const Home = () => {
   return (

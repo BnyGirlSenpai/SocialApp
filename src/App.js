@@ -2,14 +2,14 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import React from 'react';
 import Protected from './components/Protected';
 import { AuthContextProvider } from './context/AuthContext';
-import HomePage from './Pages/HomePage';
-import Signin from './Pages/SignInPage';
-import Eventpage from './Pages/EventPage';
-import Friendpage from './Pages/FriendPage';
-import Mappage from './Pages/MapPage';
-import Calenderpage from './Pages/CalenderPage';
-import Settingspage from './Pages/SettingsPage';
-import Profilepage from './Pages/ProfilePage';
+import HomePage from './pages/HomePage';
+import Signin from './pages/SignInPage';
+import Eventpage from './pages/EventPage';
+import Friendpage from './pages/FriendPage';
+import Mappage from './pages/MapPage';
+import Calenderpage from './pages/CalenderPage';
+import Settingspage from './pages/SettingsPage';
+import Profilepage from './pages/ProfilePage';
 function App() {
   return (
     <div className="App">    
