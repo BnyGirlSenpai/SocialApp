@@ -1,5 +1,4 @@
 import express from 'express';
-import axios from 'axios';
 import { createPool} from 'mysql2/promise';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -21,6 +20,7 @@ app.use(cors({
 }));
 
 // Define the main function for fetching data from the Ticketmaster API
+/*
 async function fetchEventData() {
     const page = 3;
     const classificationName = 'music';
@@ -49,8 +49,22 @@ app.get('/api/events', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+*/
 
-// API endpoint to receive data
+// API endpoint to get User data
+app.get('/api/users/:uid', async (req, res) => {
+    try {
+      const connection = await pool.getConnection();
+      const uid = req.params.uid;
+      const [rows] = await connection.query('SELECT * FROM users WHERE uid = ?', [uid]);
+      res.status(200).json(rows);
+    } catch (error) {
+      console.error('Error retrieving user data:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// API endpoint to store User data
 app.post('/api/users', async (req, res) => {
     const receivedData = req.body;
     const userData = JSON.parse(receivedData.body);
@@ -70,15 +84,13 @@ app.post('/api/users', async (req, res) => {
 
         if (userCount > 0) {
             // User already exists, do nothing
-            console.error('User already exists!');
+            console.log('User already exists!');
         } else {
             // User does not exist, insert data
             const insertQuery = 'INSERT INTO users (uid, authprovider, email, displayName, photoURL) VALUES (?, ?, ?, ?, ?)';
-
             // Use async/await for the INSERT query
             await connection.query(insertQuery, [uid, providerData?.[0]?.providerId, userData?.email, userData?.displayName, userData?.photoURL]);
-
-            res.status(201).send("User data saved");
+            console.log("User data saved");
         }
 
         // Release connection back to the pool
