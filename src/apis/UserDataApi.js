@@ -42,8 +42,6 @@ const UserDataApi = ({ data }) => {
       sendDataToBackend(data);
     }
   }, [data]);
-
-  // No HTML is returned from this component
   return null;
 };
 

@@ -6,8 +6,7 @@ import { getDataFromBackend }  from '../apis/UserDataApi';
 const Settings = () => {
     const { user } = UserAuth();
     const [isButtonClicked, setIsButtonClicked] = useState(false);
-    
-    /*
+
     const [profileData, setProfileData] = useState({
         username: '',
         email: '',
@@ -17,24 +16,29 @@ const Settings = () => {
         country: '',
         region: '',
     });
-    */
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged( auth, user => {
-          if (user) {
-            getDataFromBackend(user.uid) 
-            //loadProfile(user.uid);
-          }
+            fetchData();
         });
         return () => unsubscribe();
     }, []);
 
-    /*
-    const loadProfile = async (uid) => {
+    async function fetchData() {
+        try {
+            if (user) {
+                const data = await getDataFromBackend(user.uid);
+                loadProfile(data);
+                console.log(data)
+            }  
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+    }
+    
+    const loadProfile = async (userData) => {
     try {
-
-        if (!data) {
-        const userData = data.docs[0].data();
+        if (userData) {
         setProfileData(userData);
         console.log('Loaded profile data:', userData);
         } else {
@@ -44,7 +48,7 @@ const Settings = () => {
         console.log('Error loading profile data:', error);
     }
     };
-  
+  /*
     const handleSaveProfile = async () => {
         try {
             const q = query(collectionUserRef, where("uid", "==", user.uid));
@@ -75,7 +79,6 @@ const Settings = () => {
     };
     */
 
-    /*
     const handleInputChange = (e) => {
             const { name, value } = e.target;
             setProfileData((prevData) => ({
@@ -83,10 +86,9 @@ const Settings = () => {
             [name]: value,
         }));
     };
-    */
 
 return (
-   /* <div className="container d-flex justify-content-center align-items-center">
+    <div className="container d-flex justify-content-center align-items-center">
         <div className="card">
             <div className="upper">
         </div>
@@ -124,10 +126,7 @@ return (
                 <label className="labels">Password</label>
                 <input type="password" className="form-control" placeholder={""} name="password" value={profileData?.password} onChange={handleInputChange} />
             </div>
-            <div className="col-md-6">
-                <label className="labels">Repeat Password</label>
-                <input type="password" className="form-control" placeholder={""} name="password" value={""} onChange={handleInputChange} />
-            </div>
+
             </div>
             <div className="row mt-3">
             <div className="col-md-12">
@@ -144,17 +143,19 @@ return (
             </div>
             </div>
             <div className="mt-5 text-center">
-            <button
-                className={`btn ${isButtonClicked ? 'btn-success' : 'btn-primary'} profile-button`}
-                type="button"
-                onClick={handleSaveProfile}>
-                {isButtonClicked ? 'Profile Saved' : 'Save Profile'}
-            </button>
             </div>
         </div>
     </div>
-</div> */
-null
+</div> 
 )}; 
 
 export default Settings;
+
+/*
+<button
+    className={`btn ${isButtonClicked ? 'btn-success' : 'btn-primary'} profile-button`}
+    type="button"
+    onClick={handleSaveProfile}>
+    {isButtonClicked ? 'Profile Saved' : 'Save Profile'}
+</button> 
+*/
