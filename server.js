@@ -15,7 +15,7 @@ const pool = createPool({
 });
 app.use(express.json());
 app.use(cors({
-    origin: 'http://localhost:3000', // Allow requests from your frontend's origin
+    origin: ['http://localhost:3000', 'http://localhost:3000/SettingsPage'], // Allow requests from your frontend's origin
     credentials: true // Optional, to allow cookies if needed
 }));
 
@@ -93,6 +93,34 @@ app.post('/api/users', async (req, res) => {
             console.log("User data saved");
         }
 
+        // Release connection back to the pool
+        connection.release();
+    } catch (error) {
+        console.error('Error processing data:', error);
+        res.status(500).json({ error: 'Failed to process data' });
+    }
+});
+
+// API endpoint to update User data
+app.post('/api/users/update', async (req, res) => {
+    const receivedData = req.body;
+    const userData = JSON.parse(receivedData.body);
+    const uid = userData?.[0]?.uid;
+
+    // Check if uid already exists in the database
+    const selectQuery = 'SELECT COUNT(*) AS count FROM users WHERE uid = ?';
+    try {
+        const connection = await pool.getConnection();
+        const [results] = await connection.query(selectQuery, [uid]);
+        const userCount = results[0].count;
+
+        if (userCount = 1) {
+            // User already exists, update data
+            const updateQuery = 'UPDATE users SET email = ?, country = ?, region = ?, username = ? , phoneNumber = ?, address = ?, password = ?, dateOfBirth = ? WHERE uid = ?';
+            // Use async/await for the UPDATE query
+            await connection.query(updateQuery, [userData?.[0]?.email, userData?.[0]?.country, userData?.[0]?.region, userData?.[0]?.username, userData?.[0]?.phoneNumber,userData?.[0]?.adress, userData?.[0]?.password, userData?.[0]?.dateOfBirth, userData?.[0]?.uid]);
+            console.log('User data updated');
+        } 
         // Release connection back to the pool
         connection.release();
     } catch (error) {
