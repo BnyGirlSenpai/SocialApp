@@ -9,9 +9,28 @@ const sendDataToBackend = async (data) => {
       body: JSON.stringify(data)
     });
     if (response.ok) {
+      console.log(data)
       console.log('data stored successfully');
     } else {
       console.error('Error storing data:', response);
+    }
+  } catch (error) {
+    console.error('Error sending data to backend:', error);
+  }
+};
+
+const updateUserDataInDb = async (data) => {
+  try {
+      const response = await axios.post('http://localhost:3001/api/users/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (response.ok) {
+      console.log(data)
+      console.log('data updated successfully');
+    } else {
+      console.error('Error updating data:', response);
     }
   } catch (error) {
     console.error('Error sending data to backend:', error);
@@ -45,4 +64,4 @@ const UserDataApi = ({ data }) => {
   return null;
 };
 
-export { UserDataApi, sendDataToBackend ,getDataFromBackend};
+export { UserDataApi, sendDataToBackend ,getDataFromBackend ,updateUserDataInDb};
