@@ -13,6 +13,8 @@ const pool = createPool({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME
 });
+const connection = await pool.getConnection();
+
 app.use(express.json());
 app.use(cors({
     origin: ['http://localhost:3000', 'http://localhost:3000/SettingsPage'], // Allow requests from your frontend's origin
@@ -54,9 +56,8 @@ app.get('/api/events', async (req, res) => {
 // API endpoint to get User data
 app.get('/api/users/:uid', async (req, res) => {
     try {
-      const connection = await pool.getConnection();
-      const uid = req.params.uid;
-      const [rows] = await connection.query('SELECT * FROM users WHERE uid = ?', [uid]);
+      let uid = req.params.uid;
+      let [rows] = await connection.query('SELECT * FROM users WHERE uid = ?', [uid]);
       res.status(200).json(rows);
     } catch (error) {
       console.error('Error retrieving user data:', error);
@@ -66,28 +67,26 @@ app.get('/api/users/:uid', async (req, res) => {
 
 // API endpoint to store User data
 app.post('/api/users', async (req, res) => {
-    const receivedData = req.body;
-    const userData = JSON.parse(receivedData.body);
-    const providerData = userData.providerData;
-    const uid = userData.uid;
+    let receivedData = req.body;
+    let userData = JSON.parse(receivedData.body);
+    let providerData = userData.providerData;
+    let uid = userData.uid;
 
     // Check if uid already exists in the database
-    const selectQuery = 'SELECT COUNT(*) AS count FROM users WHERE uid = ?';
+    let selectQuery = 'SELECT COUNT(*) AS count FROM users WHERE uid = ?';
 
     try {
-        const connection = await pool.getConnection();
-
         // Use async/await for the SELECT query
-        const [results] = await connection.query(selectQuery, [uid]);
+        let [results] = await connection.query(selectQuery, [uid]);
 
-        const userCount = results[0].count;
+        let userCount = results[0].count;
 
         if (userCount > 0) {
             // User already exists, do nothing
             console.log('User already exists!');
         } else {
             // User does not exist, insert data
-            const insertQuery = 'INSERT INTO users (uid, authprovider, email, displayName, photoURL) VALUES (?, ?, ?, ?, ?)';
+            let insertQuery = 'INSERT INTO users (uid, authprovider, email, displayName, photoURL) VALUES (?, ?, ?, ?, ?)';
             // Use async/await for the INSERT query
             await connection.query(insertQuery, [uid, providerData?.[0]?.providerId, userData?.email, userData?.displayName, userData?.photoURL]);
             console.log("User data saved");
@@ -102,23 +101,23 @@ app.post('/api/users', async (req, res) => {
 });
 
 // API endpoint to update User data
-app.post('/api/users/update', async (req, res) => {
-    const receivedData = req.body;
-    const userData = JSON.parse(receivedData.body);
-    const uid = userData?.[0]?.uid;
+app.post('/api/users/update', async (req ,res) => {
+    console.log(req.body)
+    let userData = req.body;
+    let uid = userData.uid;
 
     // Check if uid already exists in the database
     const selectQuery = 'SELECT COUNT(*) AS count FROM users WHERE uid = ?';
     try {
-        const connection = await pool.getConnection();
-        const [results] = await connection.query(selectQuery, [uid]);
-        const userCount = results[0].count;
+        let connection = await pool.getConnection();
+        let [results] = await connection.query(selectQuery, [uid]);
+        let userCount = results[0].count;
 
-        if (userCount = 1) {
+        if (userCount === 1) {
             // User already exists, update data
-            const updateQuery = 'UPDATE users SET email = ?, country = ?, region = ?, username = ? , phoneNumber = ?, address = ?, password = ?, dateOfBirth = ? WHERE uid = ?';
+            let updateQuery = 'UPDATE users SET email = ?, country = ?, region = ?, username = ?, phoneNumber = ?, address = ?, password = ?, dateOfBirth = ? WHERE uid = ?';
             // Use async/await for the UPDATE query
-            await connection.query(updateQuery, [userData?.[0]?.email, userData?.[0]?.country, userData?.[0]?.region, userData?.[0]?.username, userData?.[0]?.phoneNumber,userData?.[0]?.adress, userData?.[0]?.password, userData?.[0]?.dateOfBirth, userData?.[0]?.uid]);
+            await connection.query(updateQuery, [userData?.email, userData?.country, userData?.region, userData?.username, userData?.phoneNumber, userData?.address, userData?.password, userData?.dateOfBirth, userData.uid]);
             console.log('User data updated');
         } 
         // Release connection back to the pool
