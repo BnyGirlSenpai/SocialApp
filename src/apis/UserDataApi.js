@@ -1,9 +1,8 @@
-import { useEffect } from 'react';
 import axios from 'axios';
 
 const sendDataToBackend = async (data) => {
   try {
-      const response = await axios.post('http://localhost:3001/api/users', {
+      let response = await axios.post('http://localhost:3001/api/users', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -21,16 +20,16 @@ const sendDataToBackend = async (data) => {
 
 const updateUserDataInDb = async (data) => {
   try {
-      const response = await axios.post('http://localhost:3001/api/users/update', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-    if (response.ok) {
-      console.log(data)
-      console.log('data updated successfully');
+    let response = await axios.post('http://localhost:3001/api/users/update',data,
+      {
+        headers: { 'Content-Type': 'application/json' } // Set headers separately
+      }
+    );
+    if (response.status === 200) { // Check status instead of response.ok
+      console.log(data);
+      console.log('Data send successfully');
     } else {
-      console.error('Error updating data:', response);
+      console.error('Error storing data:', response);
     }
   } catch (error) {
     console.error('Error sending data to backend:', error);
@@ -39,7 +38,7 @@ const updateUserDataInDb = async (data) => {
 
 const getDataFromBackend = async (uid) => {
   try {
-    const response = await axios.get(`http://localhost:3001/api/users/${uid}`);
+    let response = await axios.get(`http://localhost:3001/api/users/${uid}`);
 
     if (response.status === 200) {
       const data = response.data;
@@ -55,13 +54,4 @@ const getDataFromBackend = async (uid) => {
   }
 };
 
-const UserDataApi = ({ data }) => {
-  useEffect(() => {
-    if (data) {
-      sendDataToBackend(data);
-    }
-  }, [data]);
-  return null;
-};
-
-export { UserDataApi, sendDataToBackend ,getDataFromBackend ,updateUserDataInDb};
+export {sendDataToBackend ,getDataFromBackend ,updateUserDataInDb};

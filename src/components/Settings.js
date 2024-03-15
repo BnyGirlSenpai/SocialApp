@@ -10,9 +10,10 @@ const Settings = () => {
         email: '',
         dateOfBirth: '',
         password: '',
-        adress: '',
+        address: '',
         country: '',
         region: '',
+        phoneNumber: '',
     });
 
     useEffect(() => {
@@ -34,15 +35,16 @@ const Settings = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setProfileData(({
+        setProfileData(() => ({
+            
             [name]: value,
             uid: user.uid 
         }));
     };
+    
     const handleSaveProfile = async () => { 
         try {
             if (profileData) {
-                console.log('Profile data updated successfully');
                 console.log('Data to server:', profileData);
                 updateUserDataInDb(profileData); 
                 setIsButtonClicked(true);
@@ -105,9 +107,14 @@ return (
                     </div>
 
                     <div className="row mt-3">
-                        <div className="col-md-12">
+                        <div className="col-md-6">
                             <label className="labels">Address</label>
-                            <input type="text" className="form-control" placeholder={""} name="address" value={profileData?.[0]?.adress} onChange={handleInputChange} />
+                            <input type="text" className="form-control" placeholder={""} name="address" value={profileData?.[0]?.address} onChange={handleInputChange} />
+                        </div>
+
+                        <div className="col-md-6">
+                            <label className="labels">PhoneNumber</label>
+                            <input type="text" className="form-control" placeholder={""} name="phoneNumber" value={profileData?.[0]?.phoneNumber} onChange={handleInputChange} />
                         </div>
 
                         <div className="col-md-6">
@@ -125,7 +132,7 @@ return (
                         <button
                             className={`btn ${isButtonClicked ? 'btn-success' : 'btn-primary'} profile-button`}
                             type="button"
-                            onClick={() => handleSaveProfile(user)}> {/* Pass user object to handleSaveProfile */}
+                            onClick={() => handleSaveProfile()}> {/* Pass user object to handleSaveProfile */}
                             {isButtonClicked ? 'Profile Saved' : 'Save Profile'}
                         </button> 
                     </div>
