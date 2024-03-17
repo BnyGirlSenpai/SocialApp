@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-const sendDataToBackend = async (data) => {
+const sendDataToBackend = async (data,endpoint) => {
   try {
-      let response = await axios.post('http://localhost:3001/api/users', {
+      let response = await axios.post(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -18,9 +18,9 @@ const sendDataToBackend = async (data) => {
   }
 };
 
-const updateUserDataInDb = async (data) => {
+const updateUserDataInDb = async (data,endpoint) => {
   try {
-    let response = await axios.post('http://localhost:3001/api/users/update',data,
+    let response = await axios.post(endpoint,data,
       {
         headers: { 'Content-Type': 'application/json' } // Set headers separately
       }
@@ -36,9 +36,9 @@ const updateUserDataInDb = async (data) => {
   }
 };
 
-const getDataFromBackend = async (uid) => {
+const getDataFromBackend = async (endpoint) => {
   try {
-    let response = await axios.get(`http://localhost:3001/api/users/${uid}`);
+    let response = await axios.get(endpoint);
 
     if (response.status === 200) {
       const data = response.data;

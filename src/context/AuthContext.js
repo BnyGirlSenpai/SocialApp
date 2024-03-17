@@ -13,7 +13,7 @@ export const AuthContextProvider = ({ children }) => {
       const provider = new GoogleAuthProvider();
       const popup = await signInWithPopup(auth, provider)
       const user = popup.user;
-      sendDataToBackend(user);
+      sendDataToBackend(user,'http://localhost:3001/api/users');
       console.log(user);
     } catch (error) {
       console.log(error);

@@ -20,7 +20,7 @@ const Settings = () => {
         const fetchData = async () => {
             try {
                 if (user) {
-                    const data = await getDataFromBackend(user.uid);
+                    const data = await getDataFromBackend(`http://localhost:3001/api/users/${user.uid}`);
                     setProfileData(data);
                     console.log("Loaded data from server:", data);
                 }  
@@ -46,7 +46,7 @@ const Settings = () => {
         try {
             if (profileData) {
                 console.log('Data to server:', profileData);
-                updateUserDataInDb(profileData); 
+                updateUserDataInDb(profileData,'http://localhost:3001/api/users/update'); 
                 setIsButtonClicked(true);
                 setTimeout(() => {
                     setIsButtonClicked(false);
