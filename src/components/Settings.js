@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend,updateUserDataInDb }  from '../apis/UserDataApi';
 
@@ -37,8 +37,8 @@ const Settings = () => {
         const { name, value } = e.target;
         setProfileData(prevProfileData => ({
             ...prevProfileData, // Preserve existing state
-            [name]: value, // Update only the changed field
-            uid: user.uid // Add uid if necessary
+            [name]: value,
+            uid: user.uid 
         }));
     };
     
