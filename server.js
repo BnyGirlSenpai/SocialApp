@@ -51,13 +51,13 @@ app.get('/api/events', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-*/
+*/  
 
 // API endpoint to get User data
 app.get('/api/users/:uid', async (req, res) => {
     try {
       let uid = req.params.uid;
-      let [rows] = await connection.query('SELECT * FROM users WHERE uid = ?', [uid]);
+      let [rows] = await connection.query('SELECT uid, authprovider, email, displayName, photoURL, country,region, username, phoneNumber, address, password, dateOfBirth FROM users WHERE uid = ?', [uid]);
       res.status(200).json(rows);
     } catch (error) {
       console.error('Error retrieving user data:', error);
@@ -99,10 +99,9 @@ app.post('/api/users', async (req, res) => {
         res.status(500).json({ error: 'Failed to process data' });
     }
 });
-
 // API endpoint to update User data
-app.post('/api/users/update', async (req ,res) => {
-    console.log(req.body)
+app.post('/api/users/update', async (req, res) => {
+    console.log(req.body);
     let userData = req.body;
     let uid = userData.uid;
 
@@ -115,11 +114,32 @@ app.post('/api/users/update', async (req ,res) => {
 
         if (userCount === 1) {
             // User already exists, update data
-            let updateQuery = 'UPDATE users SET email = ?, country = ?, region = ?, username = ?, phoneNumber = ?, address = ?, password = ?, dateOfBirth = ? WHERE uid = ?';
-            // Use async/await for the UPDATE query
-            await connection.query(updateQuery, [userData?.email, userData?.country, userData?.region, userData?.username, userData?.phoneNumber, userData?.address, userData?.password, userData?.dateOfBirth, userData.uid]);
-            console.log('User data updated');
-        } 
+            let updateFields = [];
+            let updateValues = [];
+
+            // Construct the UPDATE query dynamically based on provided fields
+            Object.keys(userData).forEach(key => {
+                if (key !== 'uid' && key !== '0' && userData[key] !== undefined) {
+                    console.log(updateFields);
+                    // Construct each assignment properly
+                    updateFields.push(`${key} = ?`);
+              
+                    updateValues.push(userData[key]);
+                }
+            });
+
+            if (updateFields.length > 0) {
+                // Update only if there are fields to update
+                updateValues.push(uid); // Push UID for WHERE clause
+                let updateQuery = `UPDATE users SET ${updateFields.join(', ')} WHERE uid = ?`;
+             
+                // Use async/await for the UPDATE query
+                await connection.query(updateQuery, updateValues);
+                console.log('User data updated');
+            } else {
+                console.log('No fields provided for update');
+            }
+        }
         // Release connection back to the pool
         connection.release();
     } catch (error) {
