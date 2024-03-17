@@ -99,6 +99,7 @@ app.post('/api/users', async (req, res) => {
         res.status(500).json({ error: 'Failed to process data' });
     }
 });
+
 // API endpoint to update User data
 app.post('/api/users/update', async (req, res) => {
     console.log(req.body);
