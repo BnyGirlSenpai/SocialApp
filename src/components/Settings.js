@@ -35,10 +35,10 @@ const Settings = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setProfileData(() => ({
-            
-            [name]: value,
-            uid: user.uid 
+        setProfileData(prevProfileData => ({
+            ...prevProfileData, // Preserve existing state
+            [name]: value, // Update only the changed field
+            uid: user.uid // Add uid if necessary
         }));
     };
     
@@ -132,7 +132,7 @@ return (
                         <button
                             className={`btn ${isButtonClicked ? 'btn-success' : 'btn-primary'} profile-button`}
                             type="button"
-                            onClick={() => handleSaveProfile()}> {/* Pass user object to handleSaveProfile */}
+                            onClick={() => handleSaveProfile()}> 
                             {isButtonClicked ? 'Profile Saved' : 'Save Profile'}
                         </button> 
                     </div>
