@@ -35,14 +35,16 @@ const Settings = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+        console.log(name);
+        console.log(value);
         setProfileData(prevProfileData => ({
-            ...prevProfileData, // Preserve existing state
+            ...prevProfileData, // Needs to be fixed!
             [name]: value,
             uid: user.uid 
         }));
     };
     
-    const handleSaveProfile = async () => { 
+    const handleSaveProfile = () => { 
         try {
             if (profileData) {
                 console.log('Data to server:', profileData);

@@ -119,8 +119,7 @@ const AcceptRejectFriendRequest = () => {
                                             <h5>
                                                 <a href="#" className="profile-link">
                                                     {PendingFriendRequests.name}
-                                                </a>
-                                                
+                                                </a>                          
                                                 <button className="btn btn-primary pull-right" onClick={() => rejectFriendRequest(user.uid)}>Reject</button>
                                                 <button className="btn btn-primary pull-right" onClick={() => acceptFriendRequest(user.uid)}>Accept</button>
                                             </h5>
