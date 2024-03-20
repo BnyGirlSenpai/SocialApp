@@ -17,7 +17,7 @@ const connection = await pool.getConnection();
 
 app.use(express.json());
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:3000/SettingsPage'], // Allow requests from your frontend's origin
+    origin: ['http://localhost:3000', 'http://localhost:3000/SettingsPage','http://localhost:3000/FriendPage'], // Allow requests from your frontend's origin
     credentials: true // Optional, to allow cookies if needed
 }));
 
@@ -58,6 +58,21 @@ app.get('/api/users/:uid', async (req, res) => {
     try {
       let uid = req.params.uid;
       let [rows] = await connection.query('SELECT uid, authprovider, email, displayName, photoURL, country,region, username, phoneNumber, address, password, dateOfBirth FROM users WHERE uid = ?', [uid]);
+      res.status(200).json(rows);
+
+    } catch (error) {
+      console.error('Error retrieving user data:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+app.get('/api/users/friends/:uid', async (req, res) => {
+    try {
+      let uid = req.params.uid;
+      let [rows] = await connection.query('SELECT uidTransmitter FROM userrelation WHERE uidReceiver = ?',[uid]);
+      console.log(uid);
+      //03MTUi57IIqPUpinEQa38DlKc9272
+      console.log(rows);
       res.status(200).json(rows);
     } catch (error) {
       console.error('Error retrieving user data:', error);
@@ -148,6 +163,8 @@ app.post('/api/users/update', async (req, res) => {
         res.status(500).json({ error: 'Failed to process data' });
     }
 });
+
+
 
 // Start the server
 app.listen(port, () => {
