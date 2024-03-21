@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { UserAuth } from '../context/AuthContext';
-import { getDataFromBackend,updateUserDataInDb }  from '../apis/UserDataApi';
+import { getDataFromBackend,updateDataInDb }  from '../apis/UserDataApi';
 
 const Settings = () => {
     const { user } = UserAuth();
@@ -48,7 +48,7 @@ const Settings = () => {
         try {
             if (profileData) {
                 console.log('Data to server:', profileData);
-                updateUserDataInDb(profileData,'http://localhost:3001/api/users/update'); 
+                updateDataInDb(profileData,'http://localhost:3001/api/users/update'); 
                 setIsButtonClicked(true);
                 setTimeout(() => {
                     setIsButtonClicked(false);

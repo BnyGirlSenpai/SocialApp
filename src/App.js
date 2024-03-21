@@ -10,6 +10,9 @@ import Mappage from './pages/MapPage';
 import Calenderpage from './pages/CalenderPage';
 import Settingspage from './pages/SettingsPage';
 import Profilepage from './pages/ProfilePage';
+import Notifications from './pages/NotificationPage';
+
+
 function App() {
   return (
     <div className="App">    
@@ -22,6 +25,7 @@ function App() {
             <Route path='/MapPage' element={<Mappage />} />
             <Route path='/CalenderPage' element={<Calenderpage />} />
             <Route path='/SettingsPage' element={<Settingspage />} />
+            <Route path='/NotificationPage' element={<Notifications />} />
             <Route path='/ProfilePage' element={<Profilepage />} />
             <Route path='/HomePage'element={
                 <Protected>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import '../styles/eventlist.css'; // Assuming you have styles for this
+import '../styles/eventlist.css'; 
 
 const EventList = () => {
     const [events, setEvents] = useState([]);
@@ -7,7 +7,7 @@ const EventList = () => {
     useEffect(() => {
         fetch('http://localhost:3001/api/events')
             .then(response => response.json())
-            .then(data => setEvents(data._embedded.events)) // Extract the events array
+            .then(data => setEvents(data._embedded.events)) 
             .catch(error => console.error('Error fetching Events:', error));
     }, []);
 

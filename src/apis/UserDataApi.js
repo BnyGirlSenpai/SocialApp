@@ -18,7 +18,7 @@ const sendDataToBackend = async (data,endpoint) => {
   }
 };
 
-const updateUserDataInDb = async (data,endpoint) => {
+const updateDataInDb = async (data,endpoint) => {
   try {
     let response = await axios.post(endpoint,data,
       {
@@ -54,4 +54,4 @@ const getDataFromBackend = async (endpoint) => {
   }
 };
 
-export {sendDataToBackend ,getDataFromBackend ,updateUserDataInDb};
+export {sendDataToBackend ,getDataFromBackend ,updateDataInDb};
