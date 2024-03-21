@@ -118,7 +118,9 @@ app.post('/api/users/friendrequests', async (req, res)=> {
 app.get('/api/users/friends/:uid', async (req, res) => {
     try {
       let uid = req.params.uid;
-      let [rows] = await connection.query('SELECT u.photoUrl, u.username, u.uid FROM friendrequests AS f JOIN users AS u ON f.uid_transmitter = u.uid WHERE f.uid_receiver = ? AND f.status = ?', [uid, 'accepted']);
+      let [rows] = await connection.query('SELECT u.photoUrl, u.username, u.uid FROM friendrequests AS f JOIN users AS u ON (f.uid_transmitter = u.uid OR f.uid_receiver = u.uid) WHERE ((f.uid_transmitter = ? OR f.uid_receiver = ?) AND f.status = ?) AND u.uid != ?', [uid, uid, 'accepted', uid]);
+      console.log(rows);
+      
       console.log(rows);
       res.status(200).json(rows);
     } catch (error) {
@@ -218,7 +220,7 @@ app.post('/api/users/update', async (req, res) => {
         res.status(500).json({ error: 'Failed to process data' });
     }
 });
-
+//-------------------------Search Endpoints---------------------------------//
 // API endpoint to get User Search data 
 app.get('/api/users/search/:username', async (req, res) => {
     try {
