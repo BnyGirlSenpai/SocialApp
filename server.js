@@ -54,38 +54,7 @@ app.get('/api/events', async (req, res) => {
 });
 */  
 
-// API endpoint to get User Profile data
-app.get('/api/users/:uid', async (req, res) => {
-    try {
-      let uid = req.params.uid;
-      let [rows] = await connection.query('SELECT uid, authprovider, email, displayName, photoURL, country,region, username, phoneNumber, address, password, dateOfBirth FROM users WHERE uid = ?', [uid]);
-      if (rows.length > 0) {
-        res.status(200).json(rows);
-      } else {
-        res.status(404).json({ error: 'User not found' });
-      }
-    } catch (error) {
-      console.error('Error retrieving user data:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-// API endpoint to get User Search data 
-app.get('/api/users/search/:username', async (req, res) => {
-    try {
-      let username = req.params.username;
-      console.log(username);
-      let [rows] = await connection.query('SELECT uid, photoURL, username FROM users WHERE username LIKE CONCAT(\'%\', ?, \'%\')', [username]);
-      if (rows.length > 0) {
-        res.status(200).json(rows);
-      } else {
-        res.status(404).json({ error: 'User not found' });
-      }
-    } catch (error) {
-      console.error('Error retrieving user data:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
+//----------------------Friend System Endpoints-----------------------------//
 
 // API endpoint to get pending Friend Requests data
 app.get('/api/users/friendrequests/:uid', async (req, res) => {
@@ -100,20 +69,24 @@ app.get('/api/users/friendrequests/:uid', async (req, res) => {
     }
 });
 
-// API endpoint to get Friends data
-app.get('/api/users/friends/:uid', async (req, res) => {
+// API endpoint to update pending Friend Requests data
+app.post('/api/users/update/friendrequests' ,async (req, res) => {
+    let receivedData = req.body;
+    console.log(receivedData);
+    let uid_transmitter = receivedData.uid_transmitter;
+    let uid_receiver= receivedData.uid_receiver;
+    let status = receivedData.status;
     try {
-      let uid = req.params.uid;
-      let [rows] = await connection.query('SELECT u.photoUrl, u.username , u.uid FROM friends AS f JOIN users AS u ON f.user_uid2 = u.uid WHERE f.user_uid1 = ?',[uid]);
-      console.log(rows);
-      res.status(200).json(rows);
+        await connection.query('UPDATE friendrequests SET status = ? WHERE uid_transmitter = ? AND uid_receiver = ?', [status, uid_transmitter, uid_receiver]);
+        console.log(uid_receiver,uid_transmitter,status);
+        res.status(200).json({ success: true, message: 'Friend request updated successfully' });
     } catch (error) {
-      console.error('Error retrieving user data:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error updating friend request:', error);
+        res.status(500).json({ success: false, error: 'Internal Server Error' });
     }
 });
 
-// API endpoint to update Friend Request Status and Store Data 
+// API endpoint to store pending Friend Requests data
 app.post('/api/users/friendrequests', async (req, res)=> {
     let receivedData = req.body;
     let friendrequestData = JSON.parse(receivedData.body);
@@ -138,6 +111,36 @@ app.post('/api/users/friendrequests', async (req, res)=> {
     } catch (error) {
         console.error('Error processing data:', error);
         res.status(500).json({ error: 'Failed to process data' });
+    }
+});
+
+// API endpoint to get Friends data
+app.get('/api/users/friends/:uid', async (req, res) => {
+    try {
+      let uid = req.params.uid;
+      let [rows] = await connection.query('SELECT u.photoUrl, u.username, u.uid FROM friendrequests AS f JOIN users AS u ON f.uid_transmitter = u.uid WHERE f.uid_receiver = ? AND f.status = ?', [uid, 'accepted']);
+      console.log(rows);
+      res.status(200).json(rows);
+    } catch (error) {
+      console.error('Error retrieving user data:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+//-------------------------User Endpoints---------------------------------//
+
+// API endpoint to get User Profile data
+app.get('/api/users/:uid', async (req, res) => {
+    try {
+      let uid = req.params.uid;
+      let [rows] = await connection.query('SELECT uid, authprovider, email, displayName, photoURL, country,region, username, phoneNumber, address, password, dateOfBirth FROM users WHERE uid = ?', [uid]);
+      if (rows.length > 0) {
+        res.status(200).json(rows);
+      } else {
+        res.status(404).json({ error: 'User not found' });
+      }
+    } catch (error) {
+      console.error('Error retrieving user data:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
@@ -213,6 +216,23 @@ app.post('/api/users/update', async (req, res) => {
     } catch (error) {
         console.error('Error processing data:', error);
         res.status(500).json({ error: 'Failed to process data' });
+    }
+});
+
+// API endpoint to get User Search data 
+app.get('/api/users/search/:username', async (req, res) => {
+    try {
+      let username = req.params.username;
+      console.log(username);
+      let [rows] = await connection.query('SELECT uid, photoURL, username FROM users WHERE username LIKE CONCAT(\'%\', ?, \'%\')', [username]);
+      if (rows.length > 0) {
+        res.status(200).json(rows);
+      } else {
+        res.status(404).json({ error: 'User not found' });
+      }
+    } catch (error) {
+      console.error('Error retrieving user data:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
