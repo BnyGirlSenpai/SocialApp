@@ -16,8 +16,9 @@ const pool = createPool({
 const connection = await pool.getConnection();
 
 app.use(express.json());
+
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:3000/SettingsPage','http://localhost:3000/FriendPage'], // Allow requests from your frontend's origin
+    origin: ['http://localhost:3000', 'http://localhost:3000/SettingsPage','http://localhost:3000/FriendPage','http://localhost:3000/NotificationPage'], // Allow requests from your frontend's origin
     credentials: true // Optional, to allow cookies if needed
 }));
 
@@ -53,30 +54,90 @@ app.get('/api/events', async (req, res) => {
 });
 */  
 
-// API endpoint to get User data
+// API endpoint to get User Profile data
 app.get('/api/users/:uid', async (req, res) => {
     try {
       let uid = req.params.uid;
       let [rows] = await connection.query('SELECT uid, authprovider, email, displayName, photoURL, country,region, username, phoneNumber, address, password, dateOfBirth FROM users WHERE uid = ?', [uid]);
-      res.status(200).json(rows);
-
+      if (rows.length > 0) {
+        res.status(200).json(rows);
+      } else {
+        res.status(404).json({ error: 'User not found' });
+      }
     } catch (error) {
       console.error('Error retrieving user data:', error);
       res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
-app.get('/api/users/friends/:uid', async (req, res) => {
+// API endpoint to get User Search data 
+app.get('/api/users/search/:username', async (req, res) => {
+    try {
+      let username = req.params.username;
+      console.log(username);
+      let [rows] = await connection.query('SELECT uid, photoURL, username FROM users WHERE username LIKE CONCAT(\'%\', ?, \'%\')', [username]);
+      if (rows.length > 0) {
+        res.status(200).json(rows);
+      } else {
+        res.status(404).json({ error: 'User not found' });
+      }
+    } catch (error) {
+      console.error('Error retrieving user data:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// API endpoint to get pending Friend Requests data
+app.get('/api/users/friendrequests/:uid', async (req, res) => {
     try {
       let uid = req.params.uid;
-      let [rows] = await connection.query('SELECT uidTransmitter FROM userrelation WHERE uidReceiver = ?',[uid]);
-      console.log(uid);
-      //03MTUi57IIqPUpinEQa38DlKc9272
+      let [rows] = await connection.query('SELECT u.photoUrl, u.username , u.uid FROM friendrequests AS ur JOIN users AS u ON ur.uid_transmitter = u.uid WHERE ur.uid_receiver = ? AND ur.status = "pending"',[uid]);
       console.log(rows);
       res.status(200).json(rows);
     } catch (error) {
       console.error('Error retrieving user data:', error);
       res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// API endpoint to get Friends data
+app.get('/api/users/friends/:uid', async (req, res) => {
+    try {
+      let uid = req.params.uid;
+      let [rows] = await connection.query('SELECT u.photoUrl, u.username , u.uid FROM friends AS f JOIN users AS u ON f.user_uid2 = u.uid WHERE f.user_uid1 = ?',[uid]);
+      console.log(rows);
+      res.status(200).json(rows);
+    } catch (error) {
+      console.error('Error retrieving user data:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// API endpoint to update Friend Request Status and Store Data 
+app.post('/api/users/friendrequests', async (req, res)=> {
+    let receivedData = req.body;
+    let friendrequestData = JSON.parse(receivedData.body);
+    console.log(friendrequestData);
+    let uid_transmitter = friendrequestData.senderUserUid;
+    let uid_receiver= friendrequestData.targetUserUid;
+    
+    let selectQuery = 'SELECT COUNT(*) AS count FROM friendrequests WHERE uid_transmitter = ? AND uid_receiver = ?';
+
+    try {
+        let [results] = await connection.query(selectQuery, [uid_transmitter, uid_receiver]);
+        let userCount = results[0].count;
+
+        if (userCount > 0) {
+            console.log('Friend Request already exists!');
+        } else {
+            let insertQuery = 'INSERT INTO friendrequests (uid_transmitter, uid_receiver) VALUES (?, ?)';
+            await connection.query(insertQuery, [uid_transmitter, uid_receiver]);
+            console.log("User data saved");
+        }
+        connection.release();
+    } catch (error) {
+        console.error('Error processing data:', error);
+        res.status(500).json({ error: 'Failed to process data' });
     }
 });
 
@@ -86,28 +147,19 @@ app.post('/api/users', async (req, res) => {
     let userData = JSON.parse(receivedData.body);
     let providerData = userData.providerData;
     let uid = userData.uid;
-
-    // Check if uid already exists in the database
     let selectQuery = 'SELECT COUNT(*) AS count FROM users WHERE uid = ?';
 
     try {
-        // Use async/await for the SELECT query
         let [results] = await connection.query(selectQuery, [uid]);
-
         let userCount = results[0].count;
 
-        if (userCount > 0) {
-            // User already exists, do nothing
+        if (userCount > 0) {      
             console.log('User already exists!');
-        } else {
-            // User does not exist, insert data
+        } else {       
             let insertQuery = 'INSERT INTO users (uid, authprovider, email, displayName, photoURL) VALUES (?, ?, ?, ?, ?)';
-            // Use async/await for the INSERT query
             await connection.query(insertQuery, [uid, providerData?.[0]?.providerId, userData?.email, userData?.displayName, userData?.photoURL]);
             console.log("User data saved");
         }
-
-        // Release connection back to the pool
         connection.release();
     } catch (error) {
         console.error('Error processing data:', error);
@@ -163,8 +215,6 @@ app.post('/api/users/update', async (req, res) => {
         res.status(500).json({ error: 'Failed to process data' });
     }
 });
-
-
 
 // Start the server
 app.listen(port, () => {
