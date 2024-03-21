@@ -50,7 +50,7 @@ function App() {
                <Notifications />
               </Protected>              
             } />
-            <Route path='/ProfilePage' element={
+            <Route path='/ProfilePage/:uid' element={
               <Protected>
                 <Profilepage />
              </Protected> 

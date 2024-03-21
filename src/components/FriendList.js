@@ -24,14 +24,15 @@ const FriendList = () => {
   
   return (
     <div className="container">
+        <h2>FriendList</h2>
         <div className="friend-list">
-            <div className="row">
+            <div className="row">    
                 {friendsData.map((friend, index) => (
                     <div className="col-md-4 col-sm-6" key={index}>
                         <div className="friend-card">
                             <div className="card-info">
                                 <div className="friend-info">                                
-                                    <h5><a href="ProfilePage" className="profile-link">{friend.username}</a></h5> 
+                                    <h5><a href={`/profilepage/${friend.uid}`} className="profile-link">{friend.username}</a></h5> 
                                     <img src={friend.photoUrl} alt={friend.username} />
                                 </div>
                             </div>
