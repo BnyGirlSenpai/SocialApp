@@ -20,13 +20,41 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path='/' element={<Signin />} />
-            <Route path='/EventPage' element={<Eventpage />} />
-            <Route path='/FriendPage' element={<Friendpage />} />
-            <Route path='/MapPage' element={<Mappage />} />
-            <Route path='/CalenderPage' element={<Calenderpage />} />
-            <Route path='/SettingsPage' element={<Settingspage />} />
-            <Route path='/NotificationPage' element={<Notifications />} />
-            <Route path='/ProfilePage' element={<Profilepage />} />
+            <Route path='/EventPage' element={  
+              <Protected>
+                <Eventpage />
+              </Protected>
+            } />
+            <Route path='/FriendPage' element={
+              <Protected>
+                <Friendpage />
+              </Protected>
+            } />
+            <Route path='/MapPage' element={
+              <Protected>
+                <Mappage />
+              </Protected>    
+            } />
+            <Route path='/CalenderPage' element={
+              <Protected>
+                <Calenderpage />
+             </Protected>           
+            } />
+            <Route path='/SettingsPage' element={           
+              <Protected>
+                <Settingspage />
+              </Protected>        
+            } />
+            <Route path='/NotificationPage' element={
+              <Protected>
+               <Notifications />
+              </Protected>              
+            } />
+            <Route path='/ProfilePage' element={
+              <Protected>
+                <Profilepage />
+             </Protected> 
+            } />
             <Route path='/HomePage'element={
                 <Protected>
                   <HomePage />

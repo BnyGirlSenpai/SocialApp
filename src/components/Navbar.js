@@ -53,6 +53,9 @@ function Navbar() {
                 <Link to='/'>Sign in</Link>
               )}
           </div>
+          <div className="col-md-2 col-sm-2">
+            <img src={user.photoURL} alt={user.username} className="profile-photo-lg" />
+          </div>
         </div>
       </div>
     </header>  
