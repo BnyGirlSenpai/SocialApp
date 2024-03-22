@@ -187,9 +187,8 @@ app.post('/api/users', async (req, res) => {
 app.post('/api/users/update', async (req, res) => {
     console.log(req.body);
     let userData = req.body;
-    let uid = userData[9]; // Assuming UID is at index 8 in the array
+    let uid = userData[9]; 
 
-    // Check if uid already exists in the database
     const selectQuery = 'SELECT COUNT(*) AS count FROM users WHERE uid = ?';
     try {
         let connection = await pool.getConnection();
@@ -197,26 +196,20 @@ app.post('/api/users/update', async (req, res) => {
         let userCount = results[0].count;
 
         if (userCount === 1) {
-            // User already exists, update data
             let updateFields = [];
             let updateValues = [];
-
-            // Construct the UPDATE query dynamically based on provided fields
-            updateFields.push('username = ?, email = ?, dateOfBirth = ?, password = ?, address = ?, country = ?, region = ?, phoneNumber = ?, description = ?'); // Assuming these are the fields in the array in the respective order
+            updateFields.push('username = ?, email = ?, dateOfBirth = ?, password = ?, address = ?, country = ?, region = ?, phoneNumber = ?, description = ?'); 
             
             if (userData.length === 10) { 
                 updateValues = userData.slice(0, 8);
-                updateValues.push(userData[8]); // Add the description as the last value
+                updateValues.push(userData[8]); 
             } else {
                 console.log('Invalid data format');
                 return res.status(400).json({ error: 'Invalid data format' });
             }
-
-            // Update only if there are fields to update
-            updateValues.push(uid); // Push UID for WHERE clause
+            updateValues.push(uid); 
             let updateQuery = `UPDATE users SET ${updateFields} WHERE uid = ?`;
 
-            // Use async/await for the UPDATE query
             await connection.query(updateQuery, updateValues);
             console.log('User data updated');
             res.status(200).json({ success: true, message: 'User data updated' });
@@ -224,7 +217,6 @@ app.post('/api/users/update', async (req, res) => {
             console.log('User not found');
             res.status(404).json({ error: 'User not found' });
         }
-        // Release connection back to the pool
         connection.release();
     } catch (error) {
         console.error('Error processing data:', error);
@@ -254,4 +246,24 @@ app.get('/api/users/search/:username', async (req, res) => {
 // Start the server
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
+});
+
+
+//-------------------------Event Endpoints---------------------------------//
+
+// API endpoint to store Event data
+app.post('/api/event/create', async (req, res) => {
+    let receivedData = req.body;
+    let eventData =  JSON.parse(receivedData.body);
+    console.log(eventData);
+    try {
+        let insertQuery = 'INSERT INTO events (eventname, location, eventdate, description, maxGuests, eventtime, CreatorUid) VALUES (?, ?, ?, ?, ?, ?, ?)';
+        await connection.query(insertQuery, [eventData.eventName, eventData.location, eventData.eventdate, eventData.description, eventData.maxGuests, eventData.eventtime, eventData.uid]);
+        console.log("Event data saved");
+        connection.release();
+        res.status(200).json({ message: 'Event created successfully' });
+    } catch (error) {
+        console.error('Error processing data:', error);
+        res.status(500).json({ error: 'Failed to process data' });
+    }
 });
