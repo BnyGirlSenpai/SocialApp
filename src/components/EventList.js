@@ -13,7 +13,7 @@ const EventList = () => {
 
     return (
       <div>
-        <div class="container">
+        <div class="event-container">
           <div class="column">
             <h2>Next Events</h2>
             <ul class="events" id="next-events">
@@ -23,12 +23,14 @@ const EventList = () => {
           <div class="column">
             <h2>Last Events</h2>
             <ul class="events" id="last-events">
+
             </ul>
           </div>
           <div class="column">
-            <h2>Manage Own Events</h2>
+            <h2>My Events</h2>
             <button class="add-event-button">Add Own Event</button>
             <ul class="events" id="manage-events">
+              
             </ul>
           </div>
         </div>
