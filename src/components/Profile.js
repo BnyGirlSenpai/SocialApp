@@ -99,7 +99,7 @@ return (
                       </span> 
                       {!isCurrentUser && (isFriend(userData[0].uid) ? (
                         <div>
-                          <a href="#" className="btn btn-sm btn-block btn-primary" style={{ backgroundColor: 'red' }} onClick={() => removeFriend(userData[0].uid)}>
+                          <a href="" className="btn btn-sm btn-block btn-primary" style={{ backgroundColor: 'red' }} onClick={() => removeFriend(userData[0].uid)}>
                            <i class="ace-icon fa fa-envelope-o bigger-110"></i>
                             <span class="bigger-110">Remove Friend</span>
                           </a>
