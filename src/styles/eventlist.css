@@ -18,15 +18,15 @@
         overflow: hidden;
     }
 
-        .event .date .day {
-            font-size: 70px;
-            color: #fff;
-        }
+    .event .date .day {
+        font-size: 70px;
+        color: #fff;
+    }
 
-        .event .date .month {
-            font-size: 30px;
-            color: #fff;
-        }
+    .event .date .month {
+        font-size: 30px;
+        color: #fff;
+    }
 
     .event .img {
         display: inline-block;
@@ -36,11 +36,11 @@
         overflow: hidden;
     }
 
-        .event .img img {
-            width: 100%;
-            height: auto;
-            vertical-align: middle;
-        }
+    .event .img img {
+        width: 100%;
+        height: auto;
+        vertical-align: middle;
+    }
 
     .event .desc {
         display: inline-block;

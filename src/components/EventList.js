@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import '../styles/eventlist.css'; 
+import '../styles/eventpage.css'; 
 
 const EventList = () => {
     const [events, setEvents] = useState([]);
@@ -12,23 +12,27 @@ const EventList = () => {
     }, []);
 
     return (
-        <div>
-            <h1>Upcoming Events</h1>
-            <ul>
-                {events.map(event => ( 
-                    <li key={event.id}>
-                      <article class="eventlist-event">                 
-                        <div class="eventlist-details">
-                          <h3>{event.name}</h3>
-                          <div class="eventlist-date float-right">
-                  
-                          </div>                 
-                        </div>
-                      </article> 
-                    </li>
-                ))}
+      <div>
+        <div class="container">
+          <div class="column">
+            <h2>Next Events</h2>
+            <ul class="events" id="next-events">
+          
             </ul>
+          </div>
+          <div class="column">
+            <h2>Last Events</h2>
+            <ul class="events" id="last-events">
+            </ul>
+          </div>
+          <div class="column">
+            <h2>Manage Own Events</h2>
+            <button class="add-event-button">Add Own Event</button>
+            <ul class="events" id="manage-events">
+            </ul>
+          </div>
         </div>
+    </div>
     );
 };
 
