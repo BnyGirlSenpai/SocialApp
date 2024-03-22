@@ -12,7 +12,7 @@ import Settingspage from './pages/SettingsPage';
 import Profilepage from './pages/ProfilePage';
 import Notifications from './pages/NotificationPage';
 import ProfileSettingspage from './pages/ProfileSettingsPage';
-
+import EventFormpage from './pages/EventFormPage';
 
 function App() {
   return (
@@ -59,6 +59,11 @@ function App() {
             <Route path='/ProfileSettingsPage' element={
               <Protected>
                 <ProfileSettingspage />
+              </Protected> 
+            } />
+            <Route path='/EventFormpage' element={
+              <Protected>
+                <EventFormpage />
               </Protected> 
             } />
             <Route path='/HomePage'element={

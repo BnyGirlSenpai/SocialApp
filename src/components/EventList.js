@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/eventpage.css'; 
+import { UserAuth } from '../context/AuthContext';
 
 const EventList = () => {
     const [events, setEvents] = useState([]);
+    const { user } = UserAuth(); 
 
     useEffect(() => {
         fetch('http://localhost:3001/api/events')
@@ -28,7 +30,7 @@ const EventList = () => {
           </div>
           <div class="column">
             <h2>My Events</h2>
-            <button class="add-event-button">Add Own Event</button>
+            <a href="/EventFormpage"><button class="add-event-button">Add Own Event</button></a>
             <ul class="events" id="manage-events">
               
             </ul>

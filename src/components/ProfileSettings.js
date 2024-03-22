@@ -72,6 +72,7 @@ const ProfileSettings = () => {
                 break;
         }
     };
+    
     const handleSaveProfile = async () => { 
         try {
             if (user) {
@@ -89,7 +90,6 @@ const ProfileSettings = () => {
             console.error('Error updating profile data:', error);
         }
     };
-    
     
  return (
         <form> 
