@@ -18,7 +18,7 @@ const connection = await pool.getConnection();
 app.use(express.json());
 
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:3000/SettingsPage','http://localhost:3000/FriendPage','http://localhost:3000/NotificationPage'], // Allow requests from your frontend's origin
+    origin: ['http://localhost:3000', 'http://localhost:3000/ProfileSettingsPage','http://localhost:3000/FriendPage','http://localhost:3000/NotificationPage'], // Allow requests from your frontend's origin
     credentials: true // Optional, to allow cookies if needed
 }));
 
@@ -86,14 +86,14 @@ app.post('/api/users/update/friendrequests' ,async (req, res) => {
     }
 });
 
-// API endpoint to store pending Friend Requests data
-app.post('/api/users/friendrequests', async (req, res)=> {
+// API endpoint to store and update pending Friend Requests data
+app.post('/api/users/friendrequests', async (req, res) => {
     let receivedData = req.body;
     let friendrequestData = JSON.parse(receivedData.body);
     console.log(friendrequestData);
     let uid_transmitter = friendrequestData.senderUserUid;
-    let uid_receiver= friendrequestData.targetUserUid;
-    
+    let uid_receiver = friendrequestData.targetUserUid;
+
     let selectQuery = 'SELECT COUNT(*) AS count FROM friendrequests WHERE uid_transmitter = ? AND uid_receiver = ?';
 
     try {
@@ -101,7 +101,17 @@ app.post('/api/users/friendrequests', async (req, res)=> {
         let userCount = results[0].count;
 
         if (userCount > 0) {
-            console.log('Friend Request already exists!');
+            let checkStatusQuery = 'SELECT status FROM friendrequests WHERE uid_transmitter = ? AND uid_receiver = ?';
+            let [statusResults] = await connection.query(checkStatusQuery, [uid_transmitter, uid_receiver]);
+            let status = statusResults[0].status;
+
+            if (status === 'unfriended') {
+                let updateStatusQuery = 'UPDATE friendrequests SET status = ? WHERE uid_transmitter = ? AND uid_receiver = ?';
+                await connection.query(updateStatusQuery, ['pending', uid_transmitter, uid_receiver]);
+                console.log('Friend request status updated to pending');
+            } else {
+                console.log('Friend request already exists');
+            }
         } else {
             let insertQuery = 'INSERT INTO friendrequests (uid_transmitter, uid_receiver) VALUES (?, ?)';
             await connection.query(insertQuery, [uid_transmitter, uid_receiver]);
