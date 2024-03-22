@@ -2,13 +2,13 @@ import React from 'react'
 import Settings from '../components/Settings'
 import Navbar from '../components/Navbar'
 
-const Settingspage = () => {
+function SettingsPage() {
   return (
     <div className='Main'>
-    <Navbar />
-    <Settings />
- </div>
+        <Navbar />
+        <Settings />
+    </div>
   )
 }
 
-export default Settingspage
+export default SettingsPage

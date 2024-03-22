@@ -11,6 +11,7 @@ import Calenderpage from './pages/CalenderPage';
 import Settingspage from './pages/SettingsPage';
 import Profilepage from './pages/ProfilePage';
 import Notifications from './pages/NotificationPage';
+import ProfileSettingspage from './pages/ProfileSettingsPage';
 
 
 function App() {
@@ -38,7 +39,7 @@ function App() {
             <Route path='/CalenderPage' element={
               <Protected>
                 <Calenderpage />
-             </Protected>           
+              </Protected>           
             } />
             <Route path='/SettingsPage' element={           
               <Protected>
@@ -47,20 +48,24 @@ function App() {
             } />
             <Route path='/NotificationPage' element={
               <Protected>
-               <Notifications />
+                <Notifications />
               </Protected>              
             } />
             <Route path='/ProfilePage/:uid' element={
               <Protected>
                 <Profilepage />
-             </Protected> 
+              </Protected> 
+            } />
+            <Route path='/ProfileSettingsPage' element={
+              <Protected>
+                <ProfileSettingspage />
+              </Protected> 
             } />
             <Route path='/HomePage'element={
-                <Protected>
-                  <HomePage />
-                </Protected>
-              }
-            />
+              <Protected>
+                <HomePage />
+              </Protected>
+            } />
           </Routes>
         </BrowserRouter>
       </AuthContextProvider>   

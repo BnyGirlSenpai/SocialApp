@@ -81,7 +81,7 @@ const UserSearch = () => {
                           <h5><a href={`/profilepage/${searchUser.uid}`} className="profile-link">{searchUser.username}</a></h5>
                           </div>
                           <div className="col-md-3 col-sm-3">
-                            {searchUser.uid !== user.uid && ( // Only show the button if the user is not the current user
+                            {searchUser.uid !== user.uid && (
                               isFriend(searchUser.uid) ? (
                                 <p>Already Friends</p>
                               ) : (

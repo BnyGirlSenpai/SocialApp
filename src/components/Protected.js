@@ -9,12 +9,11 @@ const Protected = ({ children }) => {
   useEffect(() => {
     const delay = setTimeout(() => {
       setLoading(false);
-    }, 500); // Adjust the delay time as needed (in milliseconds)
+    }, 500);
     return () => clearTimeout(delay);
   }, []);
 
   if (loading) {
-    // Render loading indicator or message while waiting
     return <div>Loading...</div>;
   }
 
