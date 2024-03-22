@@ -138,13 +138,14 @@ app.get('/api/users/friends/:uid', async (req, res) => {
       res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
 //-------------------------User Endpoints---------------------------------//
 
 // API endpoint to get User Profile data
 app.get('/api/users/:uid', async (req, res) => {
     try {
       let uid = req.params.uid;
-      let [rows] = await connection.query('SELECT uid, authprovider, email, displayName, photoURL, country,region, username, phoneNumber, address, password, dateOfBirth FROM users WHERE uid = ?', [uid]);
+      let [rows] = await connection.query('SELECT uid, authprovider, email, displayName, photoURL, country,region, username, phoneNumber, address, password, dateOfBirth, description FROM users WHERE uid = ?', [uid]);
       if (rows.length > 0) {
         res.status(200).json(rows);
       } else {
@@ -156,7 +157,7 @@ app.get('/api/users/:uid', async (req, res) => {
     }
 });
 
-// API endpoint to store User data
+// API endpoint to store init User data
 app.post('/api/users', async (req, res) => {
     let receivedData = req.body;
     let userData = JSON.parse(receivedData.body);
@@ -186,7 +187,7 @@ app.post('/api/users', async (req, res) => {
 app.post('/api/users/update', async (req, res) => {
     console.log(req.body);
     let userData = req.body;
-    let uid = userData.uid;
+    let uid = userData[9]; // Assuming UID is at index 8 in the array
 
     // Check if uid already exists in the database
     const selectQuery = 'SELECT COUNT(*) AS count FROM users WHERE uid = ?';
@@ -201,27 +202,27 @@ app.post('/api/users/update', async (req, res) => {
             let updateValues = [];
 
             // Construct the UPDATE query dynamically based on provided fields
-            Object.keys(userData).forEach(key => {
-                if (key !== 'uid' && key !== '0' && userData[key] !== undefined) {
-                    console.log(updateFields);
-                    // Construct each assignment properly
-                    updateFields.push(`${key} = ?`);
-              
-                    updateValues.push(userData[key]);
-                }
-            });
-
-            if (updateFields.length > 0) {
-                // Update only if there are fields to update
-                updateValues.push(uid); // Push UID for WHERE clause
-                let updateQuery = `UPDATE users SET ${updateFields.join(', ')} WHERE uid = ?`;
-             
-                // Use async/await for the UPDATE query
-                await connection.query(updateQuery, updateValues);
-                console.log('User data updated');
+            updateFields.push('username = ?, email = ?, dateOfBirth = ?, password = ?, address = ?, country = ?, region = ?, phoneNumber = ?, description = ?'); // Assuming these are the fields in the array in the respective order
+            
+            if (userData.length === 10) { 
+                updateValues = userData.slice(0, 8);
+                updateValues.push(userData[8]); // Add the description as the last value
             } else {
-                console.log('No fields provided for update');
+                console.log('Invalid data format');
+                return res.status(400).json({ error: 'Invalid data format' });
             }
+
+            // Update only if there are fields to update
+            updateValues.push(uid); // Push UID for WHERE clause
+            let updateQuery = `UPDATE users SET ${updateFields} WHERE uid = ?`;
+
+            // Use async/await for the UPDATE query
+            await connection.query(updateQuery, updateValues);
+            console.log('User data updated');
+            res.status(200).json({ success: true, message: 'User data updated' });
+        } else {
+            console.log('User not found');
+            res.status(404).json({ error: 'User not found' });
         }
         // Release connection back to the pool
         connection.release();
@@ -230,7 +231,9 @@ app.post('/api/users/update', async (req, res) => {
         res.status(500).json({ error: 'Failed to process data' });
     }
 });
+
 //-------------------------Search Endpoints---------------------------------//
+
 // API endpoint to get User Search data 
 app.get('/api/users/search/:username', async (req, res) => {
     try {
