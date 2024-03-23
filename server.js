@@ -243,22 +243,20 @@ app.get('/api/users/search/:username', async (req, res) => {
     }
 });
 
-// Start the server
-app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-});
-
-
 //-------------------------Event Endpoints---------------------------------//
 
 // API endpoint to store Event data
 app.post('/api/event/create', async (req, res) => {
     let receivedData = req.body;
     let eventData =  JSON.parse(receivedData.body);
+    // Format the date and time strings into a format suitable for the database
+    let eventDate = new Date(eventData.eventDate).toISOString().slice(0, 10); // Format: YYYY-MM-DD
+    let eventTime = eventData.eventTime; // Assuming the time format is already correct
     console.log(eventData);
+    
     try {
-        let insertQuery = 'INSERT INTO events (eventname, location, eventdate, description, maxGuests, eventtime, CreatorUid) VALUES (?, ?, ?, ?, ?, ?, ?)';
-        await connection.query(insertQuery, [eventData.eventName, eventData.location, eventData.eventdate, eventData.description, eventData.maxGuests, eventData.eventtime, eventData.uid]);
+        let insertQuery = 'INSERT INTO events (eventname, location, eventdate, description, max_guests, eventtime, creator_uid) VALUES (?, ?, ?, ?, ?, ?, ?)';
+        await connection.query(insertQuery, [eventData.eventName, eventData.location, eventDate, eventData.description, eventData.maxGuests, eventTime, eventData.uid]);
         console.log("Event data saved");
         connection.release();
         res.status(200).json({ message: 'Event created successfully' });
@@ -267,3 +265,11 @@ app.post('/api/event/create', async (req, res) => {
         res.status(500).json({ error: 'Failed to process data' });
     }
 });
+
+
+//-------------------------Start the server---------------------------------//
+
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+});
+
