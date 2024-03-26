@@ -255,7 +255,7 @@ app.post('/api/event/create', async (req, res) => {
     console.log(eventData);
     
     try {
-        let insertQuery = 'INSERT INTO events (eventname, location, eventdate, description, max_guests, eventtime, creator_uid) VALUES (?, ?, ?, ?, ?, ?, ?)';
+        let insertQuery = 'INSERT INTO events (event_name, location, event_date, description, max_guests, event_time, creator_uid) VALUES (?, ?, ?, ?, ?, ?, ?)';
         await connection.query(insertQuery, [eventData.eventName, eventData.location, eventDate, eventData.description, eventData.maxGuests, eventTime, eventData.uid]);
         console.log("Event data saved");
         connection.release();
@@ -266,6 +266,23 @@ app.post('/api/event/create', async (req, res) => {
     }
 });
 
+// API endpoint to get current User Event data
+
+app.get('/api/events/:uid', async (req, res) => {
+    try {
+        let uid = req.params.uid;
+        let [rows] = await connection.query('SELECT event_id, event_name, event_date, event_time, location, description, max_guests, current_guests, creator_uid FROM events WHERE creator_uid = ?', [uid]);
+        if (rows.length > 0) {
+            res.status(200).json(rows[0]); 
+            console.log(rows);
+        } else {
+            res.status(404).json({ error: 'Event not found' });
+        }
+    } catch (error) {
+        console.error('Error retrieving event data:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
 //-------------------------Start the server---------------------------------//
 
