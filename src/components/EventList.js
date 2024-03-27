@@ -47,9 +47,9 @@ const EventList = () => {
                   <div className="event-card">
                     <div className="card-info">
                       <div className="event-info">                                
-                        <h5><a href={`/eventpage/${event.event_id}`} className="event-link">{event.event_name}</a></h5> 
+                        <h5><a href={`/EventPage/DetailView/${event.event_id}`} className="event-link">{event.event_name}</a></h5> 
                         <p>Date: {new Date(event.event_date).toLocaleDateString()}</p>
-                        <p>Time: {event.event_time}</p>
+                        <p>Time: {event.event_time.substring(0, 5)}</p>
                         <p>Location: {event.location}</p>
                         <p>Description: {event.description}</p>
                         <p>Max Guests: {event.max_guests}</p>
