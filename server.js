@@ -129,10 +129,8 @@ app.get('/api/users/friends/:uid', async (req, res) => {
     try {
       let uid = req.params.uid;
       let [rows] = await connection.query('SELECT u.photoUrl, u.username, u.uid FROM friendrequests AS f JOIN users AS u ON (f.uid_transmitter = u.uid OR f.uid_receiver = u.uid) WHERE ((f.uid_transmitter = ? OR f.uid_receiver = ?) AND f.status = ?) AND u.uid != ?', [uid, uid, 'accepted', uid]);
-      console.log(rows);
-      
-      console.log(rows);
       res.status(200).json(rows);
+      console.log(rows);
     } catch (error) {
       console.error('Error retrieving user data:', error);
       res.status(500).json({ error: 'Internal Server Error' });
@@ -272,12 +270,8 @@ app.get('/api/events/:uid', async (req, res) => {
     try {
         let uid = req.params.uid;
         let [rows] = await connection.query('SELECT event_id, event_name, event_date, event_time, location, description, max_guests, current_guests, creator_uid FROM events WHERE creator_uid = ?', [uid]);
-        if (rows.length > 0) {
-            res.status(200).json(rows[0]); 
-            console.log(rows);
-        } else {
-            res.status(404).json({ error: 'Event not found' });
-        }
+        res.status(200).json(rows); 
+        console.log(rows);
     } catch (error) {
         console.error('Error retrieving event data:', error);
         res.status(500).json({ error: 'Internal Server Error' });
