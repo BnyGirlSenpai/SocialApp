@@ -34,6 +34,12 @@ const EventList = () => {
     console.log("Left event with ID:", eventId);
   }
 
+   // Function to leave an event
+   function inviteFriends(eventId) {
+    // Implement leaving event functionality here
+    console.log("Left event with ID:", eventId);
+  }
+
   return (
     <div>
       <div className="event-container">
@@ -71,6 +77,7 @@ const EventList = () => {
                    <div className="button-container">
                      <button onClick={() => joinEvent(event.event_id)}>Join Event</button>
                      <button onClick={() => leaveEvent(event.event_id)}>Leave Event</button>
+                     <button onClick={() => inviteFriends(event.event_id)}>invite Friends</button>
                    </div>
                  </div>
                </div>
