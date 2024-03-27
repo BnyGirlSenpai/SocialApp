@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { UserAuth } from '../context/AuthContext';
-import { getDataFromBackend, updateDataInDb } from '../apis/UserDataApi';
+import { getDataFromBackend } from '../apis/UserDataApi';
 import '../styles/friendlist.css'; 
 
 const FriendList = () => {

@@ -8,7 +8,7 @@ const EventList = () => {
   const { user } = UserAuth(); 
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchCurrentUserEventData = async () => {
       try {
         if (user) {
           const data = await getDataFromBackend(`http://localhost:3001/api/events/${user.uid}`);
@@ -19,7 +19,7 @@ const EventList = () => {
         console.error("Error fetching data:", error);
       }
     };
-    fetchData();
+    fetchCurrentUserEventData();
   }, [user]);
 
   return (
@@ -42,14 +42,14 @@ const EventList = () => {
           <a href="/EventFormpage"><button className="add-event-button">Add Own Event</button></a>
           {events && events.length > 0 ? (
             <ul className="events" id="manage-events">
-              {events.map((event, index) => (
+              {events[0].map((event, index) => (
                 <li key={index}>
                   <div className="event-card">
                     <div className="card-info">
                       <div className="event-info">                                
                         <h5><a href={`/eventpage/${event.event_id}`} className="event-link">{event.event_name}</a></h5> 
                         <p>Date: {new Date(event.event_date).toLocaleDateString()}</p>
-                        <p>Time: {new Date(event.event_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                        <p>Time: {event.event_time}</p>
                         <p>Location: {event.location}</p>
                         <p>Description: {event.description}</p>
                         <p>Max Guests: {event.max_guests}</p>
