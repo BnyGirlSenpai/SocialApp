@@ -247,9 +247,8 @@ app.get('/api/users/search/:username', async (req, res) => {
 app.post('/api/event/create', async (req, res) => {
     let receivedData = req.body;
     let eventData =  JSON.parse(receivedData.body);
-    // Format the date and time strings into a format suitable for the database
-    let eventDate = new Date(eventData.eventDate).toISOString().slice(0, 10); // Format: YYYY-MM-DD
-    let eventTime = eventData.eventTime; // Assuming the time format is already correct
+    let eventDate = new Date(eventData.eventDate).toISOString().slice(0, 10); 
+    let eventTime = eventData.eventTime; 
     console.log(eventData);
     
     try {
