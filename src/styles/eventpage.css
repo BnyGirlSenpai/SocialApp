@@ -3,23 +3,28 @@
   justify-content: space-between;
   margin: 20px;
 }
+
 .column {
   flex: 1;
   margin-right: 20px;
 }
+
 .column h2 {
   text-align: center;
 }
+
 .events {
   list-style-type: none;
   padding: 0;
 }
+
 .events li {
   margin-bottom: 10px;
   padding: 10px;
   border: 1px solid #ccc;
   background-color: #f9f9f9;
 }
+
 .add-event-button {
   display: block;
   margin: 20px auto;
@@ -30,4 +35,54 @@
   border-radius: 5px;
   cursor: pointer;
   text-decoration: none;
+}
+
+/* CSS for Event Cards */
+.event-card {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-info {
+  display: flex;
+  justify-content: space-between; /* Align buttons to the right */
+  align-items: center; /* Center vertically */
+}
+
+.event-info {
+  flex: 1; /* Take remaining space */
+  margin-bottom: 10px;
+}
+
+.event-link {
+  color: #333;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.event-link:hover {
+  color: #007bff;
+}
+
+.button-container {
+  display: flex;
+}
+
+.button-container button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  margin-left: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button-container button:hover {
+  background-color: #0056b3;
 }
