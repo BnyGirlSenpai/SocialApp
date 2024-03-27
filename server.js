@@ -243,7 +243,7 @@ app.get('/api/users/search/:username', async (req, res) => {
 
 //-------------------------Event Endpoints---------------------------------//
 
-// API endpoint to store Event data
+// API endpoint to create new Event data
 app.post('/api/event/create', async (req, res) => {
     let receivedData = req.body;
     let eventData =  JSON.parse(receivedData.body);
@@ -253,7 +253,7 @@ app.post('/api/event/create', async (req, res) => {
     console.log(eventData);
     
     try {
-        let insertQuery = 'INSERT INTO events (event_name, location, event_date, description, max_guests, event_time, creator_uid, members) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+        let insertQuery = 'INSERT INTO events (event_name, location, event_date, description, max_guests_count, event_time, creator_uid, joined_guests) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
         await connection.query(insertQuery, [eventData.eventName, eventData.location, eventDate, eventData.description, eventData.maxGuests, eventTime, eventData.uid, eventData.uid]);
         console.log("Event data saved");
         connection.release();
@@ -264,11 +264,11 @@ app.post('/api/event/create', async (req, res) => {
     }
 });
 
-// API endpoint to get current User Event data
+// API endpoint to get own User Event data
 app.get('/api/events/:uid', async (req, res) => {
     try {
         let uid = req.params.uid;
-        let [rows] = await connection.query('SELECT event_id, event_name, event_date, event_time, location, description, max_guests, current_guests, creator_uid FROM events WHERE creator_uid = ?', [uid]);
+        let [rows] = await connection.query('SELECT event_id, event_name, event_date, event_time, location, description, max_guests_count, current_guests_count, creator_uid FROM events WHERE creator_uid = ?', [uid]);
         res.status(200).json(rows); 
         console.log(rows);
     } catch (error) {
