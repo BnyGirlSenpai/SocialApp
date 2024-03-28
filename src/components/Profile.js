@@ -46,11 +46,11 @@ const Profile = () => {
     }
   };
 
-  const removeFriend = async (friendUid) => {
+  const removeFriend = async (friendUid) => { 
     try {
         let updateData = {
             status: 'unfriended',
-            uid_transmitter: user.uid ,
+            uid_transmitter: user.uid, // Need to fix uid issue 
             uid_receiver: friendUid
         };
         updateDataInDb(updateData,`http://localhost:3001/api/users/update/friendrequests`)
