@@ -181,7 +181,7 @@ app.post('/api/users', async (req, res) => {
     }
 });
 
-// API endpoint to update User data
+// API endpoint to update User Profile data
 app.post('/api/users/update', async (req, res) => {
     console.log(req.body);
     let userData = req.body;
@@ -267,7 +267,7 @@ app.post('/api/event/create', async (req, res) => {
 app.get('/api/events/:uid', async (req, res) => {
     try {
         let uid = req.params.uid;
-        let [rows] = await connection.query('SELECT event_id, event_name, event_date, event_time, location, description, max_guests_count, current_guests_count, creator_uid FROM events WHERE creator_uid = ?', [uid]);
+        let [rows] = await connection.query('SELECT event_id, event_name, event_date, event_time, location, description, max_guests_count, current_guests_count, invited_guests_count, creator_uid FROM events WHERE creator_uid = ?', [uid]);
         res.status(200).json(rows); 
         console.log(rows);
     } catch (error) {
@@ -275,6 +275,91 @@ app.get('/api/events/:uid', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+/*
+// API endpoint to update Event data 
+app.post('/api/events/update/', async (req, res) => {
+    console.log(req.body);
+    let eventData = req.body;
+    let event_id = eventData[9]; 
+    const selectQuery = 'SELECT COUNT(*) AS count FROM events WHERE event_id = ?';
+
+    try {
+        let connection = await pool.getConnection();
+        let [results] = await connection.query(selectQuery, [event_id]);
+        let eventCount = results[0].count;
+
+        if (eventCount === 1) {
+            let updateFields = [];
+            let updateValues = [];
+            updateFields.push(''); 
+            
+            if (userData.length === 10) { 
+                updateValues = userData.slice(0, 8);
+                updateValues.push(eventData[8]); 
+            } else {
+                console.log('Invalid data format');
+                return res.status(400).json({ error: 'Invalid data format' });
+            }
+            updateValues.push(uid); 
+            let updateQuery = `UPDATE users SET ${updateFields} WHERE uid = ?`;
+
+            await connection.query(updateQuery, updateValues);
+            console.log('User data updated');
+            res.status(200).json({ success: true, message: 'User data updated' });
+        } else {
+            console.log('User not found');
+            res.status(404).json({ error: 'User not found' });
+        }
+        connection.release();
+    } catch (error) {
+        console.error('Error processing data:', error);
+        res.status(500).json({ error: 'Failed to process data' });
+    }
+});
+
+// API endpoint to handle Event invites
+/*  
+app.post('/api/events/invites', async (req, res) => {
+    console.log(req.body);
+    let inviteData = req.body;
+    let event_id = inviteData[9]; 
+    const selectQuery = 'SELECT COUNT(*) AS count FROM events WHERE event_id = ?';
+
+    try {
+        let connection = await pool.getConnection();
+        let [results] = await connection.query(selectQuery, [event_id]);
+        let eventCount = results[0].count;
+
+        if (eventCount === 1) {
+            let updateFields = [];
+            let updateValues = [];
+            updateFields.push(''); 
+            
+            if (inviteData.length === 10) { 
+                updateValues = inviteData.slice(0, 8);
+                updateValues.push(eventData[]); 
+            } else {
+                console.log('Invalid data format');
+                return res.status(400).json({ error: 'Invalid data format' });
+            }
+            updateValues.push(uid); 
+            let updateQuery = `UPDATE events SET ${updateFields} WHERE uid = ?`;
+
+            await connection.query(updateQuery, updateValues);
+            console.log('Event data updated');
+            res.status(200).json({ success: true, message: 'Event data updated' });
+        } else {
+            console.log('User not found');
+            res.status(404).json({ error: 'User not found' });
+        }
+        connection.release();
+    } catch (error) {
+        console.error('Error processing data:', error);
+        res.status(500).json({ error: 'Failed to process data' });
+    }
+});
+*/
 
 //-------------------------Start the server---------------------------------//
 
