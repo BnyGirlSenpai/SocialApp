@@ -46,11 +46,11 @@ const Profile = () => {
     }
   };
 
-  const removeFriend = async (friendUid) => { 
+  const removeFriend = async (friendUid,userUid) => { 
     try {
         let updateData = {
             status: 'unfriended',
-            uid_transmitter: user.uid, // Need to fix uid issue 
+            uid_transmitter: userUid, // Need to fix uid issue ignore sender and and transmitter in db
             uid_receiver: friendUid
         };
         updateDataInDb(updateData,`http://localhost:3001/api/users/update/friendrequests`)
@@ -99,7 +99,7 @@ return (
                       </span> 
                       {!isCurrentUser && (isFriend(userData[0].uid) ? (
                         <div>
-                          <a href="" className="btn btn-sm btn-block btn-primary" style={{ backgroundColor: 'red' }} onClick={() => removeFriend(userData[0].uid)}>
+                          <a href="" className="btn btn-sm btn-block btn-primary" style={{ backgroundColor: 'red' }} onClick={() =>{ removeFriend(userData[0].uid,user.uid); removeFriend(user.uid,userData[0].uid);}}>
                            <i class="ace-icon fa fa-envelope-o bigger-110"></i>
                             <span class="bigger-110">Remove Friend</span>
                           </a>
