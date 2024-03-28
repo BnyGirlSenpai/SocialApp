@@ -50,7 +50,7 @@ const Profile = () => {
     try {
         let updateData = {
             status: 'unfriended',
-            uid_transmitter: userUid, // Need to fix uid issue ignore sender and and transmitter in db
+            uid_transmitter: userUid, 
             uid_receiver: friendUid
         };
         updateDataInDb(updateData,`http://localhost:3001/api/users/update/friendrequests`)
