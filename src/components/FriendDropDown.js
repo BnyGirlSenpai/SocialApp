@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { UserAuth } from '../context/AuthContext';
-import { getDataFromBackend } from '../apis/UserDataApi';
+import { getDataFromBackend, sendDataToBackend } from '../apis/UserDataApi';
 import '../styles/friendDropDown.css'; 
 
 const FriendDropDown = ({ eventId, onInvite }) => { 
@@ -26,7 +26,7 @@ const FriendDropDown = ({ eventId, onInvite }) => {
   function inviteFriends(eventId) {
     console.log("Inviting friends with ID:", eventId);
     console.log("Selected friends:", selectedFriends);
-    
+    sendDataToBackend(selectedFriends,`http://localhost:3001/api/events/invites/${eventId}`);
     
     onInvite();
   }
