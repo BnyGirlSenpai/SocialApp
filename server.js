@@ -317,41 +317,44 @@ app.post('/api/events/update/', async (req, res) => {
         res.status(500).json({ error: 'Failed to process data' });
     }
 });
-
+*/ 
 // API endpoint to handle Event invites
-/*  
-app.post('/api/events/invites', async (req, res) => {
+
+app.post('/api/events/invites:eventId', async (req, res) => {
     console.log(req.body);
+    let eventId = req.params.eventId;
     let inviteData = req.body;
-    let event_id = inviteData[9]; 
+   
     const selectQuery = 'SELECT COUNT(*) AS count FROM events WHERE event_id = ?';
 
     try {
         let connection = await pool.getConnection();
-        let [results] = await connection.query(selectQuery, [event_id]);
+        let [results] = await connection.query(selectQuery, [eventId]);
         let eventCount = results[0].count;
 
         if (eventCount === 1) {
-            let updateFields = [];
-            let updateValues = [];
-            updateFields.push(''); 
-            
-            if (inviteData.length === 10) { 
-                updateValues = inviteData.slice(0, 8);
-                updateValues.push(eventData[]); 
+            let userIDs = inviteData.user_ids; // Assuming user_ids is an array of user IDs in inviteData
+
+            if (Array.isArray(userIDs) && userIDs.length > 0) {
+                let updateFields = [];
+                let updateValues = [];
+                updateFields.push('invited_guests = ?'); // Assuming user_id is the column where you want to store the user ID
+                updateValues.push(...userIDs);
+                // Assuming event_id is the primary key of your events table
+                updateValues.push(eventId); 
+
+                let updateQuery = `UPDATE events SET ${updateFields.join(', ')} WHERE event_id = ?`;
+
+                await connection.query(updateQuery, updateValues);
+                console.log('Event data updated');
+                res.status(200).json({ success: true, message: 'Event data updated' });
             } else {
                 console.log('Invalid data format');
                 return res.status(400).json({ error: 'Invalid data format' });
             }
-            updateValues.push(uid); 
-            let updateQuery = `UPDATE events SET ${updateFields} WHERE uid = ?`;
-
-            await connection.query(updateQuery, updateValues);
-            console.log('Event data updated');
-            res.status(200).json({ success: true, message: 'Event data updated' });
         } else {
-            console.log('User not found');
-            res.status(404).json({ error: 'User not found' });
+            console.log('Event not found');
+            res.status(404).json({ error: 'Event not found' });
         }
         connection.release();
     } catch (error) {
@@ -359,7 +362,7 @@ app.post('/api/events/invites', async (req, res) => {
         res.status(500).json({ error: 'Failed to process data' });
     }
 });
-*/
+
 
 //-------------------------Start the server---------------------------------//
 
