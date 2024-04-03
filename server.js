@@ -277,7 +277,7 @@ app.get('/api/events/:uid', async (req, res) => {
 });
 
 /*
-// API endpoint to update Event data 
+// API endpoint to update own Event data 
 app.post('/api/events/update/', async (req, res) => {
     console.log(req.body);
     let eventData = req.body;
@@ -318,30 +318,29 @@ app.post('/api/events/update/', async (req, res) => {
     }
 });
 */ 
-// API endpoint to handle Event invites
 
-app.post('/api/events/invites:eventId', async (req, res) => {
+// API endpoint to handle Event invites
+app.post('/api/events/invites/:eventId', async (req, res) => {
     console.log(req.body);
     let eventId = req.params.eventId;
-    let inviteData = req.body;
-   
-    const selectQuery = 'SELECT COUNT(*) AS count FROM events WHERE event_id = ?';
+    let receivedData = req.body;
+
+    const selectQuery = 'SELECT COUNT(*) AS eventCount FROM events WHERE event_id = ?';
 
     try {
         let connection = await pool.getConnection();
         let [results] = await connection.query(selectQuery, [eventId]);
-        let eventCount = results[0].count;
+        let eventCount = results[0].eventCount; // Accessing the eventCount from the query result
 
         if (eventCount === 1) {
-            let userIDs = inviteData.user_ids; // Assuming user_ids is an array of user IDs in inviteData
+            let userIDs = receivedData; // Directly use receivedData as it's already an array
 
             if (Array.isArray(userIDs) && userIDs.length > 0) {
                 let updateFields = [];
                 let updateValues = [];
-                updateFields.push('invited_guests = ?'); // Assuming user_id is the column where you want to store the user ID
-                updateValues.push(...userIDs);
-                // Assuming event_id is the primary key of your events table
-                updateValues.push(eventId); 
+                updateFields.push('invited_guests = ?');
+                updateValues.push(JSON.stringify(userIDs)); // Convert userIDs array to JSON string
+                updateValues.push(eventId);
 
                 let updateQuery = `UPDATE events SET ${updateFields.join(', ')} WHERE event_id = ?`;
 
