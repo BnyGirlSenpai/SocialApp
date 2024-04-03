@@ -24,10 +24,9 @@ const FriendDropDown = ({ eventId, onInvite }) => {
   }, [user]);
   
   function inviteFriends(eventId) {
-    console.log("Inviting friends with ID:", eventId);
+    console.log("Inviting friends to event with ID:", eventId);
     console.log("Selected friends:", selectedFriends);
     sendDataToBackend(selectedFriends,`http://localhost:3001/api/events/invites/${eventId}`);
-    
     onInvite();
   }
 
