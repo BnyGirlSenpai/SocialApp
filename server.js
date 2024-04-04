@@ -323,7 +323,7 @@ app.post('/api/events/update/', async (req, res) => {
 app.post('/api/events/invites/:eventId', async (req, res) => {
     console.log(req.body);
     let eventId = req.params.eventId;
-    let receivedData = req.body;
+    let receivedData = JSON.parse(req.body.body);
 
     const selectQuery = 'SELECT COUNT(*) AS eventCount FROM events WHERE event_id = ?';
 
