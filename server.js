@@ -362,7 +362,6 @@ app.post('/api/events/invites/:eventId', async (req, res) => {
     }
 });
 
-
 //-------------------------Start the server---------------------------------//
 
 app.listen(port, () => {
