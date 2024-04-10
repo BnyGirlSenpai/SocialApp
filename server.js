@@ -323,44 +323,61 @@ app.post('/api/events/update/', async (req, res) => {
 app.post('/api/events/invites/:eventId', async (req, res) => {
     console.log(req.body);
     let eventId = req.params.eventId;
-    let receivedData = JSON.parse(req.body.body);
+    let receivedData = req.body.invites; // Assuming invites is an array of objects containing user IDs and references
 
-    const selectQuery = 'SELECT COUNT(*) AS eventCount FROM events WHERE event_id = ?';
+    const selectQuery = 'SELECT invited_guests FROM events WHERE event_id = ?';
 
     try {
         let connection = await pool.getConnection();
         let [results] = await connection.query(selectQuery, [eventId]);
-        let eventCount = results[0].eventCount; // Accessing the eventCount from the query result
+        let invitedGuests = results[0].invited_guests ? JSON.parse(results[0].invited_guests) : [];
 
-        if (eventCount === 1) {
-            let userIDs = receivedData; // Directly use receivedData as it's already an array
+        // Function to merge new invites with existing ones
+        function mergeInvites(existingInvites, newInvites) {
+            let mergedInvites = Array.isArray(existingInvites) ? [...existingInvites] : [];
 
-            if (Array.isArray(userIDs) && userIDs.length > 0) {
-                let updateFields = [];
-                let updateValues = [];
-                updateFields.push('invited_guests = ?');
-                updateValues.push(JSON.stringify(userIDs)); // Convert userIDs array to JSON string
-                updateValues.push(eventId);
-
-                let updateQuery = `UPDATE events SET ${updateFields.join(', ')} WHERE event_id = ?`;
-
-                await connection.query(updateQuery, updateValues);
-                console.log('Event data updated');
-                res.status(200).json({ success: true, message: 'Event data updated' });
-            } else {
-                console.log('Invalid data format');
-                return res.status(400).json({ error: 'Invalid data format' });
+            if (!Array.isArray(newInvites)) {
+                console.error('New invites data is not in the expected format.');
+                return mergedInvites;
             }
-        } else {
-            console.log('Event not found');
-            res.status(404).json({ error: 'Event not found' });
+
+            for (let newInvite of newInvites) {
+                let isNewInvite = true;
+                if (Array.isArray(existingInvites)) {
+                    for (let existingInvite of existingInvites) {
+                        if (existingInvite.userId === newInvite.userId) {
+                            isNewInvite = false;
+                            break;
+                        }
+                    }
+                }
+                if (isNewInvite) {
+                    mergedInvites.push(newInvite);
+                }
+            }
+
+            return mergedInvites;
         }
+
+        let mergedInvites = mergeInvites(invitedGuests, receivedData);
+
+        let updateFields = ['invited_guests = ?'];
+        let updateValues = [JSON.stringify(mergedInvites)];
+        updateValues.push(eventId);
+
+        let updateQuery = `UPDATE events SET ${updateFields.join(', ')} WHERE event_id = ?`;
+
+        await connection.query(updateQuery, updateValues);
+        console.log('Event data updated');
+        res.status(200).json({ success: true, message: 'Event data updated' });
+
         connection.release();
     } catch (error) {
         console.error('Error processing data:', error);
         res.status(500).json({ error: 'Failed to process data' });
     }
 });
+
 
 //-------------------------Start the server---------------------------------//
 
