@@ -323,17 +323,15 @@ app.post('/api/events/update/', async (req, res) => {
 app.post('/api/events/invites/:eventId', async (req, res) => {
     console.log(req.body);
     let eventId = req.params.eventId;
-    let receivedData = req.body.invites; // Assuming invites is an array of objects containing user IDs and references
-
+    let receivedData = JSON.parse(req.body.body); // Parse the incoming JSON string
     const selectQuery = 'SELECT invited_guests FROM events WHERE event_id = ?';
 
     try {
         let connection = await pool.getConnection();
         let [results] = await connection.query(selectQuery, [eventId]);
         let invitedGuests = results[0].invited_guests ? JSON.parse(results[0].invited_guests) : [];
-
-        // Function to merge new invites with existing ones
-        function mergeInvites(existingInvites, newInvites) {
+       
+        async function mergeInvites(existingInvites, newInvites) {
             let mergedInvites = Array.isArray(existingInvites) ? [...existingInvites] : [];
 
             if (!Array.isArray(newInvites)) {
@@ -341,26 +339,34 @@ app.post('/api/events/invites/:eventId', async (req, res) => {
                 return mergedInvites;
             }
 
+            if (mergedInvites.length === 0) {
+                // If no guests are invited, search for user information and store references
+                mergedInvites = await Promise.all(newInvites.map(async receivedData => {
+                    // Query to retrieve user information based on user ID
+                    let [userInfo] = await connection.query('SELECT uid FROM users WHERE uid = ?', [receivedData]);
+                    return userInfo[0]; // Store user info along with ID
+                }));
+                return mergedInvites;
+            }
+
             for (let newInvite of newInvites) {
-                let isNewInvite = true;
-                if (Array.isArray(existingInvites)) {
-                    for (let existingInvite of existingInvites) {
-                        if (existingInvite.userId === newInvite.userId) {
-                            isNewInvite = false;
-                            break;
-                        }
-                    }
+                // Check if the user ID already exists in invitedGuests
+                if (existingInvites.some(invite => invite.uid === newInvite)) {
+                    console.log(`User with ID ${newInvite} is already invited.`);
+                    continue; // Skip adding this user
                 }
-                if (isNewInvite) {
-                    mergedInvites.push(newInvite);
-                }
+
+                // Retrieve user information and store along with ID
+                let [userInfo] = await connection.query('SELECT uid FROM users WHERE uid = ?', [newInvite]);
+                mergedInvites.push(userInfo[0]);
             }
 
             return mergedInvites;
         }
 
-        let mergedInvites = mergeInvites(invitedGuests, receivedData);
+        let mergedInvites = await mergeInvites(invitedGuests, receivedData);
 
+        // Update the events table with the updated invited guests list
         let updateFields = ['invited_guests = ?'];
         let updateValues = [JSON.stringify(mergedInvites)];
         updateValues.push(eventId);
@@ -377,7 +383,6 @@ app.post('/api/events/invites/:eventId', async (req, res) => {
         res.status(500).json({ error: 'Failed to process data' });
     }
 });
-
 
 //-------------------------Start the server---------------------------------//
 
