@@ -9,6 +9,7 @@ const EventList = () => {
   const { user } = UserAuth(); 
   const [showFriendDropDown, setShowFriendDropDown] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState(null); 
+  const [eventData, setEventData] = useState([]);
 
   useEffect(() => {
     const fetchCurrentUserEventData = async () => {
@@ -22,6 +23,20 @@ const EventList = () => {
         console.error("Error fetching data:", error);
       }
     };
+
+    const fetchEventData = async () => {
+      try {
+          if (user) {
+              const eventDataResponse = await getDataFromBackend(`http://localhost:3001/api/events/invited/${user.uid}`);
+              console.log("Loaded event data from server:", eventDataResponse);
+              setEventData(eventDataResponse); 
+          }  
+      } catch (error) {
+          console.error("Error fetching event data:", error);
+      }
+    };
+
+    fetchEventData();
     fetchCurrentUserEventData();
   }, [user]);
 
@@ -35,6 +50,11 @@ const EventList = () => {
 
   function hideFriendDropDown() {
     setShowFriendDropDown(false);
+  }
+
+  function editEvent(eventId) {
+    // Redirect to the event editing page with the event ID
+    console.log("Edit event with ID:", eventId);
   }
 
   return (
@@ -70,18 +90,24 @@ const EventList = () => {
                         <p>Max Guests: {event.max_guests_count}</p>
                         <p>Current Guests: {event.current_guests_count}</p>
                         <p>Invited: {event.invited_guests_count}</p>
-
                       </div>                 
                     </div>
                   </div>
                   <div className="button-container">
-                    <button onClick={() => joinEvent(event.event_id)}>Join Event</button>
-                    <button onClick={() => leaveEvent(event.event_id)}>Leave Event</button>
-                    {/* Button to toggle FriendDropDown visibility */}
-                    <button onClick={() => {
-                      setShowFriendDropDown(true);
-                      setSelectedEventId(event.event_id);
-                    }}>Invite Friends</button>
+                    {user && event.creator_uid === user.uid ? (
+                      <>
+                        <button onClick={() => editEvent(event.event_id)}>Edit Event</button>
+                        <button onClick={() => {
+                          setShowFriendDropDown(true);
+                          setSelectedEventId(event.event_id);
+                        }}>Invite Friends</button>
+                      </>
+                    ) : (
+                      <>
+                        <button onClick={() => joinEvent(event.event_id)}>Join Event</button>
+                        <button onClick={() => leaveEvent(event.event_id)}>Leave Event</button>
+                      </>
+                    )}
                   </div>
                 </li>
               ))}
@@ -91,7 +117,6 @@ const EventList = () => {
           )}
         </div>
       </div>
-      {/* Render FriendDropDown component if showFriendDropDown is true */}
       {showFriendDropDown && <FriendDropDown eventId={selectedEventId} onInvite={hideFriendDropDown} />}
     </div>
   );
