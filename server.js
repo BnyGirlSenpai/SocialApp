@@ -56,7 +56,7 @@ app.get('/api/events', async (req, res) => {
 
 //----------------------Friend System Endpoints-----------------------------//
 
-// API endpoint to get pending Friend Requests data
+// API endpoint to get pending friendrequests data
 app.get('/api/users/friendrequests/:uid', async (req, res) => {
     try {
       let uid = req.params.uid;
@@ -69,7 +69,7 @@ app.get('/api/users/friendrequests/:uid', async (req, res) => {
     }
 });
 
-// API endpoint to update pending Friend Requests data
+// API endpoint to update pending friendrequests data
 app.post('/api/users/update/friendrequests' ,async (req, res) => {
     let receivedData = req.body;
     console.log(receivedData);
@@ -86,7 +86,7 @@ app.post('/api/users/update/friendrequests' ,async (req, res) => {
     }
 });
 
-// API endpoint to store and update pending Friend Requests data
+// API endpoint to store and update pending friendrequests data
 app.post('/api/users/friendrequests', async (req, res) => {
     let receivedData = req.body;
     let friendrequestData = JSON.parse(receivedData.body);
@@ -124,7 +124,7 @@ app.post('/api/users/friendrequests', async (req, res) => {
     }
 });
 
-// API endpoint to get Friends data
+// API endpoint to get friends data
 app.get('/api/users/friends/:uid', async (req, res) => {
     try {
       let uid = req.params.uid;
@@ -137,9 +137,9 @@ app.get('/api/users/friends/:uid', async (req, res) => {
     }
 });
 
-//-------------------------User Endpoints---------------------------------//
+//-------------------------User Endpoints----------------------------------//
 
-// API endpoint to get User Profile data
+// API endpoint to get user profile data
 app.get('/api/users/:uid', async (req, res) => {
     try {
       let uid = req.params.uid;
@@ -155,7 +155,7 @@ app.get('/api/users/:uid', async (req, res) => {
     }
 });
 
-// API endpoint to store init User data
+// API endpoint to store init user data
 app.post('/api/users', async (req, res) => {
     let receivedData = req.body;
     let userData = JSON.parse(receivedData.body);
@@ -181,7 +181,7 @@ app.post('/api/users', async (req, res) => {
     }
 });
 
-// API endpoint to update User Profile data
+// API endpoint to update user profile data
 app.post('/api/users/update', async (req, res) => {
     console.log(req.body);
     let userData = req.body;
@@ -224,7 +224,7 @@ app.post('/api/users/update', async (req, res) => {
 
 //-------------------------Search Endpoints---------------------------------//
 
-// API endpoint to get User Search data 
+// API endpoint to get user search data 
 app.get('/api/users/search/:username', async (req, res) => {
     try {
       let username = req.params.username;
@@ -243,7 +243,7 @@ app.get('/api/users/search/:username', async (req, res) => {
 
 //-------------------------Event Endpoints---------------------------------//
 
-// API endpoint to create new Event data
+// API endpoint to create new event data
 app.post('/api/event/create', async (req, res) => {
     let receivedData = req.body;
     let eventData =  JSON.parse(receivedData.body);
@@ -252,8 +252,8 @@ app.post('/api/event/create', async (req, res) => {
     console.log(eventData);
     
     try {
-        let insertQuery = 'INSERT INTO events (event_name, location, event_date, description, max_guests_count, event_time, creator_uid, joined_guests) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-        await connection.query(insertQuery, [eventData.eventName, eventData.location, eventDate, eventData.description, eventData.maxGuests, eventTime, eventData.uid, eventData.uid]);
+        let insertQuery = 'INSERT INTO events (event_name, location, event_date, description, max_guests_count, event_time, creator_uid) VALUES (?, ?, ?, ?, ?, ?, ?)';
+        await connection.query(insertQuery, [eventData.eventName, eventData.location, eventDate, eventData.description, eventData.maxGuests, eventTime, eventData.uid]);
         console.log("Event data saved");
         connection.release();
         res.status(200).json({ message: 'Event created successfully' });
@@ -263,7 +263,7 @@ app.post('/api/event/create', async (req, res) => {
     }
 });
 
-// API endpoint to get own User Event data
+// API endpoint to get curent user event data
 app.get('/api/events/:uid', async (req, res) => {
     try {
         let uid = req.params.uid;
@@ -276,61 +276,93 @@ app.get('/api/events/:uid', async (req, res) => {
     }
 });
 
-/*
-// API endpoint to update own Event data 
+// API to update event database
 app.post('/api/events/update/', async (req, res) => {
-    console.log(req.body);
-    let eventData = req.body;
-    let event_id = eventData[9]; 
-    const selectQuery = 'SELECT COUNT(*) AS count FROM events WHERE event_id = ?';
-
     try {
-        let connection = await pool.getConnection();
-        let [results] = await connection.query(selectQuery, [event_id]);
-        let eventCount = results[0].count;
+        const receivedData = req.body;
+        console.log('Received data:', receivedData);
 
-        if (eventCount === 1) {
-            let updateFields = [];
-            let updateValues = [];
-            updateFields.push(''); 
-            
-            if (userData.length === 10) { 
-                updateValues = userData.slice(0, 8);
-                updateValues.push(eventData[8]); 
-            } else {
-                console.log('Invalid data format');
-                return res.status(400).json({ error: 'Invalid data format' });
-            }
-            updateValues.push(uid); 
-            let updateQuery = `UPDATE users SET ${updateFields} WHERE uid = ?`;
+        const { status, event_id, uid_guest } = receivedData;
 
-            await connection.query(updateQuery, updateValues);
-            console.log('User data updated');
-            res.status(200).json({ success: true, message: 'User data updated' });
-        } else {
-            console.log('User not found');
-            res.status(404).json({ error: 'User not found' });
+        // Validate the format of uid_guest
+        if (!uid_guest || typeof uid_guest !== 'string') {
+            throw new Error('Invalid uid_guest value');
         }
-        connection.release();
+
+        if (status === 'accepted') {
+            // Move the uid_guest from invited_guests to joined_guests
+            await connection.query(`
+                UPDATE events
+                SET joined_guests = JSON_ARRAY_APPEND(
+                                    IFNULL(joined_guests, '[]'),
+                                    '$',
+                                    JSON_OBJECT('uid', ?)
+                                ),
+                    invited_guests = JSON_REMOVE(
+                                        IFNULL(invited_guests, '[]'),
+                                        JSON_UNQUOTE(
+                                            JSON_SEARCH(
+                                                IFNULL(invited_guests, '[]'),
+                                                'one',
+                                                ?,
+                                                NULL,
+                                                '$[*].uid'
+                                            )
+                                        )
+                                    )
+                WHERE event_id = ?
+            `, [uid_guest, uid_guest, event_id]);
+        } else if (status === 'declined') {
+            // Remove the uid_guest from invited_guests
+            await connection.query(`
+                UPDATE events
+                SET declined_invites = JSON_ARRAY_APPEND(
+                                            IFNULL(declined_invites, '[]'),
+                                            '$',
+                                            JSON_OBJECT('uid', ?)
+                                        ),
+                    invited_guests = JSON_REMOVE(
+                                        IFNULL(invited_guests, '[]'),
+                                        JSON_UNQUOTE(
+                                            JSON_SEARCH(
+                                                IFNULL(invited_guests, '[]'),
+                                                'one',
+                                                ?,
+                                                NULL,
+                                                '$[*].uid'
+                                            )
+                                        )
+                                    )
+                WHERE event_id = ?
+            `, [uid_guest, uid_guest, event_id]);
+        }
+
+        res.status(200).json({ success: true, message: 'Event data updated successfully' });
     } catch (error) {
-        console.error('Error processing data:', error);
-        res.status(500).json({ error: 'Failed to process data' });
+        console.error('Error updating event data:', error);
+        res.status(500).json({ success: false, error: 'Internal Server Error' });
     }
 });
-*/ 
 
-// API endpoint to handle Event invites
+// API endpoint to store event invites uid's
 app.post('/api/events/invites/:eventId', async (req, res) => {
     console.log(req.body);
     let eventId = req.params.eventId;
-    let receivedData = JSON.parse(req.body.body); // Parse the incoming JSON string
+    let receivedData = JSON.parse(req.body.body); 
     const selectQuery = 'SELECT invited_guests FROM events WHERE event_id = ?';
 
     try {
         let connection = await pool.getConnection();
         let [results] = await connection.query(selectQuery, [eventId]);
         let invitedGuests = results[0].invited_guests ? JSON.parse(results[0].invited_guests) : [];
-       
+
+        async function updateInvitedGuestsCount(eventId) {
+            let [event] = await connection.query('SELECT invited_guests FROM events WHERE event_id = ?', [eventId]);
+            let invitedGuests = event[0].invited_guests ? JSON.parse(event[0].invited_guests) : [];
+            let invitedGuestsCount = invitedGuests.length;
+            await connection.query('UPDATE events SET invited_guests_count = ? WHERE event_id = ?', [invitedGuestsCount, eventId]);
+        }
+
         async function mergeInvites(existingInvites, newInvites) {
             let mergedInvites = Array.isArray(existingInvites) ? [...existingInvites] : [];
 
@@ -355,12 +387,10 @@ app.post('/api/events/invites/:eventId', async (req, res) => {
                     console.log(`User with ID ${newInvite} is already invited.`);
                     continue; // Skip adding this user
                 }
-
                 // Retrieve user information and store along with ID
                 let [userInfo] = await connection.query('SELECT uid FROM users WHERE uid = ?', [newInvite]);
                 mergedInvites.push(userInfo[0]);
             }
-
             return mergedInvites;
         }
 
@@ -375,12 +405,36 @@ app.post('/api/events/invites/:eventId', async (req, res) => {
 
         await connection.query(updateQuery, updateValues);
         console.log('Event data updated');
+
+        // Update the invited_guests_count column
+        await updateInvitedGuestsCount(eventId);
+
         res.status(200).json({ success: true, message: 'Event data updated' });
 
         connection.release();
     } catch (error) {
         console.error('Error processing data:', error);
         res.status(500).json({ error: 'Failed to process data' });
+    }
+});
+
+// API endpoint to get events the current user is an invited guest
+app.get('/api/events/invited/:uid', async (req, res) => {
+    try {
+        const uid = req.params.uid;
+        // Query the events table to find events where the current user is invited
+        const [rows] = await connection.query(`
+            SELECT e.event_id, e.event_name, e.creator_uid, u.username AS creator_username
+            FROM events AS e
+            JOIN users AS u ON e.creator_uid = u.uid
+            WHERE e.invited_guests LIKE ?
+        `, [`%{"uid":"${uid}"%`]);
+
+        res.status(200).json(rows);
+        console.log(rows);
+    } catch (error) {
+        console.error('Error retrieving invited events:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
