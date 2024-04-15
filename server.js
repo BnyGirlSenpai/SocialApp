@@ -281,24 +281,21 @@ app.post('/api/events/update/', async (req, res) => {
     try {
         const receivedData = req.body;
         console.log('Received data:', receivedData);
-
-        const { status, event_id, uid_guest } = receivedData;
-
-        // Validate the format of uid_guest
-        if (!uid_guest || typeof uid_guest !== 'string') {
-            throw new Error('Invalid uid_guest value');
-        }
+        const uid_guest = receivedData.uid_guest;
+        const event_id = receivedData.event_id;
+        const status = receivedData.status;
 
         if (status === 'accepted') {
-            // Move the uid_guest from invited_guests to joined_guests
             await connection.query(`
-                UPDATE events
-                SET joined_guests = JSON_ARRAY_APPEND(
+            UPDATE events
+            SET joined_guests = JSON_ARRAY_APPEND(
                                     IFNULL(joined_guests, '[]'),
                                     '$',
                                     JSON_OBJECT('uid', ?)
                                 ),
-                    invited_guests = JSON_REMOVE(
+                invited_guests = IF(
+                                    JSON_LENGTH(IFNULL(invited_guests, '[]')) > 1,
+                                    JSON_REMOVE(
                                         IFNULL(invited_guests, '[]'),
                                         JSON_UNQUOTE(
                                             JSON_SEARCH(
@@ -309,11 +306,12 @@ app.post('/api/events/update/', async (req, res) => {
                                                 '$[*].uid'
                                             )
                                         )
-                                    )
-                WHERE event_id = ?
+                                    ),
+                                    '[]'
+                                )
+            WHERE event_id = ?;            
             `, [uid_guest, uid_guest, event_id]);
         } else if (status === 'declined') {
-            // Remove the uid_guest from invited_guests
             await connection.query(`
                 UPDATE events
                 SET declined_invites = JSON_ARRAY_APPEND(
