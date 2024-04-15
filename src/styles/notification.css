@@ -1,0 +1,49 @@
+.notifications-form {
+    display: flex;
+    justify-content: space-around;
+}
+
+.friend-list {
+    width: 45%;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.event-list {
+    width: 45%;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.friend-card, .event-card {
+    margin-bottom: 20px;
+}
+
+.card-info {
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+}
+
+.friend-info, .event-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.profile-link {
+    color: #333;
+    text-decoration: none;
+}
+
+.profile-link:hover {
+    text-decoration: underline;
+}
+
+.btn {
+    margin-left: 10px;
+}
