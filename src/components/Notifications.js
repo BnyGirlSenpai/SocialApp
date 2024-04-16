@@ -12,11 +12,11 @@ const Notifications = () => {
             try {
                 if (user) {
                     const userDataResponse = await getDataFromBackend(`http://localhost:3001/api/users/friendrequests/${user.uid}`);
-                    console.log("Loaded user data from server:", userDataResponse);
+                    console.log("Loaded friendrequest data from server:", userDataResponse);
                     setUserData(userDataResponse); 
                 }  
             } catch (error) {
-                console.error("Error fetching user data:", error);
+                console.error("Error fetching friendrequest data:", error);
             }
         };
 
