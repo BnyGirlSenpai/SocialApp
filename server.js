@@ -276,7 +276,7 @@ app.get('/api/events/:uid', async (req, res) => {
     }
 });
 
-// API to update event database
+// API to update event database after invited_guest interaction
 app.post('/api/events/update/', async (req, res) => {
     try {
         const receivedData = req.body;
@@ -286,32 +286,41 @@ app.post('/api/events/update/', async (req, res) => {
         const status = receivedData.status;
 
         if (status === 'accepted') {
+            await connection.beginTransaction();
+
             await connection.query(`
-            UPDATE events
-            SET joined_guests = JSON_ARRAY_APPEND(
-                                    IFNULL(joined_guests, '[]'),
-                                    '$',
-                                    JSON_OBJECT('uid', ?)
-                                ),
-                invited_guests = IF(
-                                    JSON_LENGTH(IFNULL(invited_guests, '[]')) > 1,
-                                    JSON_REMOVE(
-                                        IFNULL(invited_guests, '[]'),
-                                        JSON_UNQUOTE(
-                                            JSON_SEARCH(
-                                                IFNULL(invited_guests, '[]'),
-                                                'one',
-                                                ?,
-                                                NULL,
-                                                '$[*].uid'
-                                            )
-                                        )
+                UPDATE events
+                SET joined_guests = JSON_ARRAY_APPEND(
+                                        IFNULL(joined_guests, '[]'),
+                                        '$',
+                                        JSON_OBJECT('uid', ?)
                                     ),
-                                    '[]'
-                                )
-            WHERE event_id = ?;            
+                    invited_guests = IF(
+                                        JSON_LENGTH(IFNULL(invited_guests, '[]')) > 1,
+                                        JSON_REMOVE(
+                                            IFNULL(invited_guests, '[]'),
+                                            JSON_UNQUOTE(
+                                                JSON_SEARCH(
+                                                    IFNULL(invited_guests, '[]'),
+                                                    'one',
+                                                    ?,
+                                                    NULL,
+                                                    '$[*].uid'
+                                                )
+                                            )
+                                        ),
+                                        '[]'
+                                    )
+                WHERE event_id = ?;            
             `, [uid_guest, uid_guest, event_id]);
+
+            await updateCounts(event_id, connection);
+
+            await connection.commit();
+
         } else if (status === 'declined') {
+            await connection.beginTransaction();
+
             await connection.query(`
                 UPDATE events
                 SET declined_invites = JSON_ARRAY_APPEND(
@@ -333,14 +342,42 @@ app.post('/api/events/update/', async (req, res) => {
                                     )
                 WHERE event_id = ?
             `, [uid_guest, uid_guest, event_id]);
+
+            // Update counts
+            await updateCounts(event_id, connection);
+
+            await connection.commit();
         }
 
         res.status(200).json({ success: true, message: 'Event data updated successfully' });
     } catch (error) {
         console.error('Error updating event data:', error);
+        await connection.rollback();
         res.status(500).json({ success: false, error: 'Internal Server Error' });
+    } finally {
+        connection.release();
     }
 });
+
+async function updateCounts(event_id, connection) {
+    const [guestCounts] = await connection.query(`
+        SELECT 
+            JSON_LENGTH(IFNULL(joined_guests, '[]')) AS joined_count,
+            JSON_LENGTH(IFNULL(declined_invites, '[]')) AS declined_count
+        FROM events
+        WHERE event_id = ?;
+    `, [event_id]);
+
+    const joinedCount = guestCounts[0].joined_count;
+    const declinedCount = guestCounts[0].declined_count;
+
+    await connection.query(`
+        UPDATE events
+        SET current_guests_count = ?,
+            declined_invites_count = ?
+        WHERE event_id = ?;
+    `, [joinedCount, declinedCount, event_id]);
+}
 
 // API endpoint to store event invites uid's
 app.post('/api/events/invites/:eventId', async (req, res) => {
@@ -370,22 +407,18 @@ app.post('/api/events/invites/:eventId', async (req, res) => {
             }
 
             if (mergedInvites.length === 0) {
-                // If no guests are invited, search for user information and store references
                 mergedInvites = await Promise.all(newInvites.map(async receivedData => {
-                    // Query to retrieve user information based on user ID
                     let [userInfo] = await connection.query('SELECT uid FROM users WHERE uid = ?', [receivedData]);
-                    return userInfo[0]; // Store user info along with ID
+                    return userInfo[0]; 
                 }));
                 return mergedInvites;
             }
 
             for (let newInvite of newInvites) {
-                // Check if the user ID already exists in invitedGuests
                 if (existingInvites.some(invite => invite.uid === newInvite)) {
                     console.log(`User with ID ${newInvite} is already invited.`);
-                    continue; // Skip adding this user
+                    continue; 
                 }
-                // Retrieve user information and store along with ID
                 let [userInfo] = await connection.query('SELECT uid FROM users WHERE uid = ?', [newInvite]);
                 mergedInvites.push(userInfo[0]);
             }
@@ -404,7 +437,6 @@ app.post('/api/events/invites/:eventId', async (req, res) => {
         await connection.query(updateQuery, updateValues);
         console.log('Event data updated');
 
-        // Update the invited_guests_count column
         await updateInvitedGuestsCount(eventId);
 
         res.status(200).json({ success: true, message: 'Event data updated' });
@@ -420,13 +452,12 @@ app.post('/api/events/invites/:eventId', async (req, res) => {
 app.get('/api/events/invited/:uid', async (req, res) => {
     try {
         const uid = req.params.uid;
-        // Query the events table to find events where the current user is invited
         const [rows] = await connection.query(`
             SELECT e.event_id, e.event_name, e.creator_uid, u.username AS creator_username
             FROM events AS e
             JOIN users AS u ON e.creator_uid = u.uid
-            WHERE e.invited_guests LIKE ?
-        `, [`%{"uid":"${uid}"%`]);
+            WHERE JSON_CONTAINS(e.invited_guests, ?)
+        `, [`{"uid":"${uid}"}`, '$']);
 
         res.status(200).json(rows);
         console.log(rows);
