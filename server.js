@@ -117,10 +117,12 @@ app.post('/api/users/friendrequests', async (req, res) => {
             await connection.query(insertQuery, [uid_transmitter, uid_receiver]);
             console.log("User data saved");
         }
-        connection.release();
     } catch (error) {
         console.error('Error processing data:', error);
         res.status(500).json({ error: 'Failed to process data' });
+    }
+    finally {
+        connection.release(); // Ensure connection is released in case of errors
     }
 });
 
@@ -174,10 +176,12 @@ app.post('/api/users', async (req, res) => {
             await connection.query(insertQuery, [uid, providerData?.[0]?.providerId, userData?.email, userData?.displayName, userData?.photoURL]);
             console.log("User data saved");
         }
-        connection.release();
     } catch (error) {
         console.error('Error processing data:', error);
         res.status(500).json({ error: 'Failed to process data' });
+    }
+    finally {
+        connection.release(); // Ensure connection is released in case of errors
     }
 });
 
@@ -215,10 +219,12 @@ app.post('/api/users/update', async (req, res) => {
             console.log('User not found');
             res.status(404).json({ error: 'User not found' });
         }
-        connection.release();
     } catch (error) {
         console.error('Error processing data:', error);
         res.status(500).json({ error: 'Failed to process data' });
+    }
+    finally {
+        connection.release(); // Ensure connection is released in case of errors
     }
 });
 
@@ -440,11 +446,12 @@ app.post('/api/events/invites/:eventId', async (req, res) => {
         await updateInvitedGuestsCount(eventId);
 
         res.status(200).json({ success: true, message: 'Event data updated' });
-
-        connection.release();
     } catch (error) {
         console.error('Error processing data:', error);
         res.status(500).json({ error: 'Failed to process data' });
+    }
+    finally {
+        connection.release(); // Ensure connection is released in case of errors
     }
 });
 
@@ -466,6 +473,26 @@ app.get('/api/events/invited/:uid', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+// API endpoint to get events the current user is a joined guest
+app.get('/api/events/joined/:uid', async (req, res) => {
+    try {
+        const uid = req.params.uid;
+        const [rows] = await connection.query(`
+            SELECT e.event_id, e.event_name, e.creator_uid,e.event_date,e.location,e.event_time, u.username AS creator_username
+            FROM events AS e
+            JOIN users AS u ON e.creator_uid = u.uid
+            WHERE JSON_CONTAINS(e.joined_guests, ?)
+        `, [`{"uid":"${uid}"}`, '$']);
+
+        res.status(200).json(rows);
+        console.log(rows);
+    } catch (error) {
+        console.error('Error retrieving invited events:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 
 //-------------------------Start the server---------------------------------//
 
