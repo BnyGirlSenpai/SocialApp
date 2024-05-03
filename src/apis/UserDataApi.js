@@ -7,9 +7,8 @@ const sendDataToBackend = async (data,endpoint) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
-    if (response.ok) {
-      console.log(data)
-      console.log('data stored successfully');
+    if (response.status === 200) {
+      console.log('Data stored successfully');
     } else {
       console.error('Error storing data:', response);
     }
@@ -22,14 +21,13 @@ const updateDataInDb = async (data,endpoint) => {
   try {
     let response = await axios.post(endpoint,data,
       {
-        headers: { 'Content-Type': 'application/json' } // Set headers separately
+        headers: { 'Content-Type': 'application/json' } 
       }
     );
-    if (response.status === 200) { // Check status instead of response.ok
-      console.log(data);
+    if (response.status === 200) { 
       console.log('Data send successfully');
     } else {
-      console.error('Error storing data:', response);
+      console.error('Error updating data:', response);
     }
   } catch (error) {
     console.error('Error sending data to backend:', error);
