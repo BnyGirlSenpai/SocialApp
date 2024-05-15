@@ -353,6 +353,33 @@ app.post('/api/events/update/', async (req, res) => {
             await updateCounts(event_id, connection);
 
             await connection.commit();
+
+        } else if (status === 'left'){
+            await connection.beginTransaction();
+
+            await connection.query(`
+            UPDATE events
+            SET left_guests = JSON_ARRAY_APPEND(
+                                        IFNULL(left_guests, '[]'),
+                                        '$',
+                                        JSON_OBJECT('uid', ?)
+                                    ),
+                joined_guests = JSON_REMOVE(
+                                    IFNULL(joined_guests, '[]'),
+                                    JSON_UNQUOTE(
+                                        JSON_SEARCH(
+                                            IFNULL(joined_guests, '[]'),
+                                            'one',
+                                            ?,
+                                            NULL,
+                                            '$[*].uid'
+                                        )
+                                    )
+                                )
+            WHERE event_id = ?
+            `, [uid_guest, uid_guest, event_id]);
+
+            await connection.commit();
         }
 
         res.status(200).json({ success: true, message: 'Event data updated successfully' });
@@ -492,7 +519,6 @@ app.get('/api/events/joined/:uid', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-
 
 //-------------------------Start the server---------------------------------//
 
