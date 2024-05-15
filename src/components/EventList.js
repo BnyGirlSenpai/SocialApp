@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/eventpage.css'; 
 import { UserAuth } from '../context/AuthContext';
-import { getDataFromBackend } from '../apis/UserDataApi';
+import { getDataFromBackend , updateDataInDb } from '../apis/UserDataApi';
 import FriendDropDown from './FriendDropDown';
 
 
@@ -35,8 +35,14 @@ const EventList = () => {
   }, [user]); 
 
   function leaveEvent(eventId) {
-    console.log("Left event with ID:", eventId);
-
+   
+      let updateData = {
+          status: 'left',
+          event_id: eventId,
+          uid_guest: user.uid
+      };
+      updateDataInDb(updateData,`http://localhost:3001/api/events/update`)
+      console.log("Left event with ID:", eventId);
   }
 
   function hideFriendDropDown() {
