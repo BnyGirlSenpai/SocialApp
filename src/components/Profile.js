@@ -189,7 +189,6 @@ return (
       ) : (
         <p>Loading...</p>
       )}
-      {/* Edit profile button for the current user */}
       {isCurrentUser && (
         <div>
           <button><a href="/ProfileSettingsPage">Edit Profile</a></button>

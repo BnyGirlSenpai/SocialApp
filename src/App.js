@@ -13,6 +13,7 @@ import Profilepage from './pages/ProfilePage';
 import Notifications from './pages/NotificationPage';
 import ProfileSettingspage from './pages/ProfileSettingsPage';
 import EventFormpage from './pages/EventFormPage';
+import EditEventFormpage from './pages/EditEventFormPage';
 
 function App() {
   return (
@@ -61,9 +62,14 @@ function App() {
                 <ProfileSettingspage />
               </Protected> 
             } />
-            <Route path='/EventFormpage' element={
+            <Route path='/EventFormPage' element={
               <Protected>
                 <EventFormpage />
+              </Protected> 
+            } />
+            <Route path='/EditEventFormPage/:event_id' element={
+              <Protected>
+                <EditEventFormpage />
               </Protected> 
             } />
             <Route path='/HomePage'element={

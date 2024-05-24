@@ -7,7 +7,7 @@ import FriendDropDown from './FriendDropDown';
 
 const EventList = () => {
   const { user  } = UserAuth(); 
-   console.log("User from context:", user); // Log the user value here
+   console.log("User from context:", user); 
   const [ownEvents, setOwnEvents] = useState([]);
   const [showFriendDropDown, setShowFriendDropDown] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState(null); 
@@ -47,11 +47,6 @@ const EventList = () => {
 
   function hideFriendDropDown() {
     setShowFriendDropDown(false);
-  }
-
-  function editEvent(eventId) {
-    // Redirect to the event editing page with the event ID
-    console.log("Edit event with ID:", eventId);
   }
 
   return (
@@ -115,7 +110,7 @@ const EventList = () => {
                     </div>
                   </div>
                   <div className="button-container">                   
-                      <button onClick={() => editEvent(event.event_id)}>Edit Event</button>
+                      <a href={`/EditEventFormPage/${event.event_id}`}><button>Edit Event</button></a>                   
                       <button onClick={() => {
                         setShowFriendDropDown(true);
                         setSelectedEventId(event.event_id);
