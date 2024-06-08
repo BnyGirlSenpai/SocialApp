@@ -52,7 +52,7 @@ function Navbar() {
                 <Link to='/'>Sign in</Link>
               )}
           </div>
-          <div className="col-md-2 col-sm-2">
+          <div className="ccol-12 col-lg-auto mb-3 mb-lg-0 me-lg-3">
             <img src={user.photoURL} alt={user.username} className="profile-photo-lg" />
           </div>
         </div>
