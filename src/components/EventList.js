@@ -4,10 +4,8 @@ import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend , updateDataInDb } from '../apis/UserDataApi';
 import FriendDropDown from './FriendDropDown';
 
-
 const EventList = () => {
   const { user  } = UserAuth(); 
-   console.log("User from context:", user); 
   const [ownEvents, setOwnEvents] = useState([]);
   const [showFriendDropDown, setShowFriendDropDown] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState(null); 
@@ -52,7 +50,6 @@ const EventList = () => {
   return (
     <div>
       <div className="event-container">
-
         <div className="column">
           <h2>Next Events</h2>
           {joinedEvents[0] && joinedEvents.length > 0 ? (
