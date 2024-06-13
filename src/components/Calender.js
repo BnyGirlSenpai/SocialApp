@@ -33,9 +33,25 @@ const Calendar = () => {
            date.getFullYear() === today.getFullYear();
   };
 
+  const handlePrevMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+  };
+
+  const handleToday = () => {
+    setCurrentMonth(new Date());
+  };
+
   return (
     <div className='calendar'>
-      <h1>{currentMonth.toLocaleString('default', { month: 'long' })} {currentMonth.getFullYear()}</h1>
+
+      <div className='calendar-header'>
+        <h1>{currentMonth.toLocaleString('default', { month: 'long' })} {currentMonth.getFullYear()}</h1>
+      </div>
+
       <div className='calendar-grid'>
         {days.map(date => (
           <div
@@ -46,6 +62,11 @@ const Calendar = () => {
             <time dateTime={date.toISOString().split('T')[0]}>{date.getDate()}</time>
           </div>
         ))}
+      </div>
+      <div className='calender-navigation'>
+        <button className='date-button' onClick={handlePrevMonth}>&lt;</button>
+        <button className='date-button' onClick={handleToday}>Today</button>
+        <button className='date-button' onClick={handleNextMonth}>&gt;</button>
       </div>
     </div>
   );
