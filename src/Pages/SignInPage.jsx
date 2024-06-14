@@ -23,7 +23,7 @@ const Signin = () => {
 
   return (
     <div className='Main'>
-      <h2>Look like you're lost in space</h2>
+      <h2>Looks like you're lost in space</h2>
       <img src="//images01.nicepage.com/c461c07a441a5d220e8feb1a/912e8a6d1ca35b4e9771774e/4566.png" alt="png"/>
         <GoogleButton onClick={handleGoogleSignIn} />
     </div>
