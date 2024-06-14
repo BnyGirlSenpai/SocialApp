@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import '../styles/eventform.css';
 import { sendDataToBackend } from '../apis/UserDataApi';
 import { UserAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const EventForm = () => {
   const { user } = UserAuth();
@@ -12,6 +13,14 @@ const EventForm = () => {
   const [eventTime, setEventTime] = useState('');
   const [description, setDescription] = useState('');
   const [maxGuests, setMaxGuests] = useState('');
+  const navigate = useNavigate();
+  const [redirect, setRedirect] = useState(false);
+
+  useEffect(() => {
+    if (redirect) {
+        navigate('/EventPage');
+    }
+  }, [redirect, navigate]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -57,6 +66,7 @@ const EventForm = () => {
         setIsButtonClicked(true);
         setTimeout(() => {
           setIsButtonClicked(false);
+          setRedirect(true);
         }, 1000);
       } else {
         console.log("User not found!");

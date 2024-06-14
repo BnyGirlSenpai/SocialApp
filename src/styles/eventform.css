@@ -15,13 +15,27 @@
     font-size: 16px;
   }
   
-  .event-form button {
-    background-color: #007bff;
-    color: #fff;
-    cursor: pointer;
-  }
-  
-  .event-form button:hover {
-    background-color: #0056b3;
-  }
+.button {
+  color: #fff;
+  cursor: pointer;
+  border: none; 
+  padding: 10px 20px;
+  transition: background-color 0.3s ease, transform 0.3s ease; 
+}
+
+.save-event {
+  background-color: #007bff; 
+}
+
+.save-event:hover {
+  background-color: #0056b3; 
+}
+
+.delete-event {
+  background-color: #ff0000; 
+}
+
+.delete-event:hover {
+  background-color: #cc0000; 
+}
   

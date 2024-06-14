@@ -7,7 +7,7 @@ const AuthContext = createContext();
 
 export const AuthContextProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-
+  console.log(user);
   const googleSignIn = async () => {
     try {
       const provider = new GoogleAuthProvider();

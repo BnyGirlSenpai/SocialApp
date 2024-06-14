@@ -83,8 +83,7 @@ const EventList = () => {
             {/* Last events content */}
           </ul>
         </div>
-
-        {/*Load Own Events*/}
+        
         <div className="column">
           <h2>My Events</h2>
           <a href="/EventFormpage"><button className="add-event-button">Add Own Event</button></a>
