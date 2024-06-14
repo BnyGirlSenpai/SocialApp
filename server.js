@@ -5,15 +5,15 @@ import cors from 'cors';
 
 dotenv.config();
 
-const app = express();
-const port = 3001;
-const pool = createPool({
+let app = express();
+let port = 3001;
+let pool = createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER, 
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME
 });
-const connection = await pool.getConnection();
+let connection = await pool.getConnection();
 
 app.use(express.json());
 
@@ -25,17 +25,17 @@ app.use(cors({
 // Define the main function for fetching data from the Ticketmaster API
 /*
 async function fetchEventData() {
-    const page = 3;
-    const classificationName = 'music';
-    const countryCode = 'DE';
-    const city = 'Cologne';
-    const apikey = process.env.API_KEY; //missing in .env
-    const size = 4;
+    let page = 3;
+    let classificationName = 'music';
+    let countryCode = 'DE';
+    let city = 'Cologne';
+    let apikey = process.env.API_KEY; //missing in .env
+    let size = 4;
 
-    const apiUrl = `https://app.ticketmaster.com/discovery/v2/events.json?classificationName=${encodeURIComponent(classificationName)}&countryCode=${encodeURIComponent(countryCode)}&city=${encodeURIComponent(city)}&apikey=${encodeURIComponent(apikey)}&size=${size}&page=${page}`;
+    let apiUrl = `https://app.ticketmaster.com/discovery/v2/events.json?classificationName=${encodeURIComponent(classificationName)}&countryCode=${encodeURIComponent(countryCode)}&city=${encodeURIComponent(city)}&apikey=${encodeURIComponent(apikey)}&size=${size}&page=${page}`;
 
     try {
-        const response = await axios.get(apiUrl);
+        let response = await axios.get(apiUrl);
         return response.data;
     } catch (error) {
         console.error('Error fetching events from Ticketmaster API:', error);
@@ -46,7 +46,7 @@ async function fetchEventData() {
 // API endpoint to get events from the Ticketmaster API
 app.get('/api/events', async (req, res) => {
     try {
-        const eventData = await fetchEventData();
+        let eventData = await fetchEventData();
         res.json(eventData);
     } catch (error) {
         res.status(500).json({ error: 'Internal Server Error' });
@@ -191,7 +191,7 @@ app.post('/api/users/update', async (req, res) => {
     let userData = req.body;
     let uid = userData[9]; 
 
-    const selectQuery = 'SELECT COUNT(*) AS count FROM users WHERE uid = ?';
+    let selectQuery = 'SELECT COUNT(*) AS count FROM users WHERE uid = ?';
     try {
         let connection = await pool.getConnection();
         let [results] = await connection.query(selectQuery, [uid]);
@@ -269,20 +269,7 @@ app.post('/api/event/create', async (req, res) => {
     }
 });
 
-// API endpoint to get curent user event data
-app.get('/api/events/:uid', async (req, res) => {
-    try {
-        let uid = req.params.uid;
-        let [rows] = await connection.query('SELECT event_id, event_name, event_date, event_time, location, description, max_guests_count, current_guests_count, invited_guests_count, creator_uid FROM events WHERE creator_uid = ?', [uid]);
-        res.status(200).json(rows); 
-        console.log(rows);
-    } catch (error) {
-        console.error('Error retrieving event data:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-// API endpoint to edit event 
+// API endpoint to Event to be edited  
 app.get('/api/events/edit/:eid', async (req, res) => {
     try {
         let eid = req.params.eid;
@@ -295,13 +282,26 @@ app.get('/api/events/edit/:eid', async (req, res) => {
     }
 });
 
-// API endpoint to update Event  data
+// API endpoint to get curent user is owner event data
+app.get('/api/events/:uid', async (req, res) => {
+    try {
+        let uid = req.params.uid;
+        let [rows] = await connection.query('SELECT event_id, event_name, event_date, event_time, location, description, max_guests_count, current_guests_count, invited_guests_count, creator_uid FROM events WHERE creator_uid = ?', [uid]);
+        res.status(200).json(rows); 
+        console.log(rows);
+    } catch (error) {
+        console.error('Error retrieving event data:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// API endpoint to update Event data
 app.post('/api/events/edit/update', async (req, res) => {
     console.log(req.body);
     let eventData = req.body;
     let eid = eventData[6]; 
 
-    const selectQuery = 'SELECT COUNT(*) AS count FROM events WHERE event_id = ?';
+    let selectQuery = 'SELECT COUNT(*) AS count FROM events WHERE event_id = ?';
     try {
         let connection = await pool.getConnection();
         let [results] = await connection.query(selectQuery, [eid]);
@@ -338,14 +338,33 @@ app.post('/api/events/edit/update', async (req, res) => {
     }
 })
 
+// API endpoint to delete event 
+app.post('/api/events/edit/delete', async (req, res) => {
+    try {
+        let eventData = req.body;
+        let eid = eventData[0]; 
+        let [result] = await connection.query('DELETE FROM events WHERE event_id = ?', [eid]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+
+        res.status(200).json({ message: 'Event deleted successfully' });
+        console.log(`Event with ID ${eid} deleted successfully`);
+    } catch (error) {
+        console.error('Error deleting event:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 // API to update event database after invited_guest interaction
 app.post('/api/events/update/', async (req, res) => {
     try {
-        const receivedData = req.body;
+        let receivedData = req.body;
         console.log('Received data:', receivedData);
-        const uid_guest = receivedData.uid_guest;
-        const event_id = receivedData.event_id;
-        const status = receivedData.status;
+        let uid_guest = receivedData.uid_guest;
+        let event_id = receivedData.event_id;
+        let status = receivedData.status;
 
         if (status === 'accepted') {
             await connection.beginTransaction();
@@ -459,7 +478,7 @@ app.post('/api/events/update/', async (req, res) => {
 
 // Update User Counters
 async function updateCounts(event_id, connection) {
-    const [guestCounts] = await connection.query(`
+    let [guestCounts] = await connection.query(`
         SELECT 
             JSON_LENGTH(IFNULL(joined_guests, '[]')) AS joined_count,
             JSON_LENGTH(IFNULL(declined_invites, '[]')) AS declined_count
@@ -467,8 +486,8 @@ async function updateCounts(event_id, connection) {
         WHERE event_id = ?;
     `, [event_id]);
 
-    const joinedCount = guestCounts[0].joined_count;
-    const declinedCount = guestCounts[0].declined_count;
+    let joinedCount = guestCounts[0].joined_count;
+    let declinedCount = guestCounts[0].declined_count;
 
     await connection.query(`
         UPDATE events
@@ -483,7 +502,7 @@ app.post('/api/events/invites/:eventId', async (req, res) => {
     console.log(req.body);
     let eventId = req.params.eventId;
     let receivedData = JSON.parse(req.body.body); 
-    const selectQuery = 'SELECT invited_guests FROM events WHERE event_id = ?';
+    let selectQuery = 'SELECT invited_guests FROM events WHERE event_id = ?';
 
     try {
         let connection = await pool.getConnection();
@@ -551,8 +570,8 @@ app.post('/api/events/invites/:eventId', async (req, res) => {
 // API endpoint to get events the current user is an invited guest
 app.get('/api/events/invited/:uid', async (req, res) => {
     try {
-        const uid = req.params.uid;
-        const [rows] = await connection.query(`
+        let uid = req.params.uid;
+        let [rows] = await connection.query(`
             SELECT e.event_id, e.event_name, e.creator_uid, u.username AS creator_username
             FROM events AS e
             JOIN users AS u ON e.creator_uid = u.uid
@@ -570,8 +589,8 @@ app.get('/api/events/invited/:uid', async (req, res) => {
 // API endpoint to get events the current user is a joined guest
 app.get('/api/events/joined/:uid', async (req, res) => {
     try {
-        const uid = req.params.uid;
-        const [rows] = await connection.query(`
+        let uid = req.params.uid;
+        let [rows] = await connection.query(`
             SELECT e.event_id, e.event_name, e.creator_uid,e.event_date,e.location,e.event_time, u.username AS creator_username
             FROM events AS e
             JOIN users AS u ON e.creator_uid = u.uid
