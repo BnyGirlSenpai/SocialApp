@@ -157,7 +157,7 @@ return (
                         <div class="profile-info-row">
                           <div class="profile-info-name"> Last Online </div>
                           <div class="profile-info-value">
-                            <span>{user.metadata.lastLoginAt}</span>           
+                            <span>{user.metadata.lastSignInTime}</span>           
                           </div>
                         </div>
                       </div>
