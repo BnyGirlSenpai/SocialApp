@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import '../styles/calender.css'; 
+import React, { useState, useEffect, useCallback } from 'react';
+import '../styles/calendar.css'; 
 import { UserAuth } from '../context/AuthContext';
-import { getDataFromBackend} from '../apis/UserDataApi';
+import { getDataFromBackend } from '../apis/UserDataApi';
 
 const Calendar = () => {
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedDate] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [days, setDays] = useState([]);
-  const { user  } = UserAuth(); 
+  const { user } = UserAuth(); 
   const [ownEvents, setOwnEvents] = useState([]);
   const [joinedEvents, setJoinedEvents] = useState([]);
-  const [eventsForCurrentMonth, setEventsForCurrentMonth] = useState({}); // Define eventsForCurrentMonth state variable
+  const [eventsForCurrentMonth, setEventsForCurrentMonth] = useState({});
 
   useEffect(() => {
     const fetchEventData = async () => {
@@ -18,7 +18,7 @@ const Calendar = () => {
         if (user) {
           const ownEventData = await getDataFromBackend(`http://localhost:3001/api/events/${user.uid}`);
           const joinedEventData = await getDataFromBackend(`http://localhost:3001/api/events/joined/${user.uid}`);
-          // Process own events data
+          
           if (ownEventData) {
             const formattedOwnEvents = ownEventData.map(event => ({
               event_date: new Date(event.event_date).toISOString().split('T')[0],
@@ -31,7 +31,6 @@ const Calendar = () => {
             setOwnEvents([]);
           }
 
-          // Process joined events data
           if (joinedEventData) {
             const formattedJoinedEvents = joinedEventData.map(event => ({
               event_date: new Date(event.event_date).toISOString().split('T')[0],
@@ -55,8 +54,6 @@ const Calendar = () => {
   useEffect(() => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
-    
-    const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
     const daysInMonth = [];
 
@@ -74,6 +71,27 @@ const Calendar = () => {
            date.getFullYear() === today.getFullYear();
   };
 
+  const getEventsForDate = useCallback((date) => {
+    const formattedDate = date.toISOString().split('T')[0];
+    const ownEventsForDate = ownEvents
+      .filter(event => event.event_date === formattedDate)
+      .map(event => ({
+        name: event.event_name,
+        date: event.event_date,
+        id: event.event_id
+      }));
+
+    const joinedEventsForDate = joinedEvents
+      .filter(event => event.event_date === formattedDate)
+      .map(event => ({
+        name: event.event_name,
+        date: event.event_date,
+        id: event.event_id
+      }));
+  
+    return { ownEvents: ownEventsForDate, joinedEvents: joinedEventsForDate };
+  }, [ownEvents, joinedEvents]);
+
   useEffect(() => {
     const eventsMap = {};
     days.forEach(day => {
@@ -81,7 +99,7 @@ const Calendar = () => {
       eventsMap[day.toISOString().split('T')[0]] = events;
     });
     setEventsForCurrentMonth(eventsMap);
-  }, [currentMonth, ownEvents, joinedEvents]);
+  }, [days, getEventsForDate]);
 
   const handlePrevMonth = () => {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
@@ -95,28 +113,6 @@ const Calendar = () => {
     setCurrentMonth(new Date());
   };
 
-  const getEventsForDate = (date) => {
-    const formattedDate = date.toISOString().split('T')[0];
-    const flattenedOwnEvents = ownEvents.flat();
-    const flattenedJoinedEvents = joinedEvents.flat();
-    const ownEventsForDate = flattenedOwnEvents
-      .filter(event => event.event_date.split('T')[0] === formattedDate)
-      .map(event => ({
-        name: event.event_name,
-        date: new Date(event.event_date).toISOString().split('T')[0],
-        id: event.event_id
-      }));
-
-    const joinedEventsForDate = flattenedJoinedEvents
-      .filter(event => event.event_date.split('T')[0] === formattedDate)
-      .map(event => ({
-        name: event.event_name,
-        date: new Date(event.event_date).toISOString().split('T')[0],
-        id: event.event_id
-      }));
-  
-    return { ownEvents: ownEventsForDate, joinedEvents: joinedEventsForDate };
-  };
   return (
     <div className='calendar'>
       <div className='calendar-header'>
@@ -130,7 +126,7 @@ const Calendar = () => {
               key={date}
               className={`calendar-cell ${isToday(date) ? 'today' : ''} ${selectedDate === date.toISOString().split('T')[0] ? 'selected' : ''}`}
             >
-              <time dateTime={date.toLocaleDateString().split('T')[0]}>{date.getDate()}</time>
+              <time dateTime={date.toISOString().split('T')[0]}>{date.getDate()}</time>
               <div className="event-names">
                 {eventsForDate.ownEvents.map(event => (
                   <div key={event.id} className="event-name">
@@ -152,7 +148,7 @@ const Calendar = () => {
           );
         })}
       </div>
-      <div className='calender-navigation'>
+      <div className='calendar-navigation'>
         <button className='date-button' onClick={handlePrevMonth}>&lt;</button>
         <button className='date-button' onClick={handleToday}>Today</button>
         <button className='date-button' onClick={handleNextMonth}>&gt;</button>
