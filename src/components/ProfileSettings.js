@@ -82,6 +82,16 @@ const ProfileSettings = () => {
                     return;
                 }
 
+                const currentDate = new Date();
+                const selectedDate = new Date(dateOfBirth);
+                const age = currentDate.getFullYear() - selectedDate.getFullYear();
+                const monthDifference = currentDate.getMonth() - selectedDate.getMonth();
+                const dayDifference = currentDate.getDate() - selectedDate.getDate();
+
+                if (age < 16 || (age === 16 && monthDifference < 0) || (age === 16 && monthDifference === 0 && dayDifference < 0)) {
+                    alert("You must be 16 years old!");
+                    return;
+                }
                 const validations = [
                     { name: 'username', value: username, type: 'text' },
                     { name: 'email', value: email, type: 'email' },
