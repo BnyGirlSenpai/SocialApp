@@ -37,14 +37,12 @@ function Navbar() {
             <li><a href="/CalenderPage" className="nav-link px-2 link-body-emphasis">Calender</a></li>
           </ul>
 
-          <form className="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
-            <input type="search" className="form-control" placeholder="Search..." aria-label="Search" />
-          </form>
           <ul className="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
             <li><a href={`/profilepage/${user.uid}`} className="nav-link px-2 link-body-emphasis">Profile</a></li>
             <li><a href="/NotificationPage" className="nav-link px-2 link-body-emphasis">Notifications</a></li>
             <li><a href="/SettingsPage" className="nav-link px-2 link-body-emphasis">Settings</a></li>
           </ul>
+
           <div className="dropdown text-end">
             {user?.displayName ? (
                 <button onClick={handleSignOut}>Logout</button>
@@ -52,9 +50,11 @@ function Navbar() {
                 <Link to='/'>Sign in</Link>
               )}
           </div>
+          
           <div className="ccol-12 col-lg-auto mb-3 mb-lg-0 me-lg-3">
             <img src={user.photoURL} alt={user.username} className="profile-photo-lg" />
           </div>
+
         </div>
       </div>
     </header>  

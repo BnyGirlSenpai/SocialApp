@@ -3,6 +3,7 @@ import '../styles/eventform.css';
 import { sendDataToBackend } from '../apis/UserDataApi';
 import { UserAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import validateInput from '../utils/UserInputValidator';
 
 const EventForm = () => {
   const { user } = UserAuth();
@@ -23,28 +24,62 @@ const EventForm = () => {
   }, [redirect, navigate]);
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target; 
+    let isValid = false;
+
     switch (name) {
       case 'eventName':
-        setEventName(value);
+        isValid = validateInput(value, 'text');
         break;
       case 'location':
-        setLocation(value);
-        break;
-      case 'eventDate':
-        setEventDate(value);
-        break;
-      case 'eventTime':
-        setEventTime(value);
+        isValid = validateInput(value, 'text');
         break;
       case 'description':
-        setDescription(value);
+        isValid = validateInput(value, 'text');
         break;
-      case 'maxGuests':
-        setMaxGuests(value);
+      case 'eventDate':
+        const currentDate = new Date();
+        const selectedDate = new Date(value);
+        isValid = validateInput(value, 'date') && selectedDate >= currentDate.setHours(0, 0, 0, 0);   
         break;
-      default:
+        case 'eventTime':
+        const currentTime = new Date().toLocaleTimeString('en-US', { hour12: false });
+        isValid = validateInput(value, 'time') && value >= currentTime;  
         break;
+        case 'maxGuests':
+          const numericValue = parseInt(value, 10);
+          isValid = !isNaN(numericValue) && numericValue <= 69 && numericValue >=0;
+          value = numericValue > 69 ? 69 : numericValue;
+          break;
+        default:
+          break;
+    }
+
+    if (isValid) {
+      switch (name) {
+        case 'eventName':
+          setEventName(value);
+          break;
+        case 'location':
+          setLocation(value);
+          break;
+        case 'eventDate':
+          setEventDate(value);
+          break;
+        case 'eventTime':
+          setEventTime(value);
+          break;
+        case 'description':
+          setDescription(value);
+          break;
+        case 'maxGuests':
+          setMaxGuests(value);
+          break;
+        default:
+          break;
+      }
+    } else {
+      alert(`Invalid ${name} input:`, value);
     }
   };
 
@@ -60,6 +95,11 @@ const EventForm = () => {
           maxGuests: maxGuests,
           uid: user.uid
         };
+
+        if (!eventName || !location || !eventDate || !eventTime || !maxGuests) {
+          alert("Please fill in all fields before saving the event.");
+          return;
+        }
   
         console.log('Data to server:', eventData);
         await sendDataToBackend(eventData, 'http://localhost:3001/api/event/create');

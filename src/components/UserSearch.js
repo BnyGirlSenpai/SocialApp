@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { UserAuth } from '../context/AuthContext';
 import '../styles/userlist.css';
 import { getDataFromBackend, sendDataToBackend } from '../apis/UserDataApi';
+import validateInput from '../utils/UserInputValidator';
 
 const UserSearch = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [userFriends, setUserFriends] = useState([]);
-  const { user } = UserAuth(); // Corrected user destructuring
+  const { user } = UserAuth(); 
 
   useEffect(() => {
     const fetchUserFriends = async () => {
@@ -24,9 +25,13 @@ const UserSearch = () => {
   }, [user]);
 
   const searchUser = async () => {
+    let isValid = false;
     try {
-      const results = await searchUserInDb(searchTerm);
-      setSearchResults(results);
+      isValid = validateInput(searchTerm ,"text");
+      if(isValid){
+        const results = await searchUserInDb(searchTerm);
+        setSearchResults(results);
+      }
     } catch (error) {
       console.log('Error searching for users:', error);
     }

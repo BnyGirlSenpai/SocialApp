@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend,updateDataInDb }  from '../apis/UserDataApi';
+import validateInput from '../utils/UserInputValidator';
 
 const ProfileSettings = () => {
     const { user } = UserAuth();
@@ -76,6 +77,30 @@ const ProfileSettings = () => {
     const handleSaveProfile = async () => { 
         try {
             if (user) {
+                if (!username || !email || !dateOfBirth || !password || !phoneNumber) {
+                    alert("Please fill in all required fields before saving the profile.");
+                    return;
+                }
+
+                const validations = [
+                    { name: 'username', value: username, type: 'text' },
+                    { name: 'email', value: email, type: 'email' },
+                    { name: 'dateOfBirth', value: dateOfBirth, type: 'date' },
+                    { name: 'password', value: password, type: 'text' },
+                    { name: 'address', value: address, type: 'text' },
+                    { name: 'country', value: country, type: 'text' },
+                    { name: 'region', value: region, type: 'text' },
+                    { name: 'phoneNumber', value: phoneNumber, type: 'phone' },
+                    { name: 'description', value: description, type: 'text' },
+                ];
+
+                for (const { name, value, type } of validations) {
+                    if (!validateInput(value, type)) {
+                        alert(`Invalid input for ${name}. Please check your input and try again.`);
+                        return;
+                    }
+                }
+
                 const updatedData = [username, email, dateOfBirth, password, address, country, region, phoneNumber, description, user.uid];
                 console.log('Data to server:', updatedData);
                 await updateDataInDb(JSON.stringify(updatedData), 'http://localhost:3001/api/users/update'); 
@@ -109,23 +134,23 @@ const ProfileSettings = () => {
                         </div>
                         <div className="row mt-2">
                             <div className="col-md-6">
-                                <label className="labels">Username</label>
+                                <label className="labels">!Username</label>
                                 <input required type="text" className="form-control" placeholder={""} name="username" value={username} onChange={handleInputChange} />
                             </div> 
 
                             <div className="col-md-6">
-                                <label className="labels">Email</label>
+                                <label className="labels">!Email</label>
                                 <input required type="text" className="form-control" placeholder={""} name="email" value={email} onChange={handleInputChange} />
                             </div>
                         </div>
                         <div className="row mt-2">
                             <div className="col-md-6">
-                                <label className="labels">Password</label>
+                                <label className="labels">!Password</label>
                                 <input required type="password" className="form-control" placeholder={""} name="password" value={password} onChange={handleInputChange} />
                             </div>
 
                             <div className="col-md-6">
-                                <label className="labels">Date of Birth</label>
+                                <label className="labels">!Date of Birth</label>
                                 <input required type="date" className="form-control" placeholder={""} name="dateOfBirth" value={dateOfBirth} onChange={handleInputChange} />
                             </div>
                         </div>
@@ -135,7 +160,7 @@ const ProfileSettings = () => {
                                 <input type="text" className="form-control" placeholder={""} name="address" value={address} onChange={handleInputChange} />
                             </div>
                             <div className="col-md-6">
-                                <label className="labels">PhoneNumber</label>
+                                <label className="labels">!PhoneNumber</label>
                                 <input type="text" className="form-control" placeholder={""} name="phoneNumber" value={phoneNumber} onChange={handleInputChange} />
                             </div>
                             <div className="col-md-6">

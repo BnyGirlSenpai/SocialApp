@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 const Map = () => {
 
-  const MAPTILER_KEY = 'get_your_own_OpIi9ZULNHzrESv6T2vL';
+  //const MAPTILER_KEY = 'get_your_own_OpIi9ZULNHzrESv6T2vL';
 
   const mapContainer = useRef(null);
   const map = useRef(null)

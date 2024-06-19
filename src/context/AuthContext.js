@@ -44,7 +44,7 @@ export const UserAuth = () => {
   return useContext(AuthContext);
 };
 
-  /*const loginWithUserAndEmail = async(email, password) =>{
+/*const loginWithUserAndEmail = async(email, password) =>{
     try {
       await signInWithEmailAndPassword(auth, email, password);
       });
@@ -53,7 +53,7 @@ export const UserAuth = () => {
     }
   }*/
 
-  /*cosnt sendPasswordToEmail = async() => {
+/*cosnt sendPasswordToEmail = async() => {
 
   } */
 

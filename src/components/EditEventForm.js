@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { updateDataInDb,getDataFromBackend } from '../apis/UserDataApi';
 import { UserAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import validateInput from '../utils/UserInputValidator';
 
 const EditEventForm = () => {
   const { user } = UserAuth();
@@ -48,44 +49,83 @@ const EditEventForm = () => {
     }, [redirect, navigate]);
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
+        let { name, value } = e.target; 
+        let isValid = false;
+    
         switch (name) {
-            case 'eventName':
-                setEventName(value);
-                break;
-            case 'location':
-                setLocation(value);
-                break;
-            case 'eventDate':
-                setEventDate(value);
-                break;
+          case 'eventName':
+            isValid = validateInput(value, 'text');
+            break;
+          case 'location':
+            isValid = validateInput(value, 'text');
+            break;
+          case 'description':
+            isValid = validateInput(value, 'text');
+            break;
+          case 'eventDate':
+            const currentDate = new Date();
+            const selectedDate = new Date(value);
+            isValid = validateInput(value, 'date') && selectedDate >= currentDate.setHours(0, 0, 0, 0);   
+            break;
             case 'eventTime':
-                setEventTime(value);
-                break;
-            case 'description':
-                setDescription(value);
-                break;
+            const currentTime = new Date().toLocaleTimeString('en-US', { hour12: false });
+            isValid = validateInput(value, 'time') && value >= currentTime;  
+            break;
             case 'maxGuests':
-                setMaxGuests(value);
-                break;
+              const numericValue = parseInt(value, 10);
+              isValid = !isNaN(numericValue) && numericValue <= 69 && numericValue >=0;
+              value = numericValue > 69 ? 69 : numericValue;
+              break;
             default:
-                break;
+              break;
         }
-    };
+    
+        if (isValid) {
+          switch (name) {
+            case 'eventName':
+              setEventName(value);
+              break;
+            case 'location':
+              setLocation(value);
+              break;
+            case 'eventDate':
+              setEventDate(value);
+              break;
+            case 'eventTime':
+              setEventTime(value);
+              break;
+            case 'description':
+              setDescription(value);
+              break;
+            case 'maxGuests':
+              setMaxGuests(value);
+              break;
+            default:
+              break;
+          }
+        } else {
+          alert(`Invalid ${name} input:`, value);
+        }
+      };
 
-    const handleSaveEvent = async () => { 
+    const handleSaveEvent = async () => {
+        if (!eventName || !location || !eventDate || !eventTime || !maxGuests) {
+            alert("Please fill in all fields before saving the event.");
+            return;
+        }
+
         try {
             if (user) {
-                const updatedData = [eventName, location, eventDate, eventTime, description, maxGuests, event_id];
-                console.log('Data to server:', updatedData);
-                await updateDataInDb(JSON.stringify(updatedData), 'http://localhost:3001/api/events/edit/update'); 
-                setIsSaveButtonClicked(true);
-                setTimeout(() => {
-                    setIsSaveButtonClicked(false);
-                    setRedirect(true);
-                }, 1000);
+            const updatedData = [eventName, location, eventDate, eventTime, description, maxGuests, event_id];
+            console.log('Data to server:', updatedData);
+            await updateDataInDb(JSON.stringify(updatedData), 'http://localhost:3001/api/events/edit/update'); 
+            setIsSaveButtonClicked(true);
+            setTimeout(() => {
+                setIsSaveButtonClicked(false);
+                setRedirect(true);
+            }, 1000);
             } else {
-                console.log("Event not found!");
+            console.log("Event not found!");
             }
         } catch (error) {
             console.error('Error updating Event data:', error);
@@ -114,22 +154,22 @@ const EditEventForm = () => {
     return (
     <form className="event-form">
         <label htmlFor="eventName">Event Name</label>
-        <input required type="text" id="eventName" name="eventName" placeholder="Enter Event Name" value={eventName} onChange={handleInputChange} />
+        <input type="text" id="eventName" name="eventName" placeholder="Enter Event Name" value={eventName} onChange={handleInputChange} />
 
         <label htmlFor="location">Location</label>
-        <input required type="text" id="location" name="location" placeholder="Enter Location" value={location} onChange={handleInputChange} />
+        <input type="text" id="location" name="location" placeholder="Enter Location" value={location} onChange={handleInputChange} />
 
         <label htmlFor="eventDate">Event Date</label>
-        <input required type="date" id="eventDate" name="eventDate" placeholder="Select Event Date" value={eventDate} onChange={handleInputChange} />
+        <input type="date" id="eventDate" name="eventDate" placeholder="Select Event Date" value={eventDate} onChange={handleInputChange} />
 
         <label htmlFor="eventTime">Event Time</label>
-        <input required type="time" id="eventTime" name="eventTime" placeholder="Select Event Time" value={eventTime} onChange={handleInputChange} />
+        <input type="time" id="eventTime" name="eventTime" placeholder="Select Event Time" value={eventTime} onChange={handleInputChange} />
 
         <label htmlFor="description">Event Description</label>
         <textarea id="description" name="description" placeholder="Enter Event Description" value={description} onChange={handleInputChange}></textarea>
 
         <label htmlFor="maxGuests">Max Guests</label>
-        <input required type="number" id="maxGuests" name="maxGuests" placeholder="Enter Max Guests" value={maxGuests} onChange={handleInputChange} />
+        <input type="number" id="maxGuests" name="maxGuests" placeholder="Enter Max Guests" value={maxGuests} onChange={handleInputChange} />
 
         <div className="mt-5 text-center">
             <button
