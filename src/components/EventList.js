@@ -28,20 +28,25 @@ const EventList = () => {
         console.error("Error fetching event data:", error);
       }
     };
-
     fetchEventData();
   }, [user]); 
 
-  function leaveEvent(eventId) {
-   
-      let updateData = {
-          status: 'left',
-          event_id: eventId,
-          uid_guest: user.uid
-      };
-      updateDataInDb(updateData,`http://localhost:3001/api/events/update`)
+  const leaveEvent = async (eventId) => {
+    let updateData = {
+      status: 'left',
+      event_id: eventId,
+      uid_guest: user.uid
+    };
+
+    try {
+      await updateDataInDb(updateData, `http://localhost:3001/api/events/update`);
       console.log("Left event with ID:", eventId);
-  }
+      
+      setJoinedEvents((prevEvents) => [prevEvents[0].filter(event => event.event_id !== eventId)]);
+    } catch (error) {
+      console.error('Error leaving event:', error);
+    }
+  };
 
   function hideFriendDropDown() {
     setShowFriendDropDown(false);
@@ -75,13 +80,6 @@ const EventList = () => {
           ) : (
             <p>No events found.</p>
           )}         
-        </div>
-
-        <div className="column">
-          <h2>Last Events</h2>
-          <ul className="events" id="last-events">
-            {/* Last events content */}
-          </ul>
         </div>
         
         <div className="column">
