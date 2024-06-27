@@ -12,26 +12,36 @@ let pool = createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER, 
     password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
+    database: process.env.DB_NAME,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+    connectTimeout: 10000,  // 10 seconds
+    acquireTimeout: 10000   // 10 seconds
 });
 
-let connection = await pool.getConnection();
-
-// Periodically execute a keep-alive query to prevent connection closure due to inactivity
-setInterval(async () => {
-    let connection;
-    try {
-        connection = await pool.getConnection();
-        await connection.query('SELECT 1');
-        console.log("!");
-        connection.release();
-    } catch (err) {
-        console.error('Error during keep-alive query:', err);
-        if (connection) {
-            connection.release();
-        }
+let connection;
+try {
+    connection = await pool.getConnection();
+    // Perform queries
+} catch (error) {
+    console.error('Error executing query:', error);
+} finally {
+    if (connection) {
+        connection.release(); // Always release the connection after use
     }
-}, 0.3 * 60 * 1000);
+}
+
+setInterval(async () => {
+    try {
+        const connection = await pool.getConnection();
+        await connection.ping();
+        connection.release();
+        console.log('Keep-alive query executed successfully');
+    } catch (error) {
+        console.error('Error in keep-alive query:', error);
+    }
+}, 60000); // Ping every minute
 
 let limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
