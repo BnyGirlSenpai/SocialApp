@@ -23,6 +23,7 @@ setInterval(async () => {
     try {
         connection = await pool.getConnection();
         await connection.query('SELECT 1');
+        console.log("!");
         connection.release();
     } catch (err) {
         console.error('Error during keep-alive query:', err);
@@ -30,7 +31,7 @@ setInterval(async () => {
             connection.release();
         }
     }
-}, 4 * 60 * 1000);
+}, 0.3 * 60 * 1000);
 
 let limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
