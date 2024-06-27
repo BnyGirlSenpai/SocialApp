@@ -57,7 +57,7 @@ const EventList = () => {
       <div className="event-container">
         <div className="column">
           <h2>Next Events</h2>
-          {joinedEvents[0] && joinedEvents.length > 1 ? (
+          {joinedEvents[0] ? (
           <ul className="events" id="next-events">
             {joinedEvents[0] && joinedEvents[0].map((event, index) => (
               <li key={index}>
@@ -85,7 +85,7 @@ const EventList = () => {
         <div className="column">
           <h2>My Events</h2>
           <a href="/EventFormpage"><button className="add-event-button">Add Own Event</button></a>
-          {ownEvents && ownEvents.length > 1 ? (
+          {ownEvents[0] ? (
             <ul className="events" id="manage-events">
               {ownEvents[0].map((event, index) => (
                 <li key={index}>
