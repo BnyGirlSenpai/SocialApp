@@ -2,7 +2,8 @@ import express from 'express';
 import { createPool} from 'mysql2/promise';
 import dotenv from 'dotenv';
 import cors from 'cors';
-
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 dotenv.config();
 
 let app = express();
@@ -13,14 +14,78 @@ let pool = createPool({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME
 });
+
 let connection = await pool.getConnection();
 
+// Periodically execute a keep-alive query to prevent connection closure due to inactivity
+setInterval(async () => {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        await connection.query('SELECT 1');
+        connection.release();
+    } catch (err) {
+        console.error('Error during keep-alive query:', err);
+        if (connection) {
+            connection.release();
+        }
+    }
+}, 4 * 60 * 1000);
+
+let limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100 // Limit each IP to 100 requests per windowMs
+});
+  
+app.use('/api/', limiter);
 app.use(express.json());
+app.use(helmet());
+
+app.use(
+    helmet.contentSecurityPolicy({
+      useDefaults: true,
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "https://trusted.cdn.com"],
+        styleSrc: ["'self'", "https://trusted.cdn.com"],
+      },
+    })
+);
+
+app.use(helmet.xssFilter());
+app.use(helmet.frameguard({ action: 'deny' }));
+app.use(helmet.referrerPolicy({ policy: 'same-origin' }));
+
+// Enable HSTS
+app.use(helmet.hsts({
+    maxAge: 31536000, // 1 year in seconds
+    includeSubDomains: true,
+    preload: true
+}));
+
+// Serve static files and other middleware
+app.use(express.static('build'));
 
 app.use(cors({
     origin: ['http://localhost:3000', 'http://localhost:3000/ProfileSettingsPage','http://localhost:3000/FriendPage','http://localhost:3000/NotificationPage'], // Allow requests from your frontend's origin
     credentials: true // Optional, to allow cookies if needed
 }));
+
+// Define error handling middleware
+app.use((err, req, res, next) => {
+    // Check if the error is a known error with a status code
+    if (!err.statusCode) {
+        err.statusCode = 500; // Set default status code for unknown errors
+    }
+
+    // Respond to the client with the appropriate status code and error message
+    res.status(err.statusCode).json({
+        error: {
+            status: err.statusCode,
+            message: err.message
+        }
+    });
+});
 
 // Define the main function for fetching data from the Ticketmaster API
 /*
