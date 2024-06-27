@@ -17,7 +17,6 @@ let pool = createPool({
     connectionLimit: 10,
     queueLimit: 0,
     connectTimeout: 10000,  // 10 seconds
-    acquireTimeout: 10000   // 10 seconds
 });
 
 let connection;
@@ -45,7 +44,7 @@ setInterval(async () => {
 
 let limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100 // Limit each IP to 100 requests per windowMs
+    max: 1000 // Limit each IP to 1000 requests per windowMs
 });
   
 app.use('/api/', limiter);
