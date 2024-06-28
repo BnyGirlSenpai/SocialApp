@@ -4,15 +4,15 @@ import { getDataFromBackend } from '../apis/UserDataApi';
 import '../styles/friendlist.css'; 
 
 const FriendList = () => {
-  const { user } = UserAuth();
-  const [friendsData, setFriendsData] = useState([]);
+  let { user } = UserAuth();
+  let [friendsData, setFriendsData] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         if (user) {
-          const data = await getDataFromBackend(`http://localhost:3001/api/users/friends/${user.uid}`);
-          console.log("Loaded data from server:", data);
+          let data = await getDataFromBackend(`http://localhost:3001/api/users/friends/${user.uid}`);
+          console.log("Loaded data from server:", data);     
           setFriendsData(data); 
         }  
       } catch (error) {

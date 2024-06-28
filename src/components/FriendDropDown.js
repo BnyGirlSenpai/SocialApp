@@ -6,27 +6,33 @@ import '../styles/friendDropDown.css';
 const FriendDropDown = ({ eventId, onInvite }) => { 
   const { user } = UserAuth();
   const [friendsData, setFriendsData] = useState([]);
-  const [selectedFriends, setSelectedFriends] = useState([]); 
+  const [selectedFriends, setSelectedFriends] = useState([]);
+  const [guestsData, setGuestsData] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         if (user) {
-          const data = await getDataFromBackend(`http://localhost:3001/api/users/friends/${user.uid}`);
-          console.log("Loaded data from server:", data);
-          setFriendsData(data); 
+          let friends = await getDataFromBackend(`http://localhost:3001/api/users/friends/${user.uid}`);
+          let guests = await getDataFromBackend(`http://localhost:3001/api/events/allGuests/${eventId}`);
+
+          console.log("Loaded friends data from server:", friends);
+          console.log("Loaded guests data from server:", guests);
+          
+          setFriendsData(friends);
+          setGuestsData(guests); 
         }  
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
     fetchData();
-  }, [user]);
+  }, [user, eventId]);
   
   function inviteFriends(eventId) {
     console.log("Inviting friends to event with ID:", eventId);
     console.log("Selected friends:", selectedFriends);
-    sendDataToBackend(selectedFriends,`http://localhost:3001/api/events/invites/${eventId}`);
+    sendDataToBackend(selectedFriends, `http://localhost:3001/api/events/invites/${eventId}`);
     onInvite();
   }
 
@@ -44,19 +50,26 @@ const FriendDropDown = ({ eventId, onInvite }) => {
     <div className="container">
       <h2>FriendList</h2>
       <div className="friend-list">
-        {friendsData.map((friend, index) => (
-          <div key={index} className="friend-item">
-            <input
-              type="checkbox"
-              id={`friend-${friend.uid}`}
-              value={friend.uid}
-              checked={selectedFriends.includes(friend.uid)}
-              onChange={() => handleCheckboxChange(friend.uid)}
-            />
-            <label htmlFor={`friend-${friend.uid}`}>{friend.username}</label>
-            <img src={friend.photoUrl} alt={friend.username} />
-          </div>
-        ))}
+        {friendsData.map((friend, index) => {
+          const isInvitedOrJoined = guestsData.some(guest => guest.uid === friend.uid);
+          return (
+            <div key={index} className="friend-item">
+              {isInvitedOrJoined ? (
+                <span>Already Invited</span>
+              ) : (
+                <input
+                  type="checkbox"
+                  id={`friend-${friend.uid}`}
+                  value={friend.uid}
+                  checked={selectedFriends.includes(friend.uid)}
+                  onChange={() => handleCheckboxChange(friend.uid)}
+                />
+              )}
+              <label htmlFor={`friend-${friend.uid}`}>{friend.username}</label>
+              <img src={friend.photoUrl} alt={friend.username} />
+            </div>
+          );
+        })}
       </div>
       <button onClick={() => inviteFriends(eventId)}>Invite Selected Friends</button>
     </div>
