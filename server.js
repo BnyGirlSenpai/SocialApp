@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import e from 'cors';
 dotenv.config();
 
 let app = express();
@@ -676,6 +677,34 @@ app.get('/api/events/joined/:uid', async (req, res) => {
         console.log(rows);
     } catch (error) {
         console.error('Error retrieving invited events:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// API endpoint to get all guests (invited and joined) for a given event
+app.get('/api/events/allGuests/:eventId', async (req, res) => {
+    try {
+        let eventId = req.params.eventId;
+        let [rows] = await connection.query(`
+            SELECT invited_guests, joined_guests
+            FROM events
+            WHERE event_id = ?
+        `, [eventId]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+        let { invited_guests, joined_guests } = rows[0];
+
+        invited_guests = JSON.parse(invited_guests || '[]');
+        joined_guests = JSON.parse(joined_guests || '[]');
+
+        let allGuests = [...invited_guests, ...joined_guests];
+
+        res.status(200).json(allGuests);
+        console.log(allGuests);
+    } catch (error) {
+        console.error('Error retrieving event guests:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
