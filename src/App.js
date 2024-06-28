@@ -14,6 +14,7 @@ import Notifications from './pages/NotificationPage';
 import ProfileSettingspage from './pages/ProfileSettingsPage';
 import EventFormpage from './pages/EventFormPage';
 import EditEventFormpage from './pages/EditEventFormPage';
+import EventDetailpage from './pages/EventDetailPage';
 
 function App() {
   return (
@@ -70,6 +71,11 @@ function App() {
             <Route path='/EditEventFormPage/:event_id' element={
               <Protected>
                 <EditEventFormpage />
+              </Protected> 
+            } />
+            <Route path='/EventPage/EventDetailPage/:event_id' element={
+              <Protected>
+                <EventDetailpage />
               </Protected> 
             } />
             <Route path='/HomePage'element={

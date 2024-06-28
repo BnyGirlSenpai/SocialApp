@@ -131,7 +131,7 @@ const Calendar = () => {
                 {eventsForDate.ownEvents.map(event => (
                   <div key={event.id} className="event-name">
                     <h5>
-                      <a href={`/EventPage/DetailView/${event.id}`} className="event-link">{event.name}</a>
+                      <a href={`/EventPage/EventDetailPage/${event.id}`} className="event-link">{event.name}</a>
                     </h5>
                   </div>                
                 ))}

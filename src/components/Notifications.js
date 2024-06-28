@@ -111,8 +111,8 @@ const Notifications = () => {
                             <div className="event-card">
                                 <div className="card-info">
                                     <div className="event-info">                                
-                                        <h5><a href={`/eventpage/${event.event_id}`} className="event-link">{event.event_name}</a></h5>
-                                        </div><div> 
+                                    <h5><a href={`/EventPage/EventDetailPage/${event.event_id}`} className="event-link">{event.event_name}</a></h5> 
+                                    </div><div> 
                                         <h5>Created by <a href={`/profilepage/${event.creator_uid}`} className="profile-link">{event.creator_username}</a></h5> 
                                         <button className="btn btn-primary pull-right" onClick={() => rejectEventRequest(event.event_id)}>Reject</button>
                                         <button className="btn btn-primary pull-right" onClick={() => acceptEventRequest(event.event_id)}>Accept</button>
