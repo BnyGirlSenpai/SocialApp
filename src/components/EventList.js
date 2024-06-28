@@ -104,11 +104,21 @@ const EventList = () => {
                     </div>
                   </div>
                   <div className="button-container">                   
-                      <a href={`/EditEventFormPage/${event.event_id}`}><button>Edit Event</button></a>                   
-                      <button onClick={() => {
-                        setShowFriendDropDown(true);
-                        setSelectedEventId(event.event_id);
-                      }}>Invite Friends</button>
+                    <a href={`/EditEventFormPage/${event.event_id}`}><button>Edit Event</button></a>                   
+                    <button 
+                      onClick={() => {
+                      setShowFriendDropDown(true);
+                      setSelectedEventId(event.event_id);
+                    }}
+                    disabled={event.current_guests_count >= event.max_guests_count}
+                    style={{
+                      backgroundColor: event.current_guests_count >= event.max_guests_count ? '#ccc' : '', // Gray background when disabled
+                      color: event.current_guests_count >= event.max_guests_count ? '#666' : '', // Darker text color when disabled
+                      cursor: event.current_guests_count >= event.max_guests_count ? 'not-allowed' : 'pointer', // Change cursor when disabled
+                      border: '1px solid #ddd', // Optional: Add border for better visual appearance
+                      padding: '10px', // Optional: Adjust padding for better spacing
+                    }}
+                    >Invite Friends</button>
                   </div>
                 </li>
               ))}
@@ -117,7 +127,6 @@ const EventList = () => {
             <p>No events found!</p>
           )}
         </div>
-
       </div>
       {showFriendDropDown && <FriendDropDown eventId={selectedEventId} onInvite={hideFriendDropDown} />}
     </div>
