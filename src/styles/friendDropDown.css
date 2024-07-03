@@ -28,3 +28,12 @@
   border-radius: 50%; /* Makes the photo circular */
   margin-left: 10px;
 }
+
+.button {
+  color: #fff;
+  cursor: pointer;
+  border: none; 
+  padding: 10px 20px;
+  transition: background-color 0.3s ease, transform 0.3s ease; 
+}
+

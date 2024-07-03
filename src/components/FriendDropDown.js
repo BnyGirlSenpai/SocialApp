@@ -71,7 +71,9 @@ const FriendDropDown = ({ eventId, onInvite }) => {
           );
         })}
       </div>
-      <button onClick={() => inviteFriends(eventId)}>Invite Selected Friends</button>
+      <div className="button-container">                                   
+          <button onClick={() => inviteFriends(eventId)}>Invite Selected Friends</button>       
+      </div>          
     </div>
   );
 }
