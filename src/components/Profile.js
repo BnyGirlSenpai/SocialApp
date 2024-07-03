@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { getDataFromBackend, sendDataToBackend, updateDataInDb } from '../apis/UserDataApi';
 import { UserAuth } from '../context/AuthContext';
 import '../styles/profile.css';
+import Button from '@mui/material/Button';
 
 const Profile = () => {
   const { uid } = useParams(); 
@@ -63,33 +64,7 @@ return (
     <div className="container">
       {userData ? (
         <div id="user-profile-2" class="user-profile">
-            <div class="tabbable">
-              <ul class="nav nav-tabs padding-18">
-                <li class="active">
-                  <a data-toggle="tab" href="#home">
-                    <i class="green ace-icon fa fa-user bigger-120"></i>
-                    Profile
-                  </a>
-                </li>       
-                <li>
-                  <a data-toggle="tab" href="#feed">
-                    <i class="orange ace-icon fa fa-rss bigger-120"></i>
-                    Activity Feed
-                  </a>
-                </li>       
-                <li>
-                  <a data-toggle="tab" href="#friends">
-                    <i class="blue ace-icon fa fa-users bigger-120"></i>
-                    Friends
-                  </a>
-                </li>        
-                <li>
-                  <a data-toggle="tab" href="#pictures">
-                    <i class="pink ace-icon fa fa-picture-o bigger-120"></i>
-                    Pictures
-                  </a>
-                </li>
-              </ul>       
+            <div class="tabbable">  
               <div class="tab-content no-border padding-24">
                 <div id="home" class="tab-pane in active">
                   <div class="row">
@@ -129,13 +104,13 @@ return (
                       </h4>
                       <div class="profile-user-info">
                         <div class="profile-info-row">
-                          <div class="profile-info-name"> Username </div>
+                          <div class="profile-info-name"> Username: </div>
                           <div class="profile-info-value">
                            <span>{userData?.[0]?.username}</span>
                           </div>
                         </div>
                         <div class="profile-info-row">
-                          <div class="profile-info-name"> Location </div>
+                          <div class="profile-info-name"> Location: </div>
                           <div class="profile-info-value">
                             <i class="fa fa-map-marker light-orange bigger-110"></i>
                             <span>{userData?.[0]?.country}</span>
@@ -143,19 +118,19 @@ return (
                           </div>
                         </div>
                         <div class="profile-info-row">
-                          <div class="profile-info-name"> Date of Birth </div>
+                          <div class="profile-info-name"> Date of Birth: </div>
                           <div class="profile-info-value">
                             <span>{userData?.[0]?.dateOfBirth}</span>
                           </div>
                         </div>
                         <div class="profile-info-row">
-                          <div class="profile-info-name"> Joined </div>
+                          <div class="profile-info-name"> Joined: </div>
                           <div class="profile-info-value">
                             <span>{user.metadata.creationTime}</span> 
                           </div>
                         </div>
                         <div class="profile-info-row">
-                          <div class="profile-info-name"> Last Online </div>
+                          <div class="profile-info-name"> Last Online: </div>
                           <div class="profile-info-value">
                             <span>{user.metadata.lastSignInTime}</span>           
                           </div>
@@ -191,7 +166,9 @@ return (
       )}
       {isCurrentUser && (
         <div>
-          <button><a href="/ProfileSettingsPage">Edit Profile</a></button>
+          <a href="/ProfileSettingsPage">
+            <Button variant="contained" >Edit Profile</Button >
+          </a>
         </div>
       )}
     </div>

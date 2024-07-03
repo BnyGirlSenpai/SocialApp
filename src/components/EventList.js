@@ -48,8 +48,16 @@ const EventList = () => {
     }
   };
 
-  function hideFriendDropDown() {
-    setShowFriendDropDown(false);
+  const hideFriendDropDown = async () => {
+    try {
+      if (user) {
+        const ownEventData = await getDataFromBackend(`http://localhost:3001/api/events/${user.uid}`);
+        setOwnEvents(ownEventData ? [ownEventData] : []);
+        setShowFriendDropDown(false);  
+      }
+    } catch (error) {
+      console.error("Error fetching own event data:", error);
+    }
   }
 
   return (

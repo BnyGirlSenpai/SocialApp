@@ -29,12 +29,21 @@ const FriendDropDown = ({ eventId, onInvite }) => {
     fetchData();
   }, [user, eventId]);
   
-  function inviteFriends(eventId) {
+  const inviteFriends = async (eventId) => {
+    if (selectedFriends.length === 0) {
+      console.log("No friends selected for invitation.");
+      onInvite();
+      return;
+    }
     console.log("Inviting friends to event with ID:", eventId);
     console.log("Selected friends:", selectedFriends);
-    sendDataToBackend(selectedFriends, `http://localhost:3001/api/events/invites/${eventId}`);
-    onInvite();
-  }
+    try {
+      await sendDataToBackend(selectedFriends, `http://localhost:3001/api/events/invites/${eventId}`);
+      onInvite();
+    } catch (error) {
+      console.error("Error sending invites:", error);
+    }
+  };
 
   function handleCheckboxChange(friendId) {
     setSelectedFriends(prevSelected => {
