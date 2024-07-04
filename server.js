@@ -77,7 +77,7 @@ app.use(helmet.hsts({
 app.use(express.static('build'));
 
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:3000/ProfileSettingsPage','http://localhost:3000/FriendPage','http://localhost:3000/NotificationPage'], // Allow requests from your frontend's origin
+    origin: ['http://localhost:3000','http://localhost:3000/HomePage', 'http://localhost:3000/ProfileSettingsPage','http://localhost:3000/FriendPage','http://localhost:3000/NotificationPage'], // Allow requests from your frontend's origin
     credentials: true // Optional, to allow cookies if needed
 }));
 
@@ -129,7 +129,7 @@ app.get('/api/events', async (req, res) => {
 });
 */  
 
-//----------------------Friend System Endpoints-----------------------------//
+//----------------------Friend System Endpoints---------------------------//
 
 // API endpoint to get pending friendrequests data
 app.get('/api/users/friendrequests/:uid', async (req, res) => {
@@ -214,7 +214,7 @@ app.get('/api/users/friends/:uid', async (req, res) => {
     }
 });
 
-//-------------------------User Endpoints----------------------------------//
+//-------------------------User Endpoints---------------------------------//
 
 // API endpoint to get user profile data
 app.get('/api/users/:uid', async (req, res) => {
@@ -303,7 +303,7 @@ app.post('/api/users/update', async (req, res) => {
     }
 });
 
-//-------------------------Search Endpoints---------------------------------//
+//-------------------------Search Endpoints-------------------------------//
 
 // API endpoint to get user search data 
 app.get('/api/users/search/:username', async (req, res) => {
@@ -322,7 +322,7 @@ app.get('/api/users/search/:username', async (req, res) => {
     }
 });
 
-//-------------------------Event Endpoints---------------------------------//
+//-------------------------Event Creation Endpoints-----------------------//
 
 // API endpoint to create new event data
 app.post('/api/event/create', async (req, res) => {
@@ -333,8 +333,8 @@ app.post('/api/event/create', async (req, res) => {
     console.log(eventData);
     
     try {
-        let insertQuery = 'INSERT INTO events (event_name, location, event_date, description, max_guests_count, event_time, creator_uid) VALUES (?, ?, ?, ?, ?, ?, ?)';
-        await connection.query(insertQuery, [eventData.eventName, eventData.location, eventDate, eventData.description, eventData.maxGuests, eventTime, eventData.uid]);
+        let insertQuery = 'INSERT INTO events (event_name, location, event_date, description, max_guests_count, event_time, event_status, creator_uid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+        await connection.query(insertQuery, [eventData.eventName, eventData.location, eventDate, eventData.description, eventData.maxGuests, eventTime, eventData.eventStatus, eventData.uid]);
         console.log("Event data saved");
         connection.release();
         res.status(200).json({ message: 'Event created successfully' });
@@ -344,11 +344,11 @@ app.post('/api/event/create', async (req, res) => {
     }
 });
 
-// API endpoint to Event to be edited  
+// API endpoint to edited events 
 app.get('/api/events/edit/:eid', async (req, res) => {
     try {
         let eid = req.params.eid;
-        let [rows] = await connection.query('SELECT event_id, event_name, event_date, event_time, location, description, max_guests_count FROM events WHERE event_id = ?', [eid]);
+        let [rows] = await connection.query('SELECT event_id, event_name, event_date, event_time, location, description, max_guests_count, event_status FROM events WHERE event_id = ?', [eid]);
         res.status(200).json(rows); 
         console.log(rows);
     } catch (error) {
@@ -357,24 +357,30 @@ app.get('/api/events/edit/:eid', async (req, res) => {
     }
 });
 
-// API endpoint to get curent user is owner event data
-app.get('/api/events/:uid', async (req, res) => {
+// API endpoint to delete event 
+app.post('/api/events/edit/delete', async (req, res) => {
     try {
-        let uid = req.params.uid;
-        let [rows] = await connection.query('SELECT event_id, event_name, event_date, event_time, location, description, max_guests_count, current_guests_count, invited_guests_count, creator_uid FROM events WHERE creator_uid = ?', [uid]);
-        res.status(200).json(rows); 
-        console.log(rows);
+        let eventData = req.body;
+        let eid = eventData[0]; 
+        let [result] = await connection.query('DELETE FROM events WHERE event_id = ?', [eid]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+
+        res.status(200).json({ message: 'Event deleted successfully' });
+        console.log(`Event with ID ${eid} deleted successfully`);
     } catch (error) {
-        console.error('Error retrieving event data:', error);
+        console.error('Error deleting event:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
-// API endpoint to update Event data
+// API endpoint to store updated event data
 app.post('/api/events/edit/update', async (req, res) => {
     console.log(req.body);
     let eventData = req.body;
-    let eid = eventData[6]; 
+    let eid = eventData[7]; 
 
     let selectQuery = 'SELECT COUNT(*) AS count FROM events WHERE event_id = ?';
     try {
@@ -385,11 +391,11 @@ app.post('/api/events/edit/update', async (req, res) => {
         if (eventCount === 1) {
             let updateFields = [];
             let updateValues = [];
-            updateFields.push('event_name = ?, location = ?, event_date = ?, event_time = ?, description = ?, max_guests_count = ?'); 
+            updateFields.push('event_name = ?, location = ?, event_date = ?, event_time = ?, description = ?, max_guests_count = ?, event_status = ?'); 
             
-            if (eventData.length === 7) { 
-                updateValues = eventData.slice(0, 6);
-                updateValues.push(eventData[6]); 
+            if (eventData.length === 8) { 
+                updateValues = eventData.slice(0, 7);
+                updateValues.push(eventData[7]); 
             } else {
                 console.log('Invalid data format');
                 return res.status(400).json({ error: 'Invalid data format' });
@@ -409,26 +415,225 @@ app.post('/api/events/edit/update', async (req, res) => {
         res.status(500).json({ error: 'Failed to process data' });
     }
     finally {
-        connection.release(); // Ensure connection is released in case of errors
+        connection.release(); 
     }
 })
 
-// API endpoint to delete event 
-app.post('/api/events/edit/delete', async (req, res) => {
+//-------------------------Event Info Endpoints----------------------------//
+
+// API endpoint to get curent user is owner event data
+app.get('/api/events/:uid', async (req, res) => {
     try {
-        let eventData = req.body;
-        let eid = eventData[0]; 
-        let [result] = await connection.query('DELETE FROM events WHERE event_id = ?', [eid]);
-        
-        if (result.affectedRows === 0) {
+        let uid = req.params.uid;
+        let [rows] = await connection.query('SELECT event_id, event_name, event_date, event_time, location, description, max_guests_count, current_guests_count, invited_guests_count, event_status, creator_uid FROM events WHERE creator_uid = ?', [uid]);
+        res.status(200).json(rows); 
+        console.log(rows);
+    } catch (error) {
+        console.error('Error retrieving event data:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// API endpoint to get events the current user is an invited guest
+app.get('/api/events/invited/:uid', async (req, res) => {
+    try {
+        let uid = req.params.uid;
+        let [rows] = await connection.query(`
+            SELECT e.event_id, e.event_name, e.creator_uid, u.username AS creator_username
+            FROM events AS e
+            JOIN users AS u ON e.creator_uid = u.uid
+            WHERE JSON_CONTAINS(e.invited_guests, ?)
+        `, [`{"uid":"${uid}"}`, '$']);
+
+        res.status(200).json(rows);
+        console.log(rows);
+    } catch (error) {
+        console.error('Error retrieving invited events:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// API endpoint to get events the current user is a joined guest
+app.get('/api/events/joined/:uid', async (req, res) => {
+    try {
+        let uid = req.params.uid;
+        let [rows] = await connection.query(`
+            SELECT e.event_id, e.event_name, e.creator_uid, e.event_date, e.location, e.event_time, e.event_status, u.username AS creator_username
+            FROM events AS e
+            JOIN users AS u ON e.creator_uid = u.uid
+            WHERE JSON_CONTAINS(e.joined_guests, ?)
+        `, [`{"uid":"${uid}"}`, '$']);
+
+        res.status(200).json(rows);
+        console.log(rows);
+    } catch (error) {
+        console.error('Error retrieving invited events:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// API endpoint to get all guests ids (invited and joined) for a given event
+app.get('/api/events/allGuests/:eventId', async (req, res) => {
+    try {
+        let eventId = req.params.eventId;
+        let [rows] = await connection.query(`
+            SELECT invited_guests, joined_guests
+            FROM events
+            WHERE event_id = ?
+        `, [eventId]);
+
+        if (rows.length === 0) {
             return res.status(404).json({ error: 'Event not found' });
         }
+        let { invited_guests, joined_guests } = rows[0];
 
-        res.status(200).json({ message: 'Event deleted successfully' });
-        console.log(`Event with ID ${eid} deleted successfully`);
+        invited_guests = JSON.parse(invited_guests || '[]');
+        joined_guests = JSON.parse(joined_guests || '[]');
+
+        let allGuests = [...invited_guests, ...joined_guests];
+
+        res.status(200).json(allGuests);
+        console.log(allGuests);
     } catch (error) {
-        console.error('Error deleting event:', error);
+        console.error('Error retrieving event guests:', error);
         res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// API endpoint to fetch event detail information
+app.get('/api/events/eventDetail/:eventId', async (req, res) => {
+    try {
+        let eventId = req.params.eventId;
+        let [rows] = await connection.query(`
+            SELECT *
+            FROM events
+            WHERE event_id = ?
+        `, [eventId]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+        
+        let eventInfo = rows[0]; 
+        res.status(200).json(eventInfo);
+        console.log(eventInfo);
+    } catch (error) {
+        console.error('Error retrieving event details:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// API endpoint to fetch public events
+app.get('/api/public/events', async (req, res) => {
+    try {
+        let [rows] = await connection.query(`
+            SELECT e.event_id, e.event_name, e.location, e.event_time, e.event_date, e.current_guests_count, e.max_guests_count, e.description, e.creator_uid, u.username AS creator_username
+            FROM events AS e
+            JOIN users AS u ON e.creator_uid = u.uid
+            WHERE e.event_status = 'public'
+        `);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'No public events found' });
+        }
+        
+        res.status(200).json(rows);
+        console.log(rows); 
+    } catch (error) {
+        console.error('Error retrieving public events:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+//-------------------------Event Invite Endpoints---------------------------//
+// Update User Counters
+async function updateCounts(event_id, connection) {
+    let [guestCounts] = await connection.query(`
+        SELECT 
+            JSON_LENGTH(IFNULL(joined_guests, '[]')) AS joined_count,
+            JSON_LENGTH(IFNULL(declined_invites, '[]')) AS declined_count
+        FROM events
+        WHERE event_id = ?;
+    `, [event_id]);
+
+    let joinedCount = guestCounts[0].joined_count;
+    let declinedCount = guestCounts[0].declined_count;
+
+    await connection.query(`
+        UPDATE events
+        SET current_guests_count = ?,
+            declined_invites_count = ?
+        WHERE event_id = ?;
+    `, [joinedCount, declinedCount, event_id]);
+}
+
+// API endpoint to store event invites uid's
+app.post('/api/events/invites/:eventId', async (req, res) => {
+    console.log(req.body);
+    let eventId = req.params.eventId;
+    let receivedData = JSON.parse(req.body.body); 
+    let selectQuery = 'SELECT invited_guests FROM events WHERE event_id = ?';
+
+    try {
+        let connection = await pool.getConnection();
+        let [results] = await connection.query(selectQuery, [eventId]);
+        let invitedGuests = results[0].invited_guests ? JSON.parse(results[0].invited_guests) : [];
+
+        async function updateInvitedGuestsCount(eventId) {
+            let [event] = await connection.query('SELECT invited_guests FROM events WHERE event_id = ?', [eventId]);
+            let invitedGuests = event[0].invited_guests ? JSON.parse(event[0].invited_guests) : [];
+            let invitedGuestsCount = invitedGuests.length;
+            await connection.query('UPDATE events SET invited_guests_count = ? WHERE event_id = ?', [invitedGuestsCount, eventId]);
+        }
+
+        async function mergeInvites(existingInvites, newInvites) {
+            let mergedInvites = Array.isArray(existingInvites) ? [...existingInvites] : [];
+
+            if (!Array.isArray(newInvites)) {
+                console.error('New invites data is not in the expected format.');
+                return mergedInvites;
+            }
+
+            if (mergedInvites.length === 0) {
+                mergedInvites = await Promise.all(newInvites.map(async receivedData => {
+                    let [userInfo] = await connection.query('SELECT uid FROM users WHERE uid = ?', [receivedData]);
+                    return userInfo[0]; 
+                }));
+                return mergedInvites;
+            }
+
+            for (let newInvite of newInvites) {
+                if (existingInvites.some(invite => invite.uid === newInvite)) {
+                    console.log(`User with ID ${newInvite} is already invited.`);
+                    continue; 
+                }
+                let [userInfo] = await connection.query('SELECT uid FROM users WHERE uid = ?', [newInvite]);
+                mergedInvites.push(userInfo[0]);
+            }
+            return mergedInvites;
+        }
+
+        let mergedInvites = await mergeInvites(invitedGuests, receivedData);
+
+        // Update the events table with the updated invited guests list
+        let updateFields = ['invited_guests = ?'];
+        let updateValues = [JSON.stringify(mergedInvites)];
+        updateValues.push(eventId);
+
+        let updateQuery = `UPDATE events SET ${updateFields.join(', ')} WHERE event_id = ?`;
+
+        await connection.query(updateQuery, updateValues);
+        console.log('Event data updated');
+
+        await updateInvitedGuestsCount(eventId);
+
+        res.status(200).json({ success: true, message: 'Event data updated' });
+    } catch (error) {
+        console.error('Error processing data:', error);
+        res.status(500).json({ error: 'Failed to process data' });
+    }
+    finally {
+        connection.release(); 
     }
 });
 
@@ -548,186 +753,6 @@ app.post('/api/events/update/', async (req, res) => {
         res.status(500).json({ success: false, error: 'Internal Server Error' });
     } finally {
         connection.release();
-    }
-});
-
-// Update User Counters
-async function updateCounts(event_id, connection) {
-    let [guestCounts] = await connection.query(`
-        SELECT 
-            JSON_LENGTH(IFNULL(joined_guests, '[]')) AS joined_count,
-            JSON_LENGTH(IFNULL(declined_invites, '[]')) AS declined_count
-        FROM events
-        WHERE event_id = ?;
-    `, [event_id]);
-
-    let joinedCount = guestCounts[0].joined_count;
-    let declinedCount = guestCounts[0].declined_count;
-
-    await connection.query(`
-        UPDATE events
-        SET current_guests_count = ?,
-            declined_invites_count = ?
-        WHERE event_id = ?;
-    `, [joinedCount, declinedCount, event_id]);
-}
-
-// API endpoint to store event invites uid's
-app.post('/api/events/invites/:eventId', async (req, res) => {
-    console.log(req.body);
-    let eventId = req.params.eventId;
-    let receivedData = JSON.parse(req.body.body); 
-    let selectQuery = 'SELECT invited_guests FROM events WHERE event_id = ?';
-
-    try {
-        let connection = await pool.getConnection();
-        let [results] = await connection.query(selectQuery, [eventId]);
-        let invitedGuests = results[0].invited_guests ? JSON.parse(results[0].invited_guests) : [];
-
-        async function updateInvitedGuestsCount(eventId) {
-            let [event] = await connection.query('SELECT invited_guests FROM events WHERE event_id = ?', [eventId]);
-            let invitedGuests = event[0].invited_guests ? JSON.parse(event[0].invited_guests) : [];
-            let invitedGuestsCount = invitedGuests.length;
-            await connection.query('UPDATE events SET invited_guests_count = ? WHERE event_id = ?', [invitedGuestsCount, eventId]);
-        }
-
-        async function mergeInvites(existingInvites, newInvites) {
-            let mergedInvites = Array.isArray(existingInvites) ? [...existingInvites] : [];
-
-            if (!Array.isArray(newInvites)) {
-                console.error('New invites data is not in the expected format.');
-                return mergedInvites;
-            }
-
-            if (mergedInvites.length === 0) {
-                mergedInvites = await Promise.all(newInvites.map(async receivedData => {
-                    let [userInfo] = await connection.query('SELECT uid FROM users WHERE uid = ?', [receivedData]);
-                    return userInfo[0]; 
-                }));
-                return mergedInvites;
-            }
-
-            for (let newInvite of newInvites) {
-                if (existingInvites.some(invite => invite.uid === newInvite)) {
-                    console.log(`User with ID ${newInvite} is already invited.`);
-                    continue; 
-                }
-                let [userInfo] = await connection.query('SELECT uid FROM users WHERE uid = ?', [newInvite]);
-                mergedInvites.push(userInfo[0]);
-            }
-            return mergedInvites;
-        }
-
-        let mergedInvites = await mergeInvites(invitedGuests, receivedData);
-
-        // Update the events table with the updated invited guests list
-        let updateFields = ['invited_guests = ?'];
-        let updateValues = [JSON.stringify(mergedInvites)];
-        updateValues.push(eventId);
-
-        let updateQuery = `UPDATE events SET ${updateFields.join(', ')} WHERE event_id = ?`;
-
-        await connection.query(updateQuery, updateValues);
-        console.log('Event data updated');
-
-        await updateInvitedGuestsCount(eventId);
-
-        res.status(200).json({ success: true, message: 'Event data updated' });
-    } catch (error) {
-        console.error('Error processing data:', error);
-        res.status(500).json({ error: 'Failed to process data' });
-    }
-    finally {
-        connection.release(); // Ensure connection is released in case of errors
-    }
-});
-
-// API endpoint to get events the current user is an invited guest
-app.get('/api/events/invited/:uid', async (req, res) => {
-    try {
-        let uid = req.params.uid;
-        let [rows] = await connection.query(`
-            SELECT e.event_id, e.event_name, e.creator_uid, u.username AS creator_username
-            FROM events AS e
-            JOIN users AS u ON e.creator_uid = u.uid
-            WHERE JSON_CONTAINS(e.invited_guests, ?)
-        `, [`{"uid":"${uid}"}`, '$']);
-
-        res.status(200).json(rows);
-        console.log(rows);
-    } catch (error) {
-        console.error('Error retrieving invited events:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-// API endpoint to get events the current user is a joined guest
-app.get('/api/events/joined/:uid', async (req, res) => {
-    try {
-        let uid = req.params.uid;
-        let [rows] = await connection.query(`
-            SELECT e.event_id, e.event_name, e.creator_uid,e.event_date,e.location,e.event_time, u.username AS creator_username
-            FROM events AS e
-            JOIN users AS u ON e.creator_uid = u.uid
-            WHERE JSON_CONTAINS(e.joined_guests, ?)
-        `, [`{"uid":"${uid}"}`, '$']);
-
-        res.status(200).json(rows);
-        console.log(rows);
-    } catch (error) {
-        console.error('Error retrieving invited events:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-// API endpoint to get all guests (invited and joined) for a given event
-app.get('/api/events/allGuests/:eventId', async (req, res) => {
-    try {
-        let eventId = req.params.eventId;
-        let [rows] = await connection.query(`
-            SELECT invited_guests, joined_guests
-            FROM events
-            WHERE event_id = ?
-        `, [eventId]);
-
-        if (rows.length === 0) {
-            return res.status(404).json({ error: 'Event not found' });
-        }
-        let { invited_guests, joined_guests } = rows[0];
-
-        invited_guests = JSON.parse(invited_guests || '[]');
-        joined_guests = JSON.parse(joined_guests || '[]');
-
-        let allGuests = [...invited_guests, ...joined_guests];
-
-        res.status(200).json(allGuests);
-        console.log(allGuests);
-    } catch (error) {
-        console.error('Error retrieving event guests:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-// API endpoint to fetch event detail information
-app.get('/api/events/eventDetail/:eventId', async (req, res) => {
-    try {
-        let eventId = req.params.eventId;
-        let [rows] = await connection.query(`
-            SELECT *
-            FROM events
-            WHERE event_id = ?
-        `, [eventId]);
-
-        if (rows.length === 0) {
-            return res.status(404).json({ error: 'Event not found' });
-        }
-        
-        let eventInfo = rows[0]; 
-        res.status(200).json(eventInfo);
-        console.log(eventInfo);
-    } catch (error) {
-        console.error('Error retrieving event details:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
