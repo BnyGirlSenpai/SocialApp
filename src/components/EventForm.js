@@ -1,9 +1,10 @@
 import React, { useState,useEffect } from 'react';
-import '../styles/eventform.css';
 import { sendDataToBackend } from '../apis/UserDataApi';
 import { UserAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import validateInput from '../utils/UserInputValidator';
+import '../styles/eventform.css';
+import Switch from '@mui/material/Switch';
 
 const EventForm = () => {
   const { user } = UserAuth();
@@ -14,6 +15,7 @@ const EventForm = () => {
   const [eventTime, setEventTime] = useState('');
   const [description, setDescription] = useState('');
   const [maxGuests, setMaxGuests] = useState('');
+  const [eventStatus, setEventStatus] = useState(false); 
   const navigate = useNavigate();
   const [redirect, setRedirect] = useState(false);
 
@@ -83,6 +85,10 @@ const EventForm = () => {
     }
   };
 
+  const handleTogglePrivacy = () => {
+    setEventStatus(!eventStatus); 
+  };
+
   const handleCreateEvent = async () => {
     try {
       if (user) {
@@ -93,6 +99,7 @@ const EventForm = () => {
           eventTime: eventTime,
           description: description,
           maxGuests: maxGuests,
+          eventStatus: eventStatus ? 'private' : 'public', 
           uid: user.uid
         };
 
@@ -118,6 +125,7 @@ const EventForm = () => {
 
   return (
     <form className="event-form">
+
       <label htmlFor="eventName">Event Name</label>
       <input type="text" id="eventName" name="eventName" placeholder="Enter Event Name" value={eventName} onChange={handleInputChange} />
 
@@ -135,6 +143,12 @@ const EventForm = () => {
 
       <label htmlFor="maxGuests">Max Guests</label>
       <input type="number" id="maxGuests" name="maxGuests" placeholder="Enter Max Guests" value={maxGuests} onChange={handleInputChange} />
+
+      <div className="mt-3">
+        <button type="button" className="btn btn-sm btn-secondary" onClick={handleTogglePrivacy}>
+          {eventStatus ? 'Private' : 'Public'}
+        </button>
+      </div>
 
       <div className="mt-5 text-center">
         <button

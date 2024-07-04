@@ -3,7 +3,7 @@ import React from 'react';
 import Protected from './components/Protected';
 import { AuthContextProvider } from './context/AuthContext';
 import HomePage from './pages/HomePage';
-import Signin from './pages/SignInPage';
+import Signinpage from './pages/SignInPage';
 import Eventpage from './pages/EventPage';
 import Friendpage from './pages/FriendPage';
 import Mappage from './pages/MapPage';
@@ -22,7 +22,10 @@ function App() {
       <AuthContextProvider>
         <BrowserRouter>
           <Routes>
-            <Route path='/' element={<Signin />} />
+            <Route path='/' element={
+                <Signinpage 
+              />} 
+            />
             <Route path='/EventPage' element={  
               <Protected>
                 <Eventpage />

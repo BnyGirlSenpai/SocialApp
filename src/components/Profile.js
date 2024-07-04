@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { getDataFromBackend, sendDataToBackend, updateDataInDb } from '../apis/UserDataApi';
 import { UserAuth } from '../context/AuthContext';
-import '../styles/profile.css';
 import Button from '@mui/material/Button';
+import '../styles/profile.css';
 
 const Profile = () => {
   const { uid } = useParams(); 
@@ -63,94 +63,94 @@ const Profile = () => {
 return (
     <div className="container">
       {userData ? (
-        <div id="user-profile-2" class="user-profile">
-            <div class="tabbable">  
-              <div class="tab-content no-border padding-24">
-                <div id="home" class="tab-pane in active">
-                  <div class="row">
-                    <div class="col-xs-12 col-sm-3 center">
-                      <span class="profile-picture">
+        <div id="user-profile-2" className="user-profile">
+            <div className="tabbable">  
+              <div className="tab-content no-border padding-24">
+                <div id="home" className="tab-pane in active">
+                  <div className="row">
+                    <div className="col-xs-12 col-sm-3 center">
+                      <span className="profile-picture">
                        <img className="editable img-responsive" src={userData?.[0]?.photoURL} alt={userData?.[0]?.username} id="avatar2"/>
                       </span> 
                       {!isCurrentUser && (isFriend(userData[0].uid) ? (
                         <div>
                           <a href="" className="btn btn-sm btn-block btn-primary" style={{ backgroundColor: 'red' }} onClick={() =>{ removeFriend(userData[0].uid,user.uid); removeFriend(user.uid,userData[0].uid);}}>
-                           <i class="ace-icon fa fa-envelope-o bigger-110"></i>
-                            <span class="bigger-110">Remove Friend</span>
+                           <i className="ace-icon fa fa-envelope-o bigger-110"></i>
+                            <span className="bigger-110">Remove Friend</span>
                           </a>
-                          <a href="#" class="btn btn-sm btn-block btn-primary">
-                            <i class="ace-icon fa fa-envelope-o bigger-110"></i>
-                            <span class="bigger-110">Send a message</span>
+                          <a href="#" className="btn btn-sm btn-block btn-primary">
+                            <i className="ace-icon fa fa-envelope-o bigger-110"></i>
+                            <span className="bigger-110">Send a message</span>
                           </a>
                         </div>
                         ) : (             
                         <div>      
-                          <div class="space space-4"></div>        
-                          <a href="#" class="btn btn-sm btn-block btn-success" onClick={() => handleSendFriendRequest(userData[0].uid)}>
-                            <i class="ace-icon fa fa-plus-circle bigger-120"></i>
-                            <span class="bigger-110">Add as a friend</span>
+                          <div className="space space-4"></div>        
+                          <a href="#" className="btn btn-sm btn-block btn-success" onClick={() => handleSendFriendRequest(userData[0].uid)}>
+                            <i className="ace-icon fa fa-plus-circle bigger-120"></i>
+                            <span className="bigger-110">Add as a friend</span>
                           </a>       
-                          <a href="#" class="btn btn-sm btn-block btn-primary">
-                            <i class="ace-icon fa fa-envelope-o bigger-110"></i>
-                            <span class="bigger-110">Send a message</span>
+                          <a href="#" className="btn btn-sm btn-block btn-primary">
+                            <i className="ace-icon fa fa-envelope-o bigger-110"></i>
+                            <span className="bigger-110">Send a message</span>
                           </a>
                         </div>                  
                         )
                       )}
                     </div>       
-                    <div class="col-xs-12 col-sm-9">
-                      <h4 class="blue">
+                    <div className="col-xs-12 col-sm-9">
+                      <h4 className="blue">
                         <span className="middle">{userData?.[0]?.username}</span>
                       </h4>
-                      <div class="profile-user-info">
-                        <div class="profile-info-row">
-                          <div class="profile-info-name"> Username: </div>
-                          <div class="profile-info-value">
+                      <div className="profile-user-info">
+                        <div className="profile-info-row">
+                          <div className="profile-info-name"> Username: </div>
+                          <div className="profile-info-value">
                            <span>{userData?.[0]?.username}</span>
                           </div>
                         </div>
-                        <div class="profile-info-row">
-                          <div class="profile-info-name"> Location: </div>
-                          <div class="profile-info-value">
-                            <i class="fa fa-map-marker light-orange bigger-110"></i>
+                        <div className="profile-info-row">
+                          <div className="profile-info-name"> Location: </div>
+                          <div className="profile-info-value">
+                            <i className="fa fa-map-marker light-orange bigger-110"></i>
                             <span>{userData?.[0]?.country}</span>
                             <span>{userData?.[0]?.region}</span>
                           </div>
                         </div>
-                        <div class="profile-info-row">
-                          <div class="profile-info-name"> Date of Birth: </div>
-                          <div class="profile-info-value">
+                        <div className="profile-info-row">
+                          <div className="profile-info-name"> Date of Birth: </div>
+                          <div className="profile-info-value">
                             <span>{userData?.[0]?.dateOfBirth}</span>
                           </div>
                         </div>
-                        <div class="profile-info-row">
-                          <div class="profile-info-name"> Joined: </div>
-                          <div class="profile-info-value">
+                        <div className="profile-info-row">
+                          <div className="profile-info-name"> Joined: </div>
+                          <div className="profile-info-value">
                             <span>{user.metadata.creationTime}</span> 
                           </div>
                         </div>
-                        <div class="profile-info-row">
-                          <div class="profile-info-name"> Last Online: </div>
-                          <div class="profile-info-value">
+                        <div className="profile-info-row">
+                          <div className="profile-info-name"> Last Online: </div>
+                          <div className="profile-info-value">
                             <span>{user.metadata.lastSignInTime}</span>           
                           </div>
                         </div>
                       </div>
-                      <div class="hr hr-8 dotted"></div>
+                      <div className="hr hr-8 dotted"></div>
                     </div>
                   </div>
-                  <div class="space-20"></div>
-                  <div class="row">
-                    <div class="col-xs-12 col-sm-6">
-                      <div class="widget-box transparent">
-                        <div class="widget-header widget-header-small">
-                          <h4 class="widget-title smaller">
-                            <i class="ace-icon fa fa-check-square-o bigger-110"></i>
+                  <div className="space-20"></div>
+                  <div className="row">
+                    <div className="col-xs-12 col-sm-6">
+                      <div className="widget-box transparent">
+                        <div className="widget-header widget-header-small">
+                          <h4 className="widget-title smaller">
+                            <i className="ace-icon fa fa-check-square-o bigger-110"></i>
                               <span>About {userData?.[0]?.username}</span>
                           </h4>
                         </div>
-                        <div class="widget-body">
-                          <div class="widget-main">
+                        <div className="widget-body">
+                          <div className="widget-main">
                             <span>{userData?.[0]?.description}</span>
                           </div>
                         </div>
