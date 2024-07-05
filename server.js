@@ -10,6 +10,7 @@ import eventInviteApi from './components/eventInviteApi.js';
 import searchApi from './components/searchApi.js';
 import eventCreationApi from './components/eventCreationApi.js';
 import eventInfoApi from './components/eventInfoApi.js';
+import notificaion from './components/notifications.js';
 
 dotenv.config();
 
@@ -81,6 +82,7 @@ app.use('/api', eventInviteApi);
 app.use('/api', searchApi);
 app.use('/api', eventCreationApi);
 app.use('/api', eventInfoApi);
+app.use('/api', notificaion);
 
 app.use((err, req, res, next) => {
     if (!err.statusCode) {
