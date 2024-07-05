@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend } from '../apis/UserDataApi';
+import Button from '@mui/material/Button';
 import '../styles/eventpage.css';
 
 const Home = () => {
@@ -51,6 +52,9 @@ const Home = () => {
                         <p>Maximum Number of Guests: {event.max_guests_count}</p>
                         <p>Info: {event.description}</p>
                       </div>
+                      <a href={`/EventPage/EventDetailPage/${event.event_id}`}>
+                        <Button variant="contained" >Details</Button >
+                      </a>
                     </div>
                   </div>
                 </li>
