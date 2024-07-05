@@ -113,7 +113,8 @@ router.get('/public/events', async (req,res) => {
             SELECT e.event_id, e.event_name, e.location, e.event_time, e.event_date, e.current_guests_count, e.max_guests_count, e.description, e.creator_uid, u.username AS creator_username
             FROM events AS e
             JOIN users AS u ON e.creator_uid = u.uid
-            WHERE e.event_status = 'public' AND e.current_guests_count < e.max_guests_count
+            WHERE e.event_status = 'public'
+            AND (e.current_guests_count < e.max_guests_count OR e.current_guests_count IS NULL);
         `);
         
         res.status(200).json(rows);
