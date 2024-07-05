@@ -1,8 +1,9 @@
 import React, {useState, useEffect } from 'react';
-import '../styles/eventDetailView.css';
 import { getDataFromBackend } from '../apis/UserDataApi';
 import { UserAuth } from '../context/AuthContext';
 import { useParams } from 'react-router-dom';
+import Button from '@mui/material/Button';
+import '../styles/eventDetailView.css';
 
 const EventDetailView = () => {
     const { event_id  } = useParams(); 
@@ -32,6 +33,7 @@ const EventDetailView = () => {
                 <div className="event-time">Time: {eventData.event_time}</div>
                 <div className="event-location">Location: {eventData.location}</div>
             </div>
+            <Button variant="contained" >Join</Button >
         </div>
     );
 };

@@ -4,7 +4,6 @@ import { UserAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import validateInput from '../utils/UserInputValidator';
 import '../styles/eventform.css';
-import Switch from '@mui/material/Switch';
 
 const EventForm = () => {
   const { user } = UserAuth();
