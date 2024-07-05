@@ -75,13 +75,17 @@ app.use(cors({
     credentials: true // Optional, to allow cookies if needed
 }));
 
-app.use((err, req, res, next) => {
-    // Check if the error is a known error with a status code
-    if (!err.statusCode) {
-        err.statusCode = 500; // Set default status code for unknown errors
-    }
+app.use('/api', friendSystemApi);
+app.use('/api', userApi);
+app.use('/api', eventInviteApi);
+app.use('/api', searchApi);
+app.use('/api', eventCreationApi);
+app.use('/api', eventInfoApi);
 
-    // Respond to the client with the appropriate status code and error message
+app.use((err, req, res, next) => {
+    if (!err.statusCode) {
+        err.statusCode = 500; 
+    }
     res.status(err.statusCode).json({
         error: {
             status: err.statusCode,
@@ -89,13 +93,6 @@ app.use((err, req, res, next) => {
         }
     });
 });
-
-app.use('/api', friendSystemApi);
-app.use('/api', userApi);
-app.use('/api', eventInviteApi);
-app.use('/api', searchApi);
-app.use('/api', eventCreationApi);
-app.use('/api', eventInfoApi);
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);

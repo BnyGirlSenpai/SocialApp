@@ -107,7 +107,7 @@ router.get('/events/eventDetail/:eventId', async (req, res) => {
 });
 
 // API endpoint to fetch public events
-router.get('/public/events', async (req, res) => {
+router.get('/public/events', async (req,res) => {
     try {
         let [rows] = await connection.query(`
             SELECT e.event_id, e.event_name, e.location, e.event_time, e.event_date, e.current_guests_count, e.max_guests_count, e.description, e.creator_uid, u.username AS creator_username
