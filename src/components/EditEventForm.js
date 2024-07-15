@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import '../styles/eventform.css';
 import { useParams } from 'react-router-dom'; 
 import { updateDataInDb,getDataFromBackend } from '../apis/UserDataApi';
 import { UserAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import validateInput from '../utils/UserInputValidator';
+import '../styles/eventform.css';
 
 const EditEventForm = () => {
   const { user } = UserAuth();
