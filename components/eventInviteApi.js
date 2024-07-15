@@ -96,7 +96,7 @@ router.post('/events/invites/:eventId', async (req, res) => {
 });
 
 // API to update event database after invited_guest interaction
-router.post('/events/update/', async (req, res) => {
+router.post('/events/update', async (req, res) => {
     try {
         let receivedData = req.body;
         console.log('Received data:', receivedData);
@@ -213,5 +213,54 @@ router.post('/events/update/', async (req, res) => {
         connection.release();
     }
 });
+
+// API to join public events
+router.post('/join/public/event', async (req, res) => {
+    let receivedData = req.body;
+    let uid_guest = receivedData.uid_guest;
+    let event_id = receivedData.event_id;
+    console.log('Received data:', receivedData);
+
+    try {
+        await connection.beginTransaction();
+
+        await connection.query(`
+            UPDATE events
+            SET joined_guests = JSON_ARRAY_APPEND(
+                                    IFNULL(joined_guests, '[]'),
+                                    '$',
+                                    JSON_OBJECT('uid', ?)
+                                ),
+                invited_guests = IF(
+                                    JSON_LENGTH(IFNULL(invited_guests, '[]')) > 1,
+                                    JSON_REMOVE(
+                                        IFNULL(invited_guests, '[]'),
+                                        JSON_UNQUOTE(
+                                            JSON_SEARCH(
+                                                IFNULL(invited_guests, '[]'),
+                                                'one',
+                                                ?,
+                                                NULL,
+                                                '$[*].uid'
+                                            )
+                                        )
+                                    ),
+                                    '[]'
+                                )
+            WHERE event_id = ?;
+        `, [uid_guest, uid_guest, event_id]);
+
+        await updateCounts(event_id, connection);
+
+        await connection.commit();
+        
+        res.status(200).send({ success: true, message: 'Guest joined the event successfully' });
+    } catch (error) {
+        console.error('Error joining event:', error);
+        await connection.rollback();
+        res.status(500).send({ success: false, message: 'An error occurred while joining the event' });
+    }
+});
+
 
 export default router;
