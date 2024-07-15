@@ -262,5 +262,4 @@ router.post('/join/public/event', async (req, res) => {
     }
 });
 
-
 export default router;
