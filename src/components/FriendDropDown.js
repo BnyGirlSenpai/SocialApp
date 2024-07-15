@@ -64,7 +64,7 @@ const FriendDropDown = ({ eventId, onInvite }) => {
           return (
             <div key={index} className="friend-item">
               {isInvitedOrJoined ? (
-                <span>Already Invited</span>
+                <span>Already Invited </span>
               ) : (
                 <input
                   type="checkbox"

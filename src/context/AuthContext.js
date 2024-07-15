@@ -7,11 +7,9 @@ const AuthContext = createContext();
 
 export const AuthContextProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  console.log(user);
   const googleSignIn = async () => {
     try {
-      const provider = new GoogleAuthProvider();
-      const popup = await signInWithPopup(auth, provider)
+      const popup = await signInWithPopup(auth,  new GoogleAuthProvider())
       const user = popup.user;
       sendDataToBackend(user,'http://localhost:3001/api/users');
     } catch (error) {

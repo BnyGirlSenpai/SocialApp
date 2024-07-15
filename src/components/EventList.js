@@ -55,7 +55,7 @@ const EventList = () => {
                       <p>Date: {new Date(event.event_date).toLocaleDateString()}</p>
                       <p>Time: {event.event_time.substring(0, 5)}</p>
                       <p>Location: {event.location}</p>
-                      <p>Status: {event.event_status}</p>
+                      <p>Visibility: {event.event_visibility}</p>
                     </div>                 
                   </div>
                 </div>

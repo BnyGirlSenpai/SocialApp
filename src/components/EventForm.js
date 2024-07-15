@@ -14,7 +14,7 @@ const EventForm = () => {
   const [eventTime, setEventTime] = useState('');
   const [description, setDescription] = useState('');
   const [maxGuests, setMaxGuests] = useState('');
-  const [eventStatus, setEventStatus] = useState(false); 
+  const [eventVisibility, setEventVisibility] = useState(false); 
   const navigate = useNavigate();
   const [redirect, setRedirect] = useState(false);
 
@@ -27,6 +27,7 @@ const EventForm = () => {
   const handleInputChange = (e) => {
     let { name, value } = e.target; 
     let isValid = false;
+    const currentDate = new Date();
 
     switch (name) {
       case 'eventName':
@@ -39,21 +40,31 @@ const EventForm = () => {
         isValid = validateInput(value, 'text');
         break;
       case 'eventDate':
-        const currentDate = new Date();
         const selectedDate = new Date(value);
-        isValid = validateInput(value, 'date') && selectedDate >= currentDate.setHours(0, 0, 0, 0);   
+        if (eventTime) {
+          const [hours, minutes] = eventTime.split(':');
+          selectedDate.setHours(hours, minutes, 0, 0);
+        }
+        isValid = validateInput(value, 'date') && selectedDate >= currentDate;
         break;
-        case 'eventTime':
-        const currentTime = new Date().toLocaleTimeString('en-US', { hour12: false });
-        isValid = validateInput(value, 'time') && value >= currentTime;  
+      case 'eventTime':
+        const currentDateTime = new Date();
+        const selectedDateTime = new Date(eventDate);
+        selectedDateTime.setHours(value.split(':')[0], value.split(':')[1], 0, 0);
+
+        if (new Date(eventDate).setHours(0, 0, 0, 0) === currentDate.setHours(0, 0, 0, 0)) {
+          isValid = validateInput(value, 'time') && selectedDateTime >= currentDateTime;
+        } else {
+          isValid = validateInput(value, 'time');
+        }
         break;
-        case 'maxGuests':
-          const numericValue = parseInt(value, 10);
-          isValid = !isNaN(numericValue) && numericValue <= 69 && numericValue >=0;
-          value = numericValue > 69 ? 69 : numericValue;
-          break;
-        default:
-          break;
+      case 'maxGuests':
+        const numericValue = parseInt(value, 10);
+        isValid = !isNaN(numericValue) && numericValue <= 69 && numericValue >=0;
+        value = numericValue > 69 ? 69 : numericValue;
+        break;
+      default:
+        break;
     }
 
     if (isValid) {
@@ -85,7 +96,7 @@ const EventForm = () => {
   };
 
   const handleTogglePrivacy = () => {
-    setEventStatus(!eventStatus); 
+    setEventVisibility(!eventVisibility); 
   };
 
   const handleCreateEvent = async () => {
@@ -98,7 +109,7 @@ const EventForm = () => {
           eventTime: eventTime,
           description: description,
           maxGuests: maxGuests,
-          eventStatus: eventStatus ? 'private' : 'public', 
+          eventVisibility: eventVisibility ? 'private' : 'public', 
           uid: user.uid
         };
 
@@ -145,7 +156,7 @@ const EventForm = () => {
 
       <div className="mt-3">
         <button type="button" className="btn btn-sm btn-secondary" onClick={handleTogglePrivacy}>
-          {eventStatus ? 'Private' : 'Public'}
+          {eventVisibility ? 'Private' : 'Public'}
         </button>
       </div>
 

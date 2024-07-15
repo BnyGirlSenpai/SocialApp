@@ -58,7 +58,7 @@ const EventList = () => {
                         <p>Max Guests: {event.max_guests_count}</p>
                         <p>Current Guests: {event.current_guests_count}</p>
                         <p>Invited: {event.invited_guests_count}</p>
-                        <p>Status: {event.event_status}</p>
+                        <p>Visibility: {event.event_visibility}</p>
                       </div>                 
                     </div>
                   </div>

@@ -39,3 +39,4 @@ const EventDetailView = () => {
 };
 
 export default EventDetailView;
+

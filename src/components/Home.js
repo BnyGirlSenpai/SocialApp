@@ -43,13 +43,12 @@ const Home = () => {
                   <div className="event-card">
                     <div className="card-info">
                       <div className="event-info">
-                        <h5><a href={`/EventPage/EventDetailPage/${event.event_id}`} className="event-link">{event.event_name}</a></h5>
-                        <p>Creator: {event.creator_username}</p>
+                        <h5><a href={`/EventPage/EventDetailPage/${event.event_id}`} className="event-link">{event.event_name}</a></h5>                       
+                        <p>Creator: <a href={`/profilepage/${event.creator_uid}`} className="event-link">{event.creator_username}</a></p>
                         <p>Date: {new Date(event.event_date).toLocaleDateString()}</p>
                         <p>Time: {event.event_time}</p>
                         <p>Location: {event.location}</p>
-                        <p>Current Guests: {event.current_guests_count}</p>
-                        <p>Maximum Number of Guests: {event.max_guests_count}</p>
+                        <p>Current Guests: {event.current_guests_count} / {event.max_guests_count} </p>
                         <p>Info: {event.description}</p>
                       </div>
                       <a href={`/EventPage/EventDetailPage/${event.event_id}`}>

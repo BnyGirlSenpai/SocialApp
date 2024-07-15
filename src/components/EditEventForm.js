@@ -17,7 +17,7 @@ const EditEventForm = () => {
   const [eventTime, setEventTime] = useState('');
   const [description, setDescription] = useState('');
   const [maxGuests, setMaxGuests] = useState('');
-  const [eventStatus, setEventStatus] = useState('public'); 
+  const [eventVisibility, setEventVisibility] = useState('public'); 
   const navigate = useNavigate();
   const [redirect, setRedirect] = useState(false);
 
@@ -34,7 +34,7 @@ const EditEventForm = () => {
                     setEventTime(data[0]?.event_time || '');
                     setDescription(data[0]?.description || '');
                     setMaxGuests(data[0]?.max_guests_count  || '');
-                    setEventStatus(data[0]?.event_status || 'public'); 
+                    setEventVisibility(data[0]?.event_visibility || 'public'); 
                     console.log("Loaded data from server:", data);
                 }  
             } catch (error) {
@@ -118,7 +118,7 @@ const EditEventForm = () => {
 
         try {
             if (user) {
-            const updatedData = [eventName, location, eventDate, eventTime, description, maxGuests, eventStatus, event_id];
+            const updatedData = [eventName, location, eventDate, eventTime, description, maxGuests, eventVisibility, event_id];
             console.log('Data to server:', updatedData);
             await updateDataInDb(JSON.stringify(updatedData), 'http://localhost:3001/api/events/edit/update'); 
             setIsSaveButtonClicked(true);
@@ -135,7 +135,7 @@ const EditEventForm = () => {
     };
 
     const handleTogglePrivacy = () => {
-      setEventStatus(eventStatus === 'public' ? 'private' : 'public'); 
+      setEventVisibility(eventVisibility === 'public' ? 'private' : 'public'); 
     };
   
     const handleDeleteEvent = async () => { 
@@ -179,7 +179,7 @@ const EditEventForm = () => {
 
         <div className="mt-3">
           <button type="button" className="btn btn-sm btn-secondary" onClick={handleTogglePrivacy}>
-            {eventStatus === 'public' ? 'Make Private' : 'Make Public'}
+            {eventVisibility === 'public' ? 'Make Private' : 'Make Public'}
           </button>
         </div>
 
