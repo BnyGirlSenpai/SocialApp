@@ -13,7 +13,7 @@ router.post('/event/create', async (req, res) => {
     console.log(eventData);
     
     try {
-        let insertQuery = 'INSERT INTO events (event_name, location, event_date, description, max_guests_count, event_time, event_status, creator_uid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+        let insertQuery = 'INSERT INTO events (event_name, location, event_date, description, max_guests_count, event_time, event_visibility, creator_uid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
         await connection.query(insertQuery, [eventData.eventName, eventData.location, eventDate, eventData.description, eventData.maxGuests, eventTime, eventData.eventStatus, eventData.uid]);
         console.log("Event data saved");
         connection.release();
@@ -28,7 +28,7 @@ router.post('/event/create', async (req, res) => {
 router.get('/events/edit/:eid', async (req, res) => {
     try {
         let eid = req.params.eid;
-        let [rows] = await connection.query('SELECT event_id, event_name, event_date, event_time, location, description, max_guests_count, event_status FROM events WHERE event_id = ?', [eid]);
+        let [rows] = await connection.query('SELECT event_id, event_name, event_date, event_time, location, description, max_guests_count, event_visibility FROM events WHERE event_id = ?', [eid]);
         res.status(200).json(rows); 
         console.log(rows);
     } catch (error) {
@@ -71,7 +71,7 @@ router.post('/events/edit/update', async (req, res) => {
         if (eventCount === 1) {
             let updateFields = [];
             let updateValues = [];
-            updateFields.push('event_name = ?, location = ?, event_date = ?, event_time = ?, description = ?, max_guests_count = ?, event_status = ?'); 
+            updateFields.push('event_name = ?, location = ?, event_date = ?, event_time = ?, description = ?, max_guests_count = ?, event_visibility = ?'); 
             
             if (eventData.length === 8) { 
                 updateValues = eventData.slice(0, 7);

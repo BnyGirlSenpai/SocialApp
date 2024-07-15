@@ -8,7 +8,7 @@ let connection = await pool.getConnection();
 router.get('/events/:uid', async (req, res) => {
     try {
         let uid = req.params.uid;
-        let [rows] = await connection.query('SELECT event_id, event_name, event_date, event_time, location, description, max_guests_count, current_guests_count, invited_guests_count, event_status, creator_uid FROM events WHERE creator_uid = ?', [uid]);
+        let [rows] = await connection.query('SELECT event_id, event_name, event_date, event_time, location, description, max_guests_count, current_guests_count, invited_guests_count, event_visibility, creator_uid FROM events WHERE creator_uid = ?', [uid]);
         res.status(200).json(rows); 
         console.log(rows);
     } catch (error) {
@@ -41,7 +41,7 @@ router.get('/events/joined/:uid', async (req, res) => {
     try {
         let uid = req.params.uid;
         let [rows] = await connection.query(`
-            SELECT e.event_id, e.event_name, e.creator_uid, e.event_date, e.location, e.event_time, e.event_status, u.username AS creator_username
+            SELECT e.event_id, e.event_name, e.creator_uid, e.event_date, e.location, e.event_time, e.event_visibility, u.username AS creator_username
             FROM events AS e
             JOIN users AS u ON e.creator_uid = u.uid
             WHERE JSON_CONTAINS(e.joined_guests, ?)
@@ -113,7 +113,7 @@ router.get('/public/events', async (req,res) => {
             SELECT e.event_id, e.event_name, e.location, e.event_time, e.event_date, e.current_guests_count, e.max_guests_count, e.description, e.creator_uid, u.username AS creator_username
             FROM events AS e
             JOIN users AS u ON e.creator_uid = u.uid
-            WHERE e.event_status = 'public'
+            WHERE e.event_visibility = 'public'
             AND (e.current_guests_count < e.max_guests_count OR e.current_guests_count IS NULL);
         `);
         
