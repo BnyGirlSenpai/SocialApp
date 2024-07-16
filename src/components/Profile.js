@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { getDataFromBackend, sendDataToBackend, updateDataInDb } from '../apis/UserDataApi';
 import { UserAuth } from '../context/AuthContext';
 import Button from '@mui/material/Button';
+import { formatLocalDateTime } from '../utils/DateUtils'; 
 import '../styles/profile.css';
 
 const Profile = () => {
@@ -19,8 +20,9 @@ const Profile = () => {
         if (data) {
           setUserData(data);
           setIsCurrentUser(data[0].uid === user.uid);
-          if (user) {
-            const friendsData = await getDataFromBackend(`http://localhost:3001/api/users/friends/${user.uid}`);
+
+          if (user && !isCurrentUser) {
+            const friendsData = await getDataFromBackend(`http://localhost:3001/api/users/friends/${user.uid}`);//verbessern
             setUserFriends(friendsData);
           }
         }
@@ -126,13 +128,7 @@ return (
                         <div className="profile-info-row">
                           <div className="profile-info-name"> Joined: </div>
                           <div className="profile-info-value">
-                            <span>{user.metadata.creationTime}</span> 
-                          </div>
-                        </div>
-                        <div className="profile-info-row">
-                          <div className="profile-info-name"> Last Online: </div>
-                          <div className="profile-info-value">
-                            <span>{user.metadata.lastSignInTime}</span>           
+                            <span>{formatLocalDateTime(userData?.[0].created_at).slice(0,10)}</span> 
                           </div>
                         </div>
                       </div>
