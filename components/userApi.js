@@ -8,7 +8,7 @@ let connection = await pool.getConnection();
 router.get('/users/:uid', async (req, res) => {
     try {
       let uid = req.params.uid;
-      let [rows] = await connection.query('SELECT uid, authprovider, email, displayName, photoURL, country,region, username, phoneNumber, address, dateOfBirth, description FROM users WHERE uid = ?', [uid]);
+      let [rows] = await connection.query('SELECT uid, authprovider, email, displayName, photoURL, country, region, username, phoneNumber, address, dateOfBirth, description, created_at FROM users WHERE uid = ?', [uid]);
       if (rows.length > 0) {
         res.status(200).json(rows);
       } else {
