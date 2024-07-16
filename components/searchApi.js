@@ -13,7 +13,7 @@ router.get('/users/search/:username', async (req, res) => {
       if (rows.length > 0) {
         res.status(200).json(rows);
       } else {
-        res.status(404).json({ error: 'User not found' });
+        res.status(200).json({ error: 'User not found' });
       }
     } catch (error) {
       console.error('Error retrieving user data:', error);

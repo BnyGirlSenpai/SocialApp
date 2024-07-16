@@ -8,7 +8,7 @@ let connection = await pool.getConnection();
 router.get('/users/:uid', async (req, res) => {
     try {
       let uid = req.params.uid;
-      let [rows] = await connection.query('SELECT uid, authprovider, email, displayName, photoURL, country,region, username, phoneNumber, address, password, dateOfBirth, description FROM users WHERE uid = ?', [uid]);
+      let [rows] = await connection.query('SELECT uid, authprovider, email, displayName, photoURL, country,region, username, phoneNumber, address, dateOfBirth, description FROM users WHERE uid = ?', [uid]);
       if (rows.length > 0) {
         res.status(200).json(rows);
       } else {
@@ -52,7 +52,7 @@ router.post('/users', async (req, res) => {
 router.post('/users/update', async (req, res) => {
     console.log(req.body);
     let userData = req.body;
-    let uid = userData[9]; 
+    let uid = userData[8]; 
 
     let selectQuery = 'SELECT COUNT(*) AS count FROM users WHERE uid = ?';
     try {
@@ -63,9 +63,9 @@ router.post('/users/update', async (req, res) => {
         if (userCount === 1) {
             let updateFields = [];
             let updateValues = [];
-            updateFields.push('username = ?, email = ?, dateOfBirth = ?, password = ?, address = ?, country = ?, region = ?, phoneNumber = ?, description = ?'); 
+            updateFields.push('username = ?, email = ?, dateOfBirth = ?, address = ?, country = ?, region = ?, phoneNumber = ?, description = ?'); 
             
-            if (userData.length === 10) { 
+            if (userData.length === 9) { 
                 updateValues = userData.slice(0, 8);
                 updateValues.push(userData[8]); 
             } else {
