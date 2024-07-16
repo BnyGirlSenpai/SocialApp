@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend } from '../apis/UserDataApi';
 import FriendDropDown from './FriendDropDown';
+import { formatLocalDateTime } from '../utils/DateUtils'; 
 import '../styles/eventpage.css'; 
 
 const EventList = () => {
@@ -9,6 +10,7 @@ const EventList = () => {
   const [ownEvents, setOwnEvents] = useState([]);
   const [showFriendDropDown, setShowFriendDropDown] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState(null); 
+  const [dateTime, setDateTime] = useState([]);
 
   useEffect(() => {
     const fetchEventData = async () => {
@@ -16,14 +18,27 @@ const EventList = () => {
         if (user) {
           const ownEventData = await getDataFromBackend(`http://localhost:3001/api/events/${user.uid}`);
           console.log("Loaded own Event Data from server:", ownEventData);
-          setOwnEvents(ownEventData ? [ownEventData] : []);
+  
+          if (ownEventData && ownEventData.length > 0) {
+            if (ownEventData[0].event_datetime) {
+              setDateTime(formatLocalDateTime(ownEventData[0].event_datetime));
+            } else {
+              setDateTime(''); 
+            }
+            setOwnEvents([ownEventData]);
+          } else {
+            setOwnEvents([]);
+            setDateTime(''); 
+          }
         }
       } catch (error) {
         console.error("Error fetching event data:", error);
       }
     };
+  
     fetchEventData();
-  }, [user]); 
+  }, [user]);
+  
 
   const hideFriendDropDown = async () => {
     try {
@@ -51,8 +66,8 @@ const EventList = () => {
                     <div className="card-info">
                       <div className="event-info">                                
                       <h5><a href={`/EventPage/EventDetailPage/${event.event_id}`} className="event-link">{event.event_name}</a></h5> 
-                        <p>Date: {new Date(event.event_date).toLocaleDateString()}</p>
-                        <p>Time: {event.event_time.substring(0, 5)}</p>
+                        <p>Date: {dateTime.slice(0,10)}</p>
+                        <p>Time: {dateTime.slice(11,17)}</p>
                         <p>Location: {event.location}</p>
                         <p>Description: {event.description}</p>
                         <p>Max Guests: {event.max_guests_count}</p>

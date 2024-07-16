@@ -1,37 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { UserAuth } from '../context/AuthContext';
-import { getDataFromBackend,updateDataInDb }  from '../apis/UserDataApi';
-import validateInput from '../utils/UserInputValidator';
+import { getDataFromBackend, updateDataInDb } from '../apis/UserDataApi';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 
 const ProfileSettings = () => {
     const { user } = UserAuth();
-    const [isButtonClicked, setIsButtonClicked] = useState(false);
-    const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
-    const [dateOfBirth, setDateOfBirth] = useState('');
-    const [password, setPassword] = useState('');
-    const [address, setAddress] = useState('');
-    const [country, setCountry] = useState('');
-    const [region, setRegion] = useState('');
-    const [phoneNumber, setPhoneNumber] = useState('');
-    const [description, setDescription] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 if (user) {
                     const data = await getDataFromBackend(`http://localhost:3001/api/users/${user.uid}`);
-                    setUsername(data[0]?.username || '');
-                    setEmail(data[0]?.email || '');
-                    setDateOfBirth(data[0]?.dateOfBirth || '');
-                    setPassword(data[0]?.password || '');
-                    setAddress(data[0]?.address || '');
-                    setCountry(data[0]?.country || '');
-                    setRegion(data[0]?.region || '');
-                    setPhoneNumber(data[0]?.phoneNumber || '');
-                    setDescription(data[0]?.description || '');
+                    formik.setValues({
+                        username: data[0]?.username || '',
+                        email: data[0]?.email || '',
+                        dateOfBirth: data[0]?.dateOfBirth || '',
+                        address: data[0]?.address || '',
+                        country: data[0]?.country || '',
+                        region: data[0]?.region || '',
+                        phoneNumber: data[0]?.phoneNumber || '',
+                        description: data[0]?.description || '',
+                    });
                     console.log("Loaded data from server:", data);
-                }  
+                }
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
@@ -39,98 +31,63 @@ const ProfileSettings = () => {
         fetchData();
     }, [user]);
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        switch (name) {
-            case 'username':
-                setUsername(value);
-                break;
-            case 'email':
-                setEmail(value);
-                break;
-            case 'dateOfBirth':
-                setDateOfBirth(value);
-                break;
-            case 'password':
-                setPassword(value);
-                break;
-            case 'address':
-                setAddress(value);
-                break;
-            case 'country':
-                setCountry(value);
-                break;
-            case 'region':
-                setRegion(value);
-                break;
-            case 'phoneNumber':
-                setPhoneNumber(value);
-                break;
-            case 'description':
-                setDescription(value);
-                break;
-            default:
-                break;
-        }
-    };
-    
-    const handleSaveProfile = async () => { 
-        try {
-            if (user) {
-                if (!username || !email || !dateOfBirth || !password || !phoneNumber) {
-                    alert("Please fill in all required fields before saving the profile.");
-                    return;
-                }
-
+    const validationSchema = Yup.object().shape({
+        username: Yup.string().required('Username is required'),
+        email: Yup.string().email('Invalid email format').required('Email is required'),
+        dateOfBirth: Yup.date().required('Date of Birth is required')
+            .test('is-over-16', 'You must be 16 years old!', function (value) {
                 const currentDate = new Date();
-                const selectedDate = new Date(dateOfBirth);
+                const selectedDate = new Date(value);
                 const age = currentDate.getFullYear() - selectedDate.getFullYear();
                 const monthDifference = currentDate.getMonth() - selectedDate.getMonth();
                 const dayDifference = currentDate.getDate() - selectedDate.getDate();
+                return age > 16 || (age === 16 && monthDifference > 0) || (age === 16 && monthDifference === 0 && dayDifference >= 0);
+            }),
+        phoneNumber: Yup.string().matches(/^[0-9]+$/, 'Must be only digits').required('Phone number is required'),
+    });
 
-                if (age < 16 || (age === 16 && monthDifference < 0) || (age === 16 && monthDifference === 0 && dayDifference < 0)) {
-                    alert("You must be 16 years old!");
-                    return;
+    const formik = useFormik({
+        initialValues: {
+            username: '',
+            email: '',
+            dateOfBirth: '',
+            address: '',
+            country: '',
+            region: '',
+            phoneNumber: '',
+            description: '',
+        },
+        validationSchema: validationSchema,
+        onSubmit: async (values) => {
+            try {
+                if (user) {
+                    const updatedData = [
+                        values.username,
+                        values.email,
+                        values.dateOfBirth,
+                        values.address,
+                        values.country,
+                        values.region,
+                        values.phoneNumber,
+                        values.description,
+                        user.uid
+                    ];
+                    console.log('Data to server:', updatedData);
+                    await updateDataInDb(JSON.stringify(updatedData), 'http://localhost:3001/api/users/update');
+                } else {
+                    console.log("User not found!");
                 }
-                const validations = [
-                    { name: 'username', value: username, type: 'text' },
-                    { name: 'email', value: email, type: 'email' },
-                    { name: 'dateOfBirth', value: dateOfBirth, type: 'date' },
-                    { name: 'password', value: password, type: 'text' },
-                    { name: 'address', value: address, type: 'text' },
-                    { name: 'country', value: country, type: 'text' },
-                    { name: 'region', value: region, type: 'text' },
-                    { name: 'phoneNumber', value: phoneNumber, type: 'phone' },
-                    { name: 'description', value: description, type: 'text' },
-                ];
-
-                for (const { name, value, type } of validations) {
-                    if (!validateInput(value, type)) {
-                        alert(`Invalid input for ${name}. Please check your input and try again.`);
-                        return;
-                    }
-                }
-
-                const updatedData = [username, email, dateOfBirth, password, address, country, region, phoneNumber, description, user.uid];
-                console.log('Data to server:', updatedData);
-                await updateDataInDb(JSON.stringify(updatedData), 'http://localhost:3001/api/users/update'); 
-                setIsButtonClicked(true);
-                setTimeout(() => {
-                    setIsButtonClicked(false);
-                }, 1000);
-            } else {
-                console.log("User not found!");
+            } catch (error) {
+                console.error('Error updating profile data:', error);
             }
-        } catch (error) {
-            console.error('Error updating profile data:', error);
-        }
-    };
-    
- return (
-        <form> 
+        },
+    });
+
+    return (
+        <form onSubmit={formik.handleSubmit}>
             <div className="container d-flex justify-content-center align-items-center">
                 <div className="card">
-                    <div className="upper">                
+                    <div className="upper">
                     </div>
                     <div className="user text-center">
                         <div className="profile">
@@ -144,59 +101,77 @@ const ProfileSettings = () => {
                         </div>
                         <div className="row mt-2">
                             <div className="col-md-6">
-                                <label className="labels">!Username</label>
-                                <input required type="text" className="form-control" placeholder={""} name="username" value={username} onChange={handleInputChange} />
-                            </div> 
-
+                                <label className="labels">Username</label>
+                                <input type="text" className="form-control" placeholder="Enter Username" name="username" value={formik.values.username} onChange={formik.handleChange} onBlur={formik.handleBlur} />
+                                {formik.touched.username && formik.errors.username ? (
+                                    <div className="error">{formik.errors.username}</div>
+                                ) : null}
+                            </div>
                             <div className="col-md-6">
-                                <label className="labels">!Email</label>
-                                <input required type="text" className="form-control" placeholder={""} name="email" value={email} onChange={handleInputChange} />
+                                <label className="labels">Email</label>
+                                <input type="text" className="form-control" placeholder="Enter Email" name="email" value={formik.values.email} onChange={formik.handleChange} onBlur={formik.handleBlur} />
+                                {formik.touched.email && formik.errors.email ? (
+                                    <div className="error">{formik.errors.email}</div>
+                                ) : null}
                             </div>
                         </div>
                         <div className="row mt-2">
                             <div className="col-md-6">
-                                <label className="labels">!Password</label>
-                                <input required type="password" className="form-control" placeholder={""} name="password" value={password} onChange={handleInputChange} />
-                            </div>
-
-                            <div className="col-md-6">
-                                <label className="labels">!Date of Birth</label>
-                                <input required type="date" className="form-control" placeholder={""} name="dateOfBirth" value={dateOfBirth} onChange={handleInputChange} />
+                                <label className="labels">Date of Birth</label>
+                                <input type="date" className="form-control" placeholder="Select Date of Birth" name="dateOfBirth" value={formik.values.dateOfBirth} onChange={formik.handleChange} onBlur={formik.handleBlur} />
+                                {formik.touched.dateOfBirth && formik.errors.dateOfBirth ? (
+                                    <div className="error">{formik.errors.dateOfBirth}</div>
+                                ) : null}
                             </div>
                         </div>
                         <div className="row mt-3">
                             <div className="col-md-6">
                                 <label className="labels">Address</label>
-                                <input type="text" className="form-control" placeholder={""} name="address" value={address} onChange={handleInputChange} />
+                                <input type="text" className="form-control" placeholder="Enter Address" name="address" value={formik.values.address} onChange={formik.handleChange} onBlur={formik.handleBlur} />
+                                {formik.touched.address && formik.errors.address ? (
+                                    <div className="error">{formik.errors.address}</div>
+                                ) : null}
                             </div>
                             <div className="col-md-6">
-                                <label className="labels">!PhoneNumber</label>
-                                <input type="text" className="form-control" placeholder={""} name="phoneNumber" value={phoneNumber} onChange={handleInputChange} />
+                                <label className="labels">Phone Number</label>
+                                <input type="text" className="form-control" placeholder="Enter Phone Number" name="phoneNumber" value={formik.values.phoneNumber} onChange={formik.handleChange} onBlur={formik.handleBlur} />
+                                {formik.touched.phoneNumber && formik.errors.phoneNumber ? (
+                                    <div className="error">{formik.errors.phoneNumber}</div>
+                                ) : null}
                             </div>
                             <div className="col-md-6">
                                 <label className="labels">Country</label>
-                                <input type="text" className="form-control" placeholder={""} name="country" value={country} onChange={handleInputChange} />
+                                <input type="text" className="form-control" placeholder="Enter Country" name="country" value={formik.values.country} onChange={formik.handleChange} onBlur={formik.handleBlur} />
+                                {formik.touched.country && formik.errors.country ? (
+                                    <div className="error">{formik.errors.country}</div>
+                                ) : null}
                             </div>
                             <div className="col-md-6">
                                 <label className="labels">State/Region</label>
-                                <input type="text" className="form-control" placeholder={""} name="region" value={region} onChange={handleInputChange} />
+                                <input type="text" className="form-control" placeholder="Enter State/Region" name="region" value={formik.values.region} onChange={formik.handleChange} onBlur={formik.handleBlur} />
+                                {formik.touched.region && formik.errors.region ? (
+                                    <div className="error">{formik.errors.region}</div>
+                                ) : null}
                             </div>
                             <div className="col-md-12">
-                            <label className="labels">Description</label>
-                            <textarea className="form-control" placeholder={""} name="description" value={description} onChange={handleInputChange} />
-                        </div>
+                                <label className="labels">Description</label>
+                                <textarea className="form-control" placeholder="Enter Description" name="description" value={formik.values.description} onChange={formik.handleChange} onBlur={formik.handleBlur} />
+                                {formik.touched.description && formik.errors.description ? (
+                                    <div className="error">{formik.errors.description}</div>
+                                ) : null}
+                            </div>
                         </div>
                         <div className="mt-5 text-center">
                             <button
-                                className={`btn ${isButtonClicked ? 'btn-success' : 'btn-primary'} profile-button`}
-                                type="button"
-                                onClick={handleSaveProfile}> 
-                                {isButtonClicked ? 'Profile Saved' : 'Save Profile'}
-                            </button> 
+                                className={`btn ${formik.isSubmitting ? 'btn-success' : 'btn-primary'} profile-button`}
+                                type="submit"
+                                disabled={formik.isSubmitting}>
+                                {formik.isSubmitting ? 'Saving...' : 'Save Profile'}
+                            </button>
                         </div>
                     </div>
                 </div>
-            </div> 
+            </div>
         </form>
     );
 };

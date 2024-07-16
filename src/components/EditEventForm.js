@@ -3,21 +3,17 @@ import { useParams } from 'react-router-dom';
 import { updateDataInDb,getDataFromBackend } from '../apis/UserDataApi';
 import { UserAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import validateInput from '../utils/UserInputValidator';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
+import { formatLocalDateTime } from '../utils/DateUtils'; 
+
 import '../styles/eventform.css';
 
 const EditEventForm = () => {
   const { user } = UserAuth();
   const { event_id } = useParams(); 
-  const [isSaveButtonClicked, setIsSaveButtonClicked] = useState(false);
-  const [isDeleteButtonClicked, setIsDeleteButtonClicked] = useState(false);
-  const [eventName, setEventName] = useState('');
-  const [location, setLocation] = useState('');
-  const [eventDate, setEventDate] = useState('');
-  const [eventTime, setEventTime] = useState('');
-  const [description, setDescription] = useState('');
-  const [maxGuests, setMaxGuests] = useState('');
-  const [eventVisibility, setEventVisibility] = useState('public'); 
+  const [, setIsDeleteButtonClicked] = useState(false);
+  const [eventDateTime] = useState('');
   const navigate = useNavigate();
   const [redirect, setRedirect] = useState(false);
 
@@ -26,23 +22,24 @@ const EditEventForm = () => {
             try {
                 if (user) {
                     const data = await getDataFromBackend(`http://localhost:3001/api/events/edit/${event_id}`);
-                    setEventName(data[0]?.event_name || '');
-                    setLocation(data[0]?.location || '');
-                    const utcDate = new Date(data[0]?.event_date);
-                    const localDate = new Date(utcDate.getTime() - utcDate.getTimezoneOffset() * 60000);
-                    setEventDate(localDate.toISOString().split('T')[0]);     
-                    setEventTime(data[0]?.event_time || '');
-                    setDescription(data[0]?.description || '');
-                    setMaxGuests(data[0]?.max_guests_count  || '');
-                    setEventVisibility(data[0]?.event_visibility || 'public'); 
-                    console.log("Loaded data from server:", data);
+                    formik.setValues({
+                      eventName: data[0]?.event_name || '',
+                      location: data[0]?.location || '',
+                      eventDate: formatLocalDateTime(data[0]?.event_datetime || '').split(',')[0].split('.').reverse().join('-'),
+                      eventTime: formatLocalDateTime(data[0]?.event_datetime || '').split(',')[1].trim(),
+                      description: data[0]?.description || '',
+                      maxGuests: data[0]?.max_guests_count || '',
+                      eventVisibility: data[0]?.event_visibility || 'public'
+                  });
+                   
+                  console.log("Loaded data from server:", data);
                 }  
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
         };
         fetchData();
-    }, [user,event_id]);
+    }, [user, event_id]);
 
     useEffect(() => {
         if (redirect) {
@@ -50,94 +47,86 @@ const EditEventForm = () => {
         }
     }, [redirect, navigate]);
 
-    const handleInputChange = (e) => {
-        let { name, value } = e.target; 
-        let isValid = false;
-    
-        switch (name) {
-          case 'eventName':
-            isValid = validateInput(value, 'text');
-            break;
-          case 'location':
-            isValid = validateInput(value, 'text');
-            break;
-          case 'description':
-            isValid = validateInput(value, 'text');
-            break;
-          case 'eventDate':
-            const currentDate = new Date();
-            const selectedDate = new Date(value);
-            isValid = validateInput(value, 'date') && selectedDate >= currentDate.setHours(0, 0, 0, 0);   
-            break;
-            case 'eventTime':
-            const currentTime = new Date().toLocaleTimeString('en-US', { hour12: false });
-            isValid = validateInput(value, 'time') && value >= currentTime;  
-            break;
-            case 'maxGuests':
-              const numericValue = parseInt(value, 10);
-              isValid = !isNaN(numericValue) && numericValue <= 69 && numericValue >=0;
-              value = numericValue > 69 ? 69 : numericValue;
-              break;
-            default:
-              break;
-        }
-    
-        if (isValid) {
-          switch (name) {
-            case 'eventName':
-              setEventName(value);
-              break;
-            case 'location':
-              setLocation(value);
-              break;
-            case 'eventDate':
-              setEventDate(value);
-              break;
-            case 'eventTime':
-              setEventTime(value);
-              break;
-            case 'description':
-              setDescription(value);
-              break;
-            case 'maxGuests':
-              setMaxGuests(value);
-              break;
-            default:
-              break;
-          }
-        } else {
-          alert(`Invalid ${name} input:`, value);
-        }
-      };
-
-    const handleSaveEvent = async () => {
-        if (!eventName || !location || !eventDate || !eventTime || !maxGuests) {
-            alert("Please fill in all fields before saving the event.");
-            return;
-        }
-
-        try {
-            if (user) {
-            const updatedData = [eventName, location, eventDate, eventTime, description, maxGuests, eventVisibility, event_id];
-            console.log('Data to server:', updatedData);
-            await updateDataInDb(JSON.stringify(updatedData), 'http://localhost:3001/api/events/edit/update'); 
-            setIsSaveButtonClicked(true);
-            setTimeout(() => {
-                setIsSaveButtonClicked(false);
-                setRedirect(true);
-            }, 1000);
-            } else {
-            console.log("Event not found!");
-            }
-        } catch (error) {
-            console.error('Error updating Event data:', error);
-        }
-    };
-
-    const handleTogglePrivacy = () => {
-      setEventVisibility(eventVisibility === 'public' ? 'private' : 'public'); 
-    };
+    const validationSchema = Yup.object().shape({
+      eventName: Yup.string().required('Event name is required'),
+      location: Yup.string().required('Location is required'),
+      eventDate: Yup.date()
+        .required('Event date is required')
+        .test('is-future-date', 'Event date cannot be in the past', (value) => {
+          const currentDate = new Date();
+          currentDate.setHours(0, 0, 0, 0);
+          return value && new Date(value).getTime() >= currentDate.getTime();
+        }),
+      eventTime: Yup.string().required('Event time is required').test(
+        'is-future-time',
+        'Event time must be in the future for today\'s date',
+        function (value) {
+          const { eventDate } = this.parent;
+          if (eventDate) {
+            const selectedDate = new Date(eventDate);
+            const selectedTime = value.split(':');
+            selectedDate.setHours(selectedTime[0], selectedTime[1]);
   
+            const currentDate = new Date();
+            if (selectedDate.toDateString() === currentDate.toDateString()) {
+              return selectedDate.getTime() > currentDate.getTime();
+            }
+            return true;
+          }
+          return true;
+        }
+      ),
+      description: Yup.string().required('Description is required'),
+      maxGuests: Yup.number()
+        .required('Max guests is required')
+        .min(0, 'Min value is 0')
+        .max(69, 'Max value is 69'),
+    });
+
+    const initialDate = eventDateTime ? eventDateTime.split(',')[0].trim() : '';
+    const initialTime = eventDateTime ? eventDateTime.split(',')[1].trim() : '';
+
+    const formik = useFormik({
+      initialValues: {
+        eventName: '',
+        location: '',
+        eventDate: '',
+        eventTime: '',
+        description: '',
+        maxGuests: '',
+        eventVisibility: 'public',
+    },
+      validationSchema: validationSchema,
+      enableReinitialize: true, 
+      onSubmit: async values => {
+          console.log('Submitting:', values);
+          try {
+              if (user) {
+                  const localDateTime = new Date(`${values.eventDate}T${values.eventTime}`);
+                  // Convert to UTC and format as required for MySQL datetime
+                  const utcDateTime = localDateTime.toISOString().slice(0, 19).replace('T', ' ');
+
+                  const updatedData = [
+                      values.eventName,
+                      values.location,
+                      utcDateTime, 
+                      values.description,
+                      values.maxGuests,
+                      values.eventVisibility,
+                      event_id
+                  ];
+                  console.log('Data to server:', updatedData);
+                  await updateDataInDb(JSON.stringify(updatedData), 'http://localhost:3001/api/events/edit/update'); 
+                  setTimeout(() => navigate('/EventPage'), 1000);
+              } else {
+                  console.log("Event not found!");
+              }
+          } catch (error) {
+              console.error('Error updating Event data:', error);
+          }
+      },
+    });
+
     const handleDeleteEvent = async () => { 
         try {
             if (user) {
@@ -158,47 +147,115 @@ const EditEventForm = () => {
     };  
 
     return (
-    <form className="event-form">
-        <label htmlFor="eventName">Event Name</label>
-        <input type="text" id="eventName" name="eventName" placeholder="Enter Event Name" value={eventName} onChange={handleInputChange} />
+      <form className="event-form" onSubmit={formik.handleSubmit}>
+      <label htmlFor="eventName">Event Name</label>
+      <input
+          type="text"
+          id="eventName"
+          name="eventName"
+          placeholder="Enter Event Name"
+          value={formik.values.eventName}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+      />
+      {formik.touched.eventName && formik.errors.eventName ? (
+          <div className="error">{formik.errors.eventName}</div>
+      ) : null}
 
-        <label htmlFor="location">Location</label>
-        <input type="text" id="location" name="location" placeholder="Enter Location" value={location} onChange={handleInputChange} />
+      <label htmlFor="location">Location</label>
+      <input
+          type="text"
+          id="location"
+          name="location"
+          placeholder="Enter Location"
+          value={formik.values.location}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+      />
+      {formik.touched.location && formik.errors.location ? (
+          <div className="error">{formik.errors.location}</div>
+      ) : null}
 
-        <label htmlFor="eventDate">Event Date</label>
-        <input type="date" id="eventDate" name="eventDate" placeholder="Select Event Date" value={eventDate} onChange={handleInputChange} />
+      <label htmlFor="eventDate">Event Date</label>
+      <input
+          type="date"
+          id="eventDate"
+          name="eventDate"
+          placeholder="Select Event Date"
+          value={formik.values.eventDate}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+      />
+      {formik.touched.eventDate && formik.errors.eventDate ? (
+          <div className="error">{formik.errors.eventDate}</div>
+      ) : null}
 
-        <label htmlFor="eventTime">Event Time</label>
-        <input type="time" id="eventTime" name="eventTime" placeholder="Select Event Time" value={eventTime} onChange={handleInputChange} />
+      <label htmlFor="eventTime">Event Time</label>
+      <input
+          type="time"
+          id="eventTime"
+          name="eventTime"
+          placeholder="Select Event Time"
+          value={formik.values.eventTime}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+      />
+      {formik.touched.eventTime && formik.errors.eventTime ? (
+          <div className="error">{formik.errors.eventTime}</div>
+      ) : null}
 
-        <label htmlFor="description">Event Description</label>
-        <textarea id="description" name="description" placeholder="Enter Event Description" value={description} onChange={handleInputChange}></textarea>
+      <label htmlFor="description">Event Description</label>
+      <textarea
+          id="description"
+          name="description"
+          placeholder="Enter Event Description"
+          value={formik.values.description}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+      ></textarea>
+      {formik.touched.description && formik.errors.description ? (
+          <div className="error">{formik.errors.description}</div>
+      ) : null}
 
-        <label htmlFor="maxGuests">Max Guests</label>
-        <input type="number" id="maxGuests" name="maxGuests" placeholder="Enter Max Guests" value={maxGuests} onChange={handleInputChange} />
+      <label htmlFor="maxGuests">Max Guests</label>
+      <input
+          type="number"
+          id="maxGuests"
+          name="maxGuests"
+          placeholder="Enter Max Guests"
+          value={formik.values.maxGuests}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+      />
+      {formik.touched.maxGuests && formik.errors.maxGuests ? (
+          <div className="error">{formik.errors.maxGuests}</div>
+      ) : null}
 
-        <div className="mt-3">
-          <button type="button" className="btn btn-sm btn-secondary" onClick={handleTogglePrivacy}>
-            {eventVisibility === 'public' ? 'Make Private' : 'Make Public'}
+      <div className="mt-3">
+          <button
+              type="button"
+              className="btn btn-sm btn-secondary"
+              onClick={() => {
+                  formik.setFieldValue(
+                      'eventVisibility',
+                      formik.values.eventVisibility === 'public' ? 'private' : 'public'
+                  );
+              }}
+          >
+              {formik.values.eventVisibility === 'public' ? 'Make Private' : 'Make Public'}
           </button>
-        </div>
+      </div>
 
-        <div className="mt-5 text-center">
-            <button
-                className={`save-event button`}
-                type="button"
-                onClick={handleSaveEvent}>
-                {isSaveButtonClicked ? 'Event updated' : 'Update Event'}
-            </button>
+      <div className="mt-5 text-center">
+          <button type="submit" className="save-event button">
+              Update Event
+          </button>
 
-            <button
-                className={`delete-event button`}
-                type="button"
-                onClick={handleDeleteEvent}>
-                {isDeleteButtonClicked ? 'Deleted Event' : 'Delete Event'}
-            </button>
-        </div>
-    </form>
+          <button type="button" className="delete-event button" onClick={handleDeleteEvent}>
+              Delete Event
+          </button>
+      </div>
+  </form>
   );
 };
 

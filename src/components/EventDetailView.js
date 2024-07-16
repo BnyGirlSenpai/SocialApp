@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import { updateDataInDb } from '../apis/UserDataApi';
 import FriendDropDown from './FriendDropDown';
+import { formatLocalDateTime } from '../utils/DateUtils'; 
 import '../styles/eventDetailView.css';
 
 const EventDetailView = () => {
@@ -19,7 +20,7 @@ const EventDetailView = () => {
     const navigate = useNavigate();
     const [redirect, setRedirect] = useState(false);
     const [guestsData, setGuestsData] = useState([]);
-
+    const [dateTime, setDateTime] = useState([]);
 
     useEffect(() => {
         const fetchEventData = async () => {
@@ -29,7 +30,7 @@ const EventDetailView = () => {
                     const  guests = await getDataFromBackend(`http://localhost:3001/api/events/allGuests/${event_id}`);
                     console.log("Loaded Event Data from server:", eventData);
                     console.log("Loaded guests data from server:", guests);
-
+                    setDateTime(formatLocalDateTime(eventData.event_datetime));
                     setEventData(eventData);
                     setGuestsData(guests);
                 }
@@ -76,8 +77,8 @@ const EventDetailView = () => {
         <div className="event-detail-container">
         <div className="event-detail">
             <h1 className="event-title">{eventData.event_name}</h1>
-            <div className="event-date">Date: {new Date(eventData.event_date).toLocaleDateString()}</div>
-            <div className="event-time">Time: {eventData.event_time}</div>
+            <div className="event-date">Date: : {dateTime.slice(0,10)}</div>
+            <div className="event-time">Time: {dateTime.slice(11,17)}</div>
             <div className="event-location">Location: {eventData.location}</div>
         </div>
         {isAdmin ? (

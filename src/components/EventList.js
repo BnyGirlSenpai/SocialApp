@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend , updateDataInDb } from '../apis/UserDataApi';
+import { formatLocalDateTime } from '../utils/DateUtils'; 
 import '../styles/eventpage.css'; 
 
 const EventList = () => {
   const { user  } = UserAuth(); 
   const [joinedEvents, setJoinedEvents] = useState([]);
+  const [dateTime, setDateTime] = useState([]);
 
   useEffect(() => {
     const fetchEventData = async () => {
@@ -13,15 +15,28 @@ const EventList = () => {
         if (user) {
           const joinedEventData = await getDataFromBackend(`http://localhost:3001/api/events/joined/${user.uid}`);
           console.log("Loaded joined Event Data from server:", joinedEventData);
-          setJoinedEvents(joinedEventData ? [joinedEventData] : []);
+  
+          if (joinedEventData && joinedEventData.length > 0) {
+            if (joinedEventData[0].event_datetime) {
+              setDateTime(formatLocalDateTime(joinedEventData[0].event_datetime));
+            } else {
+              setDateTime(''); 
+            }
+  
+            setJoinedEvents([joinedEventData]);
+          } else {
+            setJoinedEvents([]);
+            setDateTime(''); 
+          }
         }
       } catch (error) {
         console.error("Error fetching event data:", error);
       }
     };
+  
     fetchEventData();
-  }, [user]); 
-
+  }, [user]);
+  
   const leaveEvent = async (eventId) => {
     let updateData = {
       status: 'left',
@@ -52,8 +67,8 @@ const EventList = () => {
                   <div className="card-info">
                     <div className="event-info">                                
                       <h5><a href={`/EventPage/EventDetailPage/${event.event_id}`} className="event-link">{event.event_name}</a></h5> 
-                      <p>Date: {new Date(event.event_date).toLocaleDateString()}</p>
-                      <p>Time: {event.event_time.substring(0, 5)}</p>
+                      <p>Date: {dateTime.slice(0,10)}</p>
+                      <p>Time: {dateTime.slice(11,17)}</p>
                       <p>Location: {event.location}</p>
                       <p>Visibility: {event.event_visibility}</p>
                     </div>                 
