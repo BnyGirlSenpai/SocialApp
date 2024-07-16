@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import '../styles/calendar.css'; 
 import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend } from '../apis/UserDataApi';
+import { formatLocalDateTime } from '../utils/DateUtils'; // Assuming you have this function
 
 const Calendar = () => {
   const [selectedDate] = useState(null);
@@ -21,7 +22,7 @@ const Calendar = () => {
           
           if (ownEventData) {
             const formattedOwnEvents = ownEventData.map(event => ({
-              event_date: new Date(event.event_date).toISOString().split('T')[0],
+              event_date: formatLocalDateTime(event.event_datetime).slice(0, 10), // Format date to YYYY-MM-DD
               event_name: event.event_name,
               event_id: event.event_id,
             }));
@@ -33,7 +34,7 @@ const Calendar = () => {
 
           if (joinedEventData) {
             const formattedJoinedEvents = joinedEventData.map(event => ({
-              event_date: new Date(event.event_date).toISOString().split('T')[0],
+              event_date: formatLocalDateTime(event.event_datetime).slice(0, 10), // Format date to YYYY-MM-DD
               event_name: event.event_name,
               event_id: event.event_id,
             }));
@@ -72,22 +73,9 @@ const Calendar = () => {
   };
 
   const getEventsForDate = useCallback((date) => {
-    const formattedDate = date.toISOString().split('T')[0];
-    const ownEventsForDate = ownEvents
-      .filter(event => event.event_date === formattedDate)
-      .map(event => ({
-        name: event.event_name,
-        date: event.event_date,
-        id: event.event_id
-      }));
-
-    const joinedEventsForDate = joinedEvents
-      .filter(event => event.event_date === formattedDate)
-      .map(event => ({
-        name: event.event_name,
-        date: event.event_date,
-        id: event.event_id
-      }));
+    const formattedDate = formatLocalDateTime(date.toISOString()).slice(0, 10); // Format date to YYYY-MM-DD
+    const ownEventsForDate = ownEvents.filter(event => event.event_date === formattedDate);
+    const joinedEventsForDate = joinedEvents.filter(event => event.event_date === formattedDate);
   
     return { ownEvents: ownEventsForDate, joinedEvents: joinedEventsForDate };
   }, [ownEvents, joinedEvents]);
@@ -95,8 +83,9 @@ const Calendar = () => {
   useEffect(() => {
     const eventsMap = {};
     days.forEach(day => {
+      const formattedDate = formatLocalDateTime(day.toISOString()).slice(0, 10); // Format date to YYYY-MM-DD
       const events = getEventsForDate(day);
-      eventsMap[day.toISOString().split('T')[0]] = events;
+      eventsMap[formattedDate] = events;
     });
     setEventsForCurrentMonth(eventsMap);
   }, [days, getEventsForDate]);
@@ -120,26 +109,27 @@ const Calendar = () => {
       </div>
       <div className='calendar-grid'>
         {days.map(date => {
-          const eventsForDate = eventsForCurrentMonth[date.toISOString().split('T')[0]] || { ownEvents: [], joinedEvents: [] };
+          const formattedDate = formatLocalDateTime(date.toISOString()).slice(0, 10); // Format date to YYYY-MM-DD
+          const eventsForDate = eventsForCurrentMonth[formattedDate] || { ownEvents: [], joinedEvents: [] };
           return (
             <div
-              key={date}
-              className={`calendar-cell ${isToday(date) ? 'today' : ''} ${selectedDate === date.toISOString().split('T')[0] ? 'selected' : ''}`}
+              key={date.toISOString()}
+              className={`calendar-cell ${isToday(date) ? 'today' : ''} ${selectedDate === formattedDate ? 'selected' : ''}`}
             >
-              <time dateTime={date.toISOString().split('T')[0]}>{date.getDate()}</time>
+              <time dateTime={formattedDate}>{date.getDate()}</time>
               <div className="event-names">
                 {eventsForDate.ownEvents.map(event => (
-                  <div key={event.id} className="event-name">
+                  <div key={event.event_id} className="event-name">
                     <h5>
-                      <a href={`/EventPage/EventDetailPage/${event.id}`} className="event-link">{event.name}</a>
+                      <a href={`/EventPage/EventDetailPage/${event.event_id}`} className="event-link">{event.event_name}</a>
                     </h5>
                   </div>                
                 ))}
                 
                 {eventsForDate.joinedEvents.map(event => (
-                  <div key={event.id} className="event-name">
+                  <div key={event.event_id} className="event-name">
                     <h5>
-                      <a href={`/EventPage/EventDetailPage/${event.id}`} className="event-link">{event.name}</a>
+                      <a href={`/EventPage/EventDetailPage/${event.event_id}`} className="event-link">{event.event_name}</a>
                     </h5>
                   </div>               
                 ))}
