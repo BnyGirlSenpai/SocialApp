@@ -4,7 +4,7 @@ import ProfileSettings from '../components/ProfileSettings'
 
 const ProfileSettingspage = () => {
   return (
-    <div className='Main'>
+    <div>
       <Navbar />
       <ProfileSettings />
     </div>

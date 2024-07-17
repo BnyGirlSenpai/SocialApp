@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar'
 
 function SettingsPage() {
   return (
-    <div className='Main'>
+    <div>
         <Navbar />
         <Settings />
     </div>

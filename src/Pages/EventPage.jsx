@@ -5,7 +5,7 @@ import Navbar from '../components/Navbar';
 
 function Eventpage() {
   return (
-    <div className='Main'>
+    <div>
        <Navbar />
        <OwnEventList/>
        <EventList />

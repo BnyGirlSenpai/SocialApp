@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar'
 
 function EventDetailpage() {
   return (
-    <div className='Main'>
+    <div>
        <Navbar />
        <EventDetailView/>
     </div>

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { UserAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import Button from '@mui/material/Button';
 import '../styles/signIn.css';
 
 const Signin = () => {
@@ -11,6 +12,7 @@ const Signin = () => {
     try {
       await googleSignIn();
     } catch (error) {
+      alert("Something went wrong!")
       console.log(error);
     }
   };
@@ -22,12 +24,14 @@ const Signin = () => {
   }, [user,navigate]);
 
   return (
-    <div className='Main'>
-      <h2>Looks like you're lost in space</h2>
-      <img src="//images01.nicepage.com/c461c07a441a5d220e8feb1a/912e8a6d1ca35b4e9771774e/4566.png" alt="png"/>
-        <button onClick={handleGoogleSignIn} className='sign-in-button'>
-          Sign In
-        </button>
+    <div> 
+    <video className="video-background" autoPlay loop muted>
+      <source src="Videos/LoginBackground.mp4" type="video/mp4" />
+      Your browser does not support the video tag!
+    </video>
+    <Button variant="contained" onClick={handleGoogleSignIn} className='sign-in-button'>
+      Sign In with Google
+    </Button>
     </div>
   );
 };

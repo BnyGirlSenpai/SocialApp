@@ -5,7 +5,7 @@ import UserSearch from '../components/UserSearch';
 
 function Friendpage() {
   return (
-    <div className='Main'>
+    <div>
        <Navbar />
        <UserSearch />
        <FriendList />

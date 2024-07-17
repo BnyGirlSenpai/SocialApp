@@ -15,82 +15,32 @@ import ProfileSettingspage from './pages/ProfileSettingsPage';
 import EventFormpage from './pages/EventFormPage';
 import EditEventFormpage from './pages/EditEventFormPage';
 import EventDetailpage from './pages/EventDetailPage';
+import './App.css';
 
-function App() {
+const App = () => {
   return (
-    <div className="App">    
-      <AuthContextProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path='/' element={
-                <Signinpage 
-              />} 
-            />
-            <Route path='/EventPage' element={  
-              <Protected>
-                <Eventpage />
-              </Protected>
-            } />
-            <Route path='/FriendPage' element={
-              <Protected>
-                <Friendpage />
-              </Protected>
-            } />
-            <Route path='/MapPage' element={
-              <Protected>
-                <Mappage />
-              </Protected>    
-            } />
-            <Route path='/CalenderPage' element={
-              <Protected>
-                <Calenderpage />
-              </Protected>           
-            } />
-            <Route path='/SettingsPage' element={           
-              <Protected>
-                <Settingspage />
-              </Protected>        
-            } />
-            <Route path='/NotificationPage' element={
-              <Protected>
-                <Notifications />
-              </Protected>              
-            } />
-            <Route path='/ProfilePage/:uid' element={
-              <Protected>
-                <Profilepage />
-              </Protected> 
-            } />
-            <Route path='/ProfileSettingsPage' element={
-              <Protected>
-                <ProfileSettingspage />
-              </Protected> 
-            } />
-            <Route path='/EventFormPage' element={
-              <Protected>
-                <EventFormpage />
-              </Protected> 
-            } />
-            <Route path='/EditEventFormPage/:event_id' element={
-              <Protected>
-                <EditEventFormpage />
-              </Protected> 
-            } />
-            <Route path='/EventPage/EventDetailPage/:event_id' element={
-              <Protected>
-                <EventDetailpage />
-              </Protected> 
-            } />
-            <Route path='/HomePage'element={
-              <Protected>
-                <HomePage />
-              </Protected>
-            } />
-          </Routes>
-        </BrowserRouter>
-      </AuthContextProvider>   
-    </div>
+      <div className="App">
+        <AuthContextProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path='/' element={<Signinpage />} />
+              <Route path='/EventPage' element={<Protected><Eventpage /></Protected>} />
+              <Route path='/FriendPage' element={<Protected><Friendpage /></Protected>} />
+              <Route path='/MapPage' element={<Protected><Mappage /></Protected>} />
+              <Route path='/CalenderPage' element={<Protected><Calenderpage /></Protected>} />
+              <Route path='/SettingsPage' element={<Protected><Settingspage /></Protected>} />
+              <Route path='/NotificationPage' element={<Protected><Notifications /></Protected>} />
+              <Route path='/ProfilePage/:uid' element={<Protected><Profilepage /></Protected>} />
+              <Route path='/ProfileSettingsPage' element={<Protected><ProfileSettingspage /></Protected>} />
+              <Route path='/EventFormPage' element={<Protected><EventFormpage /></Protected>} />
+              <Route path='/EditEventFormPage/:event_id' element={<Protected><EditEventFormpage /></Protected>} />
+              <Route path='/EventPage/EventDetailPage/:event_id' element={<Protected><EventDetailpage /></Protected>} />
+              <Route path='/HomePage' element={<Protected><HomePage /></Protected>} />
+            </Routes>
+          </BrowserRouter>
+        </AuthContextProvider>
+      </div>
   );
-}
+};
 
 export default App;

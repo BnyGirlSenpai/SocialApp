@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar';
 
 function Mappage() {
   return (
-    <div className='Main'>
+    <div>
        <Navbar />
        <Map />
     </div>

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { UserAuth } from '../context/AuthContext';
-import '../styles/userlist.css';
 import { getDataFromBackend, sendDataToBackend } from '../apis/UserDataApi';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import '../styles/userlist.css';
 
 const UserSearch = () => {
   const [searchResults, setSearchResults] = useState([]);

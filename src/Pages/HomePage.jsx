@@ -4,7 +4,7 @@ import Home from '../components/Home';
 
 function Homepage() {
   return (
-    <div className='Main'>
+    <div>
         <Navbar />
         <Home/>
     </div>

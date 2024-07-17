@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar'
 
 function EditEventFormpage() {
   return (
-    <div className='Main'>
+    <div>
        <Navbar />
        <EditEventForm/>
     </div>

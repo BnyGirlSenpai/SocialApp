@@ -4,7 +4,7 @@ import Navbar from '../components/Navbar';
 
 function Calenderpage() {
   return (
-    <div className='Main'>
+    <div>
        <Navbar />
        <Calender />
     </div>

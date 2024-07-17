@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import '../styles/calendar.css'; 
 import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend } from '../apis/UserDataApi';
-import { formatLocalDateTime } from '../utils/DateUtils'; // Assuming you have this function
+import { formatLocalDateTime } from '../utils/DateUtils';
+import '../styles/calendar.css'; 
 
 const Calendar = () => {
   const [selectedDate] = useState(null);
@@ -22,7 +22,7 @@ const Calendar = () => {
           
           if (ownEventData) {
             const formattedOwnEvents = ownEventData.map(event => ({
-              event_date: formatLocalDateTime(event.event_datetime).slice(0, 10), // Format date to YYYY-MM-DD
+              event_date: formatLocalDateTime(event.event_datetime).slice(0, 10), 
               event_name: event.event_name,
               event_id: event.event_id,
             }));
@@ -34,7 +34,7 @@ const Calendar = () => {
 
           if (joinedEventData) {
             const formattedJoinedEvents = joinedEventData.map(event => ({
-              event_date: formatLocalDateTime(event.event_datetime).slice(0, 10), // Format date to YYYY-MM-DD
+              event_date: formatLocalDateTime(event.event_datetime).slice(0, 10), 
               event_name: event.event_name,
               event_id: event.event_id,
             }));
@@ -73,7 +73,7 @@ const Calendar = () => {
   };
 
   const getEventsForDate = useCallback((date) => {
-    const formattedDate = formatLocalDateTime(date.toISOString()).slice(0, 10); // Format date to YYYY-MM-DD
+    const formattedDate = formatLocalDateTime(date.toISOString()).slice(0, 10); 
     const ownEventsForDate = ownEvents.filter(event => event.event_date === formattedDate);
     const joinedEventsForDate = joinedEvents.filter(event => event.event_date === formattedDate);
   
@@ -83,7 +83,7 @@ const Calendar = () => {
   useEffect(() => {
     const eventsMap = {};
     days.forEach(day => {
-      const formattedDate = formatLocalDateTime(day.toISOString()).slice(0, 10); // Format date to YYYY-MM-DD
+      const formattedDate = formatLocalDateTime(day.toISOString()).slice(0, 10); 
       const events = getEventsForDate(day);
       eventsMap[formattedDate] = events;
     });
@@ -109,7 +109,7 @@ const Calendar = () => {
       </div>
       <div className='calendar-grid'>
         {days.map(date => {
-          const formattedDate = formatLocalDateTime(date.toISOString()).slice(0, 10); // Format date to YYYY-MM-DD
+          const formattedDate = formatLocalDateTime(date.toISOString()).slice(0, 10); 
           const eventsForDate = eventsForCurrentMonth[formattedDate] || { ownEvents: [], joinedEvents: [] };
           return (
             <div

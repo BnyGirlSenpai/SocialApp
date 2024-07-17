@@ -4,7 +4,7 @@ import Notifications from '../components/Notifications';
 
 function Notificationpage() {
   return (
-    <div className='Main'>
+    <div>
         <Navbar />
         <Notifications/>
     </div>

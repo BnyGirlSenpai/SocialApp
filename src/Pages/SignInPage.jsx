@@ -3,7 +3,7 @@ import SignIn from '../components/SignIn'
 
 function SignInpage() {
   return (
-    <div className='Main'>
+    <div>
         <SignIn />
     </div>
   )
