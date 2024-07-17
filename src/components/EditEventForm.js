@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom'; 
 import { updateDataInDb,getDataFromBackend } from '../apis/UserDataApi';
 import { UserAuth } from '../context/AuthContext';
@@ -13,16 +13,117 @@ const EditEventForm = () => {
   const { user } = UserAuth();
   const { event_id } = useParams(); 
   const [, setIsDeleteButtonClicked] = useState(false);
-  const [eventDateTime] = useState('');
   const navigate = useNavigate();
   const [redirect, setRedirect] = useState(false);
+
+  const validationSchema = Yup.object().shape({
+    eventName: Yup.string().required('Event name is required'),
+    location: Yup.string().required('Location is required'),
+    eventDate: Yup.date()
+      .required('Event date is required')
+      .test('is-future-date', 'Event date cannot be in the past', (value) => {
+        const currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0);
+        return value && new Date(value).getTime() >= currentDate.getTime();
+      }),
+    eventTime: Yup.string().required('Event time is required').test(
+      'is-future-time',
+      'Event time must be in the future for today\'s date',
+      function (value) {
+        const { eventDate } = this.parent;
+        if (eventDate) {
+          const selectedDate = new Date(eventDate);
+          const selectedTime = value.split(':');
+          selectedDate.setHours(selectedTime[0], selectedTime[1]);
+
+          const currentDate = new Date();
+          if (selectedDate.toDateString() === currentDate.toDateString()) {
+            return selectedDate.getTime() > currentDate.getTime();
+          }
+          return true;
+        }
+        return true;
+      }
+    ),
+    description: Yup.string().required('Description is required'),
+    maxGuests: Yup.number()
+      .required('Max guests is required')
+      .min(0, 'Min value is 0')
+      .max(69, 'Max value is 69'),
+  });
+
+  const formik = useFormik({
+    initialValues: {
+      eventName: '',
+      location: '',
+      eventDate: '',
+      eventTime: '',
+      description: '',
+      maxGuests: '',
+      eventVisibility: 'public',
+  },
+    validationSchema: validationSchema,
+    enableReinitialize: true, 
+    onSubmit: async values => {
+        console.log('Submitting:', values);
+        try {
+            if (user) {
+                const localDateTime = new Date(`${values.eventDate}T${values.eventTime}`);
+                // Convert to UTC and format as required for MySQL datetime
+                const utcDateTime = localDateTime.toISOString().slice(0, 19).replace('T', ' ');
+
+                const updatedData = [
+                    values.eventName,
+                    values.location,
+                    utcDateTime, 
+                    values.description,
+                    values.maxGuests,
+                    values.eventVisibility,
+                    event_id
+                ];
+                console.log('Data to server:', updatedData);
+                await updateDataInDb(JSON.stringify(updatedData), 'http://localhost:3001/api/events/edit/update'); 
+                setTimeout(() => navigate('/EventPage'), 1000);
+            } else {
+                console.log("Event not found!");
+            }
+        } catch (error) {
+            console.error('Error updating Event data:', error);
+        }
+    },
+  });
+
+  const formikRef = useRef(formik);
+
+  useEffect(() => {
+      formikRef.current = formik;
+  }, [formik]);
+
+  const handleDeleteEvent = async () => { 
+      try {
+          if (user) {
+              const deleteData = [event_id];
+              console.log('Data to server:', deleteData);
+              await updateDataInDb(JSON.stringify(deleteData), 'http://localhost:3001/api/events/edit/delete'); 
+              setIsDeleteButtonClicked(true);
+              setTimeout(() => {
+                  setIsDeleteButtonClicked(false);
+                  setRedirect(true);
+              }, 1000);
+          } else {
+              console.log("Event not found!");
+          }
+      } catch (error) {
+          console.error('Error deleting Event data:', error);
+      }
+  };  
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 if (user) {
                     const data = await getDataFromBackend(`http://localhost:3001/api/events/edit/${event_id}`);
-                    formik.setValues({
+                    formikRef.current.setValues({
                       eventName: data[0]?.event_name || '',
                       location: data[0]?.location || '',
                       eventDate: formatLocalDateTime(data[0]?.event_datetime || '').split(',')[0].split('.').reverse().join('-'),
@@ -46,105 +147,6 @@ const EditEventForm = () => {
             navigate('/EventPage');
         }
     }, [redirect, navigate]);
-
-    const validationSchema = Yup.object().shape({
-      eventName: Yup.string().required('Event name is required'),
-      location: Yup.string().required('Location is required'),
-      eventDate: Yup.date()
-        .required('Event date is required')
-        .test('is-future-date', 'Event date cannot be in the past', (value) => {
-          const currentDate = new Date();
-          currentDate.setHours(0, 0, 0, 0);
-          return value && new Date(value).getTime() >= currentDate.getTime();
-        }),
-      eventTime: Yup.string().required('Event time is required').test(
-        'is-future-time',
-        'Event time must be in the future for today\'s date',
-        function (value) {
-          const { eventDate } = this.parent;
-          if (eventDate) {
-            const selectedDate = new Date(eventDate);
-            const selectedTime = value.split(':');
-            selectedDate.setHours(selectedTime[0], selectedTime[1]);
-  
-            const currentDate = new Date();
-            if (selectedDate.toDateString() === currentDate.toDateString()) {
-              return selectedDate.getTime() > currentDate.getTime();
-            }
-            return true;
-          }
-          return true;
-        }
-      ),
-      description: Yup.string().required('Description is required'),
-      maxGuests: Yup.number()
-        .required('Max guests is required')
-        .min(0, 'Min value is 0')
-        .max(69, 'Max value is 69'),
-    });
-
-    const initialDate = eventDateTime ? eventDateTime.split(',')[0].trim() : '';
-    const initialTime = eventDateTime ? eventDateTime.split(',')[1].trim() : '';
-
-    const formik = useFormik({
-      initialValues: {
-        eventName: '',
-        location: '',
-        eventDate: '',
-        eventTime: '',
-        description: '',
-        maxGuests: '',
-        eventVisibility: 'public',
-    },
-      validationSchema: validationSchema,
-      enableReinitialize: true, 
-      onSubmit: async values => {
-          console.log('Submitting:', values);
-          try {
-              if (user) {
-                  const localDateTime = new Date(`${values.eventDate}T${values.eventTime}`);
-                  // Convert to UTC and format as required for MySQL datetime
-                  const utcDateTime = localDateTime.toISOString().slice(0, 19).replace('T', ' ');
-
-                  const updatedData = [
-                      values.eventName,
-                      values.location,
-                      utcDateTime, 
-                      values.description,
-                      values.maxGuests,
-                      values.eventVisibility,
-                      event_id
-                  ];
-                  console.log('Data to server:', updatedData);
-                  await updateDataInDb(JSON.stringify(updatedData), 'http://localhost:3001/api/events/edit/update'); 
-                  setTimeout(() => navigate('/EventPage'), 1000);
-              } else {
-                  console.log("Event not found!");
-              }
-          } catch (error) {
-              console.error('Error updating Event data:', error);
-          }
-      },
-    });
-
-    const handleDeleteEvent = async () => { 
-        try {
-            if (user) {
-                const deleteData = [event_id];
-                console.log('Data to server:', deleteData);
-                await updateDataInDb(JSON.stringify(deleteData), 'http://localhost:3001/api/events/edit/delete'); 
-                setIsDeleteButtonClicked(true);
-                setTimeout(() => {
-                    setIsDeleteButtonClicked(false);
-                    setRedirect(true);
-                }, 1000);
-            } else {
-                console.log("Event not found!");
-            }
-        } catch (error) {
-            console.error('Error deleting Event data:', error);
-        }
-    };  
 
     return (
       <form className="event-form" onSubmit={formik.handleSubmit}>

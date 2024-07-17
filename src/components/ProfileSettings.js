@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef  } from 'react';
 import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend, updateDataInDb } from '../apis/UserDataApi';
 import { useFormik } from 'formik';
@@ -6,30 +6,6 @@ import * as Yup from 'yup';
 
 const ProfileSettings = () => {
     const { user } = UserAuth();
-
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                if (user) {
-                    const data = await getDataFromBackend(`http://localhost:3001/api/users/${user.uid}`);
-                    formik.setValues({
-                        username: data[0]?.username || '',
-                        email: data[0]?.email || '',
-                        dateOfBirth: data[0]?.dateOfBirth || '',
-                        address: data[0]?.address || '',
-                        country: data[0]?.country || '',
-                        region: data[0]?.region || '',
-                        phoneNumber: data[0]?.phoneNumber || '',
-                        description: data[0]?.description || '',
-                    });
-                    console.log("Loaded data from server:", data);
-                }
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            }
-        };
-        fetchData();
-    }, [user]);
 
     const validationSchema = Yup.object().shape({
         username: Yup.string().required('Username is required'),
@@ -82,6 +58,36 @@ const ProfileSettings = () => {
             }
         },
     });
+
+    const formikRef = useRef(formik);
+
+    useEffect(() => {
+        formikRef.current = formik;
+    }, [formik]);
+    
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                if (user) {
+                    const data = await getDataFromBackend(`http://localhost:3001/api/users/${user.uid}`);
+                    formikRef.current.setValues({
+                        username: data[0]?.username || '',
+                        email: data[0]?.email || '',
+                        dateOfBirth: data[0]?.dateOfBirth || '',
+                        address: data[0]?.address || '',
+                        country: data[0]?.country || '',
+                        region: data[0]?.region || '',
+                        phoneNumber: data[0]?.phoneNumber || '',
+                        description: data[0]?.description || '',
+                    });
+                    console.log("Loaded data from server:", data);
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        };
+        fetchData();
+    }, [user]);
 
     return (
         <form onSubmit={formik.handleSubmit}>

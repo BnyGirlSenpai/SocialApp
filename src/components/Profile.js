@@ -31,7 +31,7 @@ const Profile = () => {
       }
     };
     fetchData();
-  }, [uid, user]);
+  }, [uid, user, isCurrentUser]);
 
   const isFriend = (userId) => {
     return userFriends.some(friend => friend.uid === userId);

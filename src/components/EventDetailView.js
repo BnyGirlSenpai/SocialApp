@@ -13,7 +13,7 @@ const EventDetailView = () => {
     const { event_id  } = useParams(); 
     const { user } = UserAuth();
     const [eventData, setEventData] = useState([]);
-    const [ownEvents, setOwnEvents] = useState([]);
+    const [, setOwnEvents] = useState([]);
     const [showFriendDropDown, setShowFriendDropDown] = useState(false);
     const [selectedEventId, setSelectedEventId] = useState(null); 
     const isAdmin = eventData.creator_uid === user.uid;
@@ -39,7 +39,7 @@ const EventDetailView = () => {
             }
         };
         fetchEventData();
-    }, [user, event_id ]);
+    }, [user, event_id]);
 
     useEffect(() => {
         if (redirect) {
