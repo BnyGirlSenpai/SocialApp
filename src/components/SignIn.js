@@ -25,10 +25,7 @@ const Signin = () => {
 
   return (
     <div> 
-    <video className="video-background" autoPlay loop muted>
-      <source src="Videos/LoginBackground.mp4" type="video/mp4" />
-      Your browser does not support the video tag!
-    </video>
+    <img className="login-background" src="images/background/bg-01.jpg" alt="background image" />
     <Button variant="contained" onClick={handleGoogleSignIn} className='sign-in-button'>
       Sign In with Google
     </Button>
