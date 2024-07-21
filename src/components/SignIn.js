@@ -25,10 +25,12 @@ const Signin = () => {
 
   return (
     <div> 
-    <img className="login-background" src="images/background/bg-01.jpg" alt="background image" />
-    <Button variant="contained" onClick={handleGoogleSignIn} className='sign-in-button'>
-      Sign In with Google
-    </Button>
+      <img className="login-background" src="images/background/bg-01.jpg" alt="background image" />
+
+      <Button variant="contained" onClick={handleGoogleSignIn} className='sign-in-button'>
+        Sign In with Google
+      </Button>
+
     </div>
   );
 };
