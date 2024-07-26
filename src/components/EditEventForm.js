@@ -11,6 +11,7 @@ import '../styles/eventform.css';
 const EditEventForm = () => {
   const { user } = UserAuth();
   const { event_id } = useParams(); 
+  const [selectedFile, setSelectedFile] = useState(null);
   const [, setIsDeleteButtonClicked] = useState(false);
   const navigate = useNavigate();
   const [redirect, setRedirect] = useState(false);
@@ -49,6 +50,7 @@ const EditEventForm = () => {
       .required('Max guests is required')
       .min(0, 'Min value is 0')
       .max(69, 'Max value is 69'),
+      eventType: Yup.string().required('Event type is required'),
   });
 
   const formik = useFormik({
@@ -59,7 +61,10 @@ const EditEventForm = () => {
       eventTime: '',
       description: '',
       maxGuests: '',
-      eventVisibility: 'public',
+      eventType: '',
+      eventImage: '',
+      eventStatusPublic: false,
+      eventStatusOpen: false
   },
     validationSchema: validationSchema,
     enableReinitialize: true, 
@@ -71,13 +76,20 @@ const EditEventForm = () => {
                 // Convert to UTC and format as required for MySQL datetime
                 const utcDateTime = localDateTime.toISOString().slice(0, 19).replace('T', ' ');
 
+                const eventStatus = [
+                    values.eventStatusPublic,
+                    values.eventStatusOpen
+                  ].filter(status => status).join(',');
+
                 const updatedData = [
                     values.eventName,
                     values.location,
                     utcDateTime, 
                     values.description,
                     values.maxGuests,
-                    values.eventVisibility,
+                    values.eventType,
+                    values.eventImage,
+                    eventStatus,
                     event_id
                 ];
                 console.log('Data to server:', updatedData);
@@ -122,6 +134,7 @@ const EditEventForm = () => {
             try {
                 if (user) {
                     const data = await getDataFromBackend(`http://localhost:3001/api/events/edit/${event_id}`);
+
                     formikRef.current.setValues({
                       eventName: data[0]?.event_name || '',
                       location: data[0]?.location || '',
@@ -129,8 +142,11 @@ const EditEventForm = () => {
                       eventTime: formatLocalDateTime(data[0]?.event_datetime || '').split(',')[1].trim(),
                       description: data[0]?.description || '',
                       maxGuests: data[0]?.max_guests_count || '',
-                      eventVisibility: data[0]?.event_visibility || 'public'
-                  });
+                      eventType: data[0]?.event_type || '',
+                      eventImage: data[0]?.image_url || '',
+                      eventStatusPublic:  (data[0]?.event_status ||'').split(',')[0],
+                      eventStatusOpen:  (data[0]?.event_status || '').split(',')[1]
+                    });
                    
                   console.log("Loaded data from server:", data);
                 }  
@@ -146,6 +162,27 @@ const EditEventForm = () => {
             navigate('/EventPage');
         }
     }, [redirect, navigate]);
+
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            setSelectedFile(file);
+        }
+    };
+
+    const handleDragOver = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+    };
+
+    const handleDrop = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const file = event.dataTransfer.files[0];
+        if (file) {
+            setSelectedFile(file);
+        }
+    };
 
     return (
       <form className="event-form" onSubmit={formik.handleSubmit}>
@@ -232,18 +269,77 @@ const EditEventForm = () => {
           <div className="error">{formik.errors.maxGuests}</div>
       ) : null}
 
+<label htmlFor="eventType">Event Type</label>
+      <select
+        id="eventType"
+        name="eventType"
+        value={formik.values.eventType}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+      >
+        <option value="">Select Event Type</option>
+        <option value="conference">Conference</option>
+        <option value="workshop">Workshop</option>
+        <option value="webinar">Webinar</option>
+        <option value="meetup">Meetup</option>
+        {/* Add more event types as needed */}
+      </select>
+      {formik.touched.eventType && formik.errors.eventType ? (
+        <div className="error">{formik.errors.eventType}</div>
+      ) : null}
+
+      <label htmlFor="eventImage">Event Image</label>
+      <div
+        className="image-upload"
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+      >
+        <input
+          type="file"
+          id="eventImage"
+          name="eventImage"
+          accept="image/*"
+          onChange={handleFileChange}
+          style={{ display: 'none' }}
+        />
+        <button
+          type="button"
+          onClick={() => document.getElementById('eventImage').click()}
+        >
+          {selectedFile ? selectedFile.name : 'Choose Image'}
+        </button>
+        <p>Drag & drop an image here or click to select</p>
+      </div>
+
       <div className="mt-3">
           <button
               type="button"
               className="btn btn-sm btn-secondary"
               onClick={() => {
                   formik.setFieldValue(
-                      'eventVisibility',
-                      formik.values.eventVisibility === 'public' ? 'private' : 'public'
+                      'eventStatusPublic',
+                      formik.values.eventStatusPublic === 'public' ? 'private' : 'public'
                   );
               }}
           >
-              {formik.values.eventVisibility === 'public' ? 'Make Private' : 'Make Public'}
+              {formik.values.eventStatusPublic === 'public' ? 'Make Private' : 'Make Public'}
+          </button>
+      </div>
+
+       <div className="mt-3">
+          <button
+              type="button"
+              className="btn btn-sm btn-secondary"
+              onClick={() => {
+                  formik.setFieldValue(
+                      'eventStatusOpen',
+                      formik.values.eventStatusOpen === 'open' ? 'closed' : 'open'
+                  );
+                  console.log(formik.values.eventStatusOpen);
+
+              }}
+          >
+              {formik.values.eventStatusOpen === 'open' ? 'Close Event' : 'Open Event'}
           </button>
       </div>
 

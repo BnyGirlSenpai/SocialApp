@@ -32,7 +32,7 @@ const EventDetailView = () => {
                     console.log("Loaded guests data from server:", guests);
                     setDateTime(formatLocalDateTime(eventData.event_datetime));
                     setEventData(eventData);
-                    setGuestsData(guests);
+                    setGuestsData(guests[0]);
                 }
             } catch (error) {
                 console.error("Error fetching event data:", error);
@@ -71,7 +71,7 @@ const EventDetailView = () => {
         }
     }
 
-    const isUserAlreadyJoined = guestsData.some(guest => guest.uid === user.uid);
+    const isUserAlreadyJoined = Array.isArray(guestsData) && guestsData.some(guest => guest.uid === user.uid);
 
     return (
         <div className="event-detail-container">

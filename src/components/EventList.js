@@ -7,7 +7,6 @@ import '../styles/eventpage.css';
 const EventList = () => {
   const { user  } = UserAuth(); 
   const [joinedEvents, setJoinedEvents] = useState([]);
-  const [dateTime, setDateTime] = useState([]);
 
   useEffect(() => {
     const fetchEventData = async () => {
@@ -17,16 +16,10 @@ const EventList = () => {
           console.log("Loaded joined Event Data from server:", joinedEventData);
   
           if (joinedEventData && joinedEventData.length > 0) {
-            if (joinedEventData[0].event_datetime) {
-              setDateTime(formatLocalDateTime(joinedEventData[0].event_datetime));
-            } else {
-              setDateTime(''); 
-            }
-  
+
             setJoinedEvents([joinedEventData]);
           } else {
             setJoinedEvents([]);
-            setDateTime(''); 
           }
         }
       } catch (error) {
@@ -67,10 +60,10 @@ const EventList = () => {
                   <div className="card-info">
                     <div className="event-info">                                
                       <h5><a href={`/EventPage/EventDetailPage/${event.event_id}`} className="event-link">{event.event_name}</a></h5> 
-                      <p>Date: {dateTime.slice(0,10)}</p>
-                      <p>Time: {dateTime.slice(11,17)}</p>
+                      <p>Date: {formatLocalDateTime(event.event_datetime).slice(0,10)}</p>
+                      <p>Time: {formatLocalDateTime(event.event_datetime).slice(11,17)}</p>
                       <p>Location: {event.location}</p>
-                      <p>Visibility: {event.event_visibility}</p>
+                      <p>Status: {event.event_status}</p>
                     </div>                 
                   </div>
                 </div>

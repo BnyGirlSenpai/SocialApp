@@ -9,7 +9,6 @@ const Home = () => {
   const { user } = UserAuth();
   const [publicEvents, setPublicEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [dateTime, setDateTime] = useState([]);
 
   useEffect(() => {
     const fetchEventData = async () => {
@@ -19,15 +18,9 @@ const Home = () => {
           console.log("Loaded public Event Data from server:", publicEventsData);
 
           if (publicEventsData && publicEventsData.length > 0) {
-            if (publicEventsData[0].event_datetime) {
-              setDateTime(formatLocalDateTime(publicEventsData[0].event_datetime));
-            } else {
-              setDateTime(''); 
-            }
             setPublicEvents([publicEventsData]);
           } else {
             setPublicEvents([]);
-            setDateTime(''); 
           }
           setLoading(false); 
         }
@@ -58,11 +51,13 @@ const Home = () => {
                       <div className="event-info">
                         <h5><a href={`/EventPage/EventDetailPage/${event.event_id}`} className="event-link">{event.event_name}</a></h5>                       
                         <p>Creator: <a href={`/profilepage/${event.creator_uid}`} className="event-link">{event.creator_username}</a></p>
-                        <p>Date: {dateTime.slice(0,10)}</p>
-                        <p>Time: {dateTime.slice(11,17)}</p>
+                        <p>Date: {formatLocalDateTime(event.event_datetime).slice(0,10)}</p>
+                        <p>Time: {formatLocalDateTime(event.event_datetime).slice(11,17)}</p>
                         <p>Location: {event.location}</p>
                         <p>Current Guests: {event.current_guests_count} / {event.max_guests_count} </p>
                         <p>Info: {event.description}</p>
+                        <p>Type: {event.event_type}</p>
+                        <p>Image: {event.image_url}</p>
                       </div>
                       <a href={`/EventPage/EventDetailPage/${event.event_id}`}>
                         <Button variant="contained" >Details</Button >

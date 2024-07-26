@@ -10,7 +10,6 @@ const EventList = () => {
   const [ownEvents, setOwnEvents] = useState([]);
   const [showFriendDropDown, setShowFriendDropDown] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState(null); 
-  const [dateTime, setDateTime] = useState([]);
 
   useEffect(() => {
     const fetchEventData = async () => {
@@ -20,15 +19,9 @@ const EventList = () => {
           console.log("Loaded own Event Data from server:", ownEventData);
   
           if (ownEventData && ownEventData.length > 0) {
-            if (ownEventData[0].event_datetime) {
-              setDateTime(formatLocalDateTime(ownEventData[0].event_datetime));
-            } else {
-              setDateTime(''); 
-            }
             setOwnEvents([ownEventData]);
           } else {
             setOwnEvents([]);
-            setDateTime(''); 
           }
         }
       } catch (error) {
@@ -66,14 +59,16 @@ const EventList = () => {
                     <div className="card-info">
                       <div className="event-info">                                
                       <h5><a href={`/EventPage/EventDetailPage/${event.event_id}`} className="event-link">{event.event_name}</a></h5> 
-                        <p>Date: {dateTime.slice(0,10)}</p>
-                        <p>Time: {dateTime.slice(11,17)}</p>
+                        <p>Date: {formatLocalDateTime(event.event_datetime).slice(0,10)}</p>
+                        <p>Time: {formatLocalDateTime(event.event_datetime).slice(11,17)}</p>
                         <p>Location: {event.location}</p>
                         <p>Description: {event.description}</p>
                         <p>Max Guests: {event.max_guests_count}</p>
                         <p>Current Guests: {event.current_guests_count}</p>
                         <p>Invited: {event.invited_guests_count}</p>
-                        <p>Visibility: {event.event_visibility}</p>
+                        <p>Status: {event.event_status}</p>
+                        <p>Type: {event.event_type}</p>
+                        <p>Image: {event.image_url}</p>
                       </div>                 
                     </div>
                   </div>

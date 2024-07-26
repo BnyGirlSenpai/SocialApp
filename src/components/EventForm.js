@@ -9,6 +9,7 @@ import '../styles/eventform.css';
 const EventForm = () => {
   const { user } = UserAuth();
   const navigate = useNavigate();
+  const [selectedFile, setSelectedFile] = useState(null);
   const [isButtonClicked, setIsButtonClicked] = useState(false);
   const validationSchema = Yup.object().shape({
     eventName: Yup.string().required('Event name is required'),
@@ -44,6 +45,7 @@ const EventForm = () => {
       .required('Max guests is required')
       .min(0, 'Min value is 0')
       .max(69, 'Max value is 69'),
+    eventType: Yup.string().required('Event type is required'),
   });
 
   const formik = useFormik({
@@ -54,7 +56,8 @@ const EventForm = () => {
       eventTime: '',
       description: '',
       maxGuests: '',
-      eventVisibility: false,
+      eventType: '',
+      eventStatus: false,
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
@@ -71,7 +74,9 @@ const EventForm = () => {
             eventDateTime: utcDateTime,
             description: values.description,
             maxGuests: values.maxGuests,
-            eventVisibility: values.eventVisibility ? 'private' : 'public',
+            eventType: values.eventType,
+            eventImage: selectedFile ? selectedFile.name : '',
+            eventStatus: values.eventStatus ? 'private'+',open' : 'public'+',open',
             uid: user.uid,
           };
 
@@ -90,6 +95,27 @@ const EventForm = () => {
       }
     }
   });
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  const handleDragOver = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+  const handleDrop = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const file = event.dataTransfer.files[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
 
   return (
     <form className="event-form" onSubmit={formik.handleSubmit}>
@@ -177,13 +203,55 @@ const EventForm = () => {
         <div className="error">{formik.errors.maxGuests}</div>
       ) : null}
 
+      <label htmlFor="eventType">Event Type</label>
+      <select
+        id="eventType"
+        name="eventType"
+        value={formik.values.eventType}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+      >
+        <option value="">Select Event Type</option>
+        <option value="conference">Conference</option>
+        <option value="workshop">Workshop</option>
+        <option value="webinar">Webinar</option>
+        <option value="meetup">Meetup</option>
+        {/* Add more event types as needed */}
+      </select>
+      {formik.touched.eventType && formik.errors.eventType ? (
+        <div className="error">{formik.errors.eventType}</div>
+      ) : null}
+
+      <label htmlFor="eventImage">Event Image</label>
+      <div
+        className="image-upload"
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+      >
+        <input
+          type="file"
+          id="eventImage"
+          name="eventImage"
+          accept="image/*"
+          onChange={handleFileChange}
+          style={{ display: 'none' }}
+        />
+        <button
+          type="button"
+          onClick={() => document.getElementById('eventImage').click()}
+        >
+          {selectedFile ? selectedFile.name : 'Choose Image'}
+        </button>
+        <p>Drag & drop an image here or click to select</p>
+      </div>
+
       <div className="mt-3">
         <button
           type="button"
           className="btn btn-sm btn-secondary"
-          onClick={() => formik.setFieldValue('eventVisibility', !formik.values.eventVisibility)}
+          onClick={() => formik.setFieldValue('eventStatus', !formik.values.eventStatus)}
         >
-          {formik.values.eventVisibility ? 'Private' : 'Public'}
+          {formik.values.eventStatus ? 'Private' : 'Public'}
         </button>
       </div>
 

@@ -88,8 +88,8 @@ const Notifications = () => {
                         <div className="col-md-4 col-sm-6" key={index}>
                             <div className="friend-card">
                                 <div className="card-info">
-                                    <div className="friend-info">                                
-                                        <h5><a href="ProfilePage" className="profile-link">{user.username}</a></h5> 
+                                    <div className="friend-info">   
+                                        <h5><a href={`ProfilePage/${user.uid}`} className="profile-link">{user.username}</a></h5> 
                                         <img src={user.photoUrl} alt={user.username} />
                                         <button className="btn btn-primary pull-right" onClick={() => rejectFriendRequest(user.uid)}>Reject</button>
                                         <button className="btn btn-primary pull-right" onClick={() => acceptFriendRequest(user.uid)}>Accept</button>
