@@ -10,8 +10,8 @@ router.post('/event/create', async (req, res) => {
     let eventData =  JSON.parse(receivedData.body);
     console.log(eventData);
     try {
-        let insertQuery = 'INSERT INTO events (event_name, location, event_datetime, description, max_guests_count, event_visibility, creator_uid) VALUES (?, ?, ?, ?, ?, ?, ?)';
-        await connection.query(insertQuery, [eventData.eventName, eventData.location, eventData.eventDateTime, eventData.description, eventData.maxGuests, eventData.eventVisibility, eventData.uid]);
+        let insertQuery = 'INSERT INTO eventsTest (event_name, location, event_datetime, description, max_guests_count, event_status, creator_uid, event_type, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+        await connection.query(insertQuery, [eventData.eventName, eventData.location, eventData.eventDateTime, eventData.description, eventData.maxGuests, eventData.eventStatus, eventData.uid, eventData.eventType, eventData.eventImage]);
         console.log("Event data saved");
         connection.release();
         res.status(200).json({ message: 'Event created successfully' });
@@ -25,7 +25,7 @@ router.post('/event/create', async (req, res) => {
 router.get('/events/edit/:eid', async (req, res) => {
     try {
         let eid = req.params.eid;
-        let [rows] = await connection.query('SELECT event_id, event_name, event_datetime, location, description, max_guests_count, event_visibility FROM events WHERE event_id = ?', [eid]);
+        let [rows] = await connection.query('SELECT event_id, event_name, event_datetime, location, description, max_guests_count, event_status, event_type, image_url  FROM eventsTest WHERE event_id = ?', [eid]);
         res.status(200).json(rows); 
         console.log(rows);
     } catch (error) {
@@ -39,7 +39,7 @@ router.post('/events/edit/delete', async (req, res) => {
     try {
         let eventData = req.body;
         let eid = eventData[0]; 
-        let [result] = await connection.query('DELETE FROM events WHERE event_id = ?', [eid]);
+        let [result] = await connection.query('DELETE FROM eventsTest WHERE event_id = ?', [eid]);
         
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: 'Event not found' });
@@ -57,9 +57,9 @@ router.post('/events/edit/delete', async (req, res) => {
 router.post('/events/edit/update', async (req, res) => {
     console.log(req.body);
     let eventData = req.body;
-    let eid = eventData[6]; 
+    let eid = eventData[8]; 
 
-    let selectQuery = 'SELECT COUNT(*) AS count FROM events WHERE event_id = ?';
+    let selectQuery = 'SELECT COUNT(*) AS count FROM eventsTest WHERE event_id = ?';
     try {
         let connection = await pool.getConnection();
         let [results] = await connection.query(selectQuery, [eid]);
@@ -68,17 +68,17 @@ router.post('/events/edit/update', async (req, res) => {
         if (eventCount === 1) {
             let updateFields = [];
             let updateValues = [];
-            updateFields.push('event_name = ?, location = ?, event_datetime = ?, description = ?, max_guests_count = ?, event_visibility = ?'); 
+            updateFields.push('event_name = ?, location = ?, event_datetime = ?, description = ?, max_guests_count = ?, event_type = ?, image_url = ?, event_status = ?'); 
             
-            if (eventData.length === 7) { 
-                updateValues = eventData.slice(0, 7);
-                updateValues.push(eventData[7]); 
+            if (eventData.length === 9) { 
+                updateValues = eventData.slice(0, 9);
+                updateValues.push(eventData[9]); 
             } else {
                 console.log('Invalid data format');
                 return res.status(400).json({ error: 'Invalid data format' });
             }
             updateValues.push(eid); 
-            let updateQuery = `UPDATE events SET ${updateFields} WHERE event_id = ?`;
+            let updateQuery = `UPDATE eventsTest SET ${updateFields} WHERE event_id = ?`;
 
             await connection.query(updateQuery, updateValues);
             console.log('Event data updated');
