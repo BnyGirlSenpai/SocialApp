@@ -4,17 +4,30 @@ import pool from './database.js';
 const router = express.Router();
 let connection = await pool.getConnection();
 
-// API endpoint to create new event data
+// Ensure you get the event_id after inserting an event
 router.post('/event/create', async (req, res) => {
     let receivedData = req.body;
-    let eventData =  JSON.parse(receivedData.body);
+    let eventData = JSON.parse(receivedData.body);
     console.log(eventData);
+
     try {
-        let insertQuery = 'INSERT INTO eventsTest (event_name, location, event_datetime, description, max_guests_count, event_status, creator_uid, event_type, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
-        await connection.query(insertQuery, [eventData.eventName, eventData.location, eventData.eventDateTime, eventData.description, eventData.maxGuests, eventData.eventStatus, eventData.uid, eventData.eventType, eventData.eventImage]);
-        console.log("Event data saved");
-        connection.release();
-        res.status(200).json({ message: 'Event created successfully' });
+        const connection = await pool.getConnection();
+        try {
+            // Insert the event
+            const insertQuery = 'INSERT INTO eventsTest (event_name, location, event_datetime, description, max_guests_count, event_status, creator_uid, event_type, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            const [result] = await connection.query(insertQuery, [eventData.eventName, eventData.location, eventData.eventDateTime, eventData.description, eventData.maxGuests, eventData.eventStatus, eventData.uid, eventData.eventType, eventData.eventImage]);
+
+            // Retrieve the new event_id
+            const newEventId = result.insertId;
+
+            // Insert the creator into event_guests
+            const insertGuestQuery = 'INSERT INTO event_guests (event_id, guest_uid, status) VALUES (?, ?, ?)';
+            await connection.query(insertGuestQuery, [newEventId, eventData.uid, 'joined']);
+
+            res.status(200).json({ message: 'Event created successfully' });
+        } finally {
+            connection.release(); // Ensure the connection is released even if an error occurs
+        }
     } catch (error) {
         console.error('Error processing data:', error);
         res.status(500).json({ error: 'Failed to process data' });
