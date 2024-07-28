@@ -38,7 +38,7 @@ const EventList = () => {
     };
 
     try {
-      await updateDataInDb(updateData, `http://localhost:3001/api/events/update`);
+      await updateDataInDb(updateData, `http://localhost:3001/api/events/userStatus/update`);
       console.log("Left event with ID:", eventId);
       
       setJoinedEvents((prevEvents) => [prevEvents[0].filter(event => event.event_id !== eventId)]);
