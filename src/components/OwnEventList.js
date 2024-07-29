@@ -74,8 +74,7 @@ const EventList = () => {
                   </div>
                   <div className="button-container">                   
                     <a href={`/EditEventFormPage/${event.event_id}`}><button>Edit Event</button></a>                   
-                    <button 
-                      onClick={() => {
+                    <button onClick={() => {
                       setShowFriendDropDown(true);
                       setSelectedEventId(event.event_id);
                     }}
@@ -89,6 +88,7 @@ const EventList = () => {
                     }}
                     >Invite Friends</button>
                   </div>
+                  {showFriendDropDown && <FriendDropDown eventId={selectedEventId} onInvite={hideFriendDropDown} />}
                 </li>
               ))}
             </ul>         
@@ -97,7 +97,6 @@ const EventList = () => {
           )}
         </div>
       </div>
-      {showFriendDropDown && <FriendDropDown eventId={selectedEventId} onInvite={hideFriendDropDown} />}
     </div>
   );
 };

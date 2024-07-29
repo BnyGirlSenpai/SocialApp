@@ -16,18 +16,19 @@ const EventDetailView = () => {
     const [, setOwnEvents] = useState([]);
     const [showFriendDropDown, setShowFriendDropDown] = useState(false);
     const [selectedEventId, setSelectedEventId] = useState(null); 
-    const isAdmin = eventData.creator_uid === user.uid;
+    const isOwner = eventData.creator_uid === user.uid;
     const navigate = useNavigate();
     const [redirect, setRedirect] = useState(false);
     const [guestsData, setGuestsData] = useState([]);
     const [dateTime, setDateTime] = useState([]);
+    const [ownerData, setOwnerData] = useState(null);
 
     useEffect(() => {
         const fetchEventData = async () => {
             try {
                 if (user) {
                     const eventData = await getDataFromBackend(`http://localhost:3001/api/events/eventDetail/${event_id }`);
-                    const  guests = await getDataFromBackend(`http://localhost:3001/api/events/allGuests/${event_id}`);
+                    const  guests = await getDataFromBackend(`http://localhost:3001/api/events/guestIds/${event_id}`);
                     console.log("Loaded Event Data from server:", eventData);
                     console.log("Loaded guests data from server:", guests);
                     setDateTime(formatLocalDateTime(eventData.event_datetime));
@@ -46,6 +47,23 @@ const EventDetailView = () => {
             navigate('/EventPage');
         }
     }, [redirect, navigate]);
+
+    useEffect(() => {
+        const fetchOwnerInfo = async () => {
+            if (isOwner) {
+                try {
+                    const response = await fetch(`http://localhost:3001/api/events/ownerInfo/${event_id}`);
+                    const data = await response.json();
+                    console.log(data);
+                    setOwnerData(data); 
+                } catch (error) {
+                    console.error('Failed to fetch owner info:', error);
+                }
+            }
+        };
+
+        fetchOwnerInfo();
+    }, [isOwner, eventData.event_id]);
 
     const joinPublicEvent = async (targetEventId) => {
         let updateData = {
@@ -82,9 +100,10 @@ const EventDetailView = () => {
             <div className="event-time">Time: {dateTime.slice(11,17)}</div>
             <div className="event-location">Location: {eventData.location}</div>
         </div>
-        {isAdmin ? (
+        {isOwner ? (
             <div className="button-container">                   
-                <a href={`/EditEventFormPage/${eventData.event_id}`}><button>Edit Event</button></a>                   
+                <a href={`/EditEventFormPage/${eventData.event_id}`}><button>Edit Event</button></a>     
+                ownerInfo();              
                 <button 
                     onClick={() => {
                         setShowFriendDropDown(true);

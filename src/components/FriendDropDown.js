@@ -5,17 +5,16 @@ import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend, sendDataToBackend } from '../apis/UserDataApi';
 import '../styles/friendDropDown.css';
 
-const FriendDropDown = ({ eventId, onInvite }) => {
+const FriendDropDown = ({ eventId, onInvite, creatorUid}) => {
   const { user } = UserAuth();
   const [friendsData, setFriendsData] = useState([]);
   const [guestsData, setGuestsData] = useState([]);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
         if (user) {
           const friends = await getDataFromBackend(`http://localhost:3001/api/users/friends/${user.uid}`);
-          const guests = await getDataFromBackend(`http://localhost:3001/api/events/allGuests/${eventId}`);
+          const guests = await getDataFromBackend(`http://localhost:3001/api/events/guestIds/${eventId}`);
 
           console.log("Loaded friends data from server:", friends);
           console.log("Loaded guests data from server:", guests);
@@ -63,18 +62,23 @@ const FriendDropDown = ({ eventId, onInvite }) => {
           {friendsData.map((friend, index) => {
             const guestUids = guestsData.guests || [];
             const isInvitedOrJoined = guestUids.includes(friend.uid);
+            const isOwner = friend.uid === creatorUid;
             return (
               <div key={index} className="friend-item">
-                {isInvitedOrJoined ? (
-                  <span>Already Invited </span>
+                {isOwner ? (
+                  <span>Owner </span> // Display "Owner" if the friend is the creator
                 ) : (
-                  <input
-                    type="checkbox"
-                    id={`friend-${friend.uid}`}
-                    value={friend.uid}
-                    checked={formik.values.selectedFriends.includes(friend.uid)}
-                    onChange={() => handleCheckboxChange(friend.uid)}
-                  />
+                  isInvitedOrJoined ? (
+                    <span>Already Invited </span> // Display "Already Invited" if the friend is already invited
+                  ) : (
+                    <input
+                      type="checkbox"
+                      id={`friend-${friend.uid}`}
+                      value={friend.uid}
+                      checked={formik.values.selectedFriends.includes(friend.uid)}
+                      onChange={() => handleCheckboxChange(friend.uid)}
+                    />
+                  )
                 )}
                 <label htmlFor={`friend-${friend.uid}`}>{friend.username}</label>
                 <img src={friend.photoUrl} alt={friend.username} />

@@ -2,22 +2,26 @@ import React, { useState, useEffect } from 'react';
 import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend , updateDataInDb } from '../apis/UserDataApi';
 import { formatLocalDateTime } from '../utils/DateUtils'; 
+import FriendDropDown from './FriendDropDown';
 import '../styles/eventpage.css'; 
 
 const EventList = () => {
   const { user  } = UserAuth(); 
   const [joinedEvents, setJoinedEvents] = useState([]);
-
+  const [showFriendDropDown, setShowFriendDropDown] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState(null);
+  const [creatorUid, setCreatorUid] = useState(null)
+  
   useEffect(() => {
     const fetchEventData = async () => {
       try {
         if (user) {
           const joinedEventData = await getDataFromBackend(`http://localhost:3001/api/events/joined/${user.uid}`);
           console.log("Loaded joined Event Data from server:", joinedEventData);
-  
+          const creatorUid = joinedEventData.length > 0 ? joinedEventData[0].creator_uid : null;
           if (joinedEventData && joinedEventData.length > 0) {
-
             setJoinedEvents([joinedEventData]);
+            setCreatorUid(creatorUid);
           } else {
             setJoinedEvents([]);
           }
@@ -26,10 +30,21 @@ const EventList = () => {
         console.error("Error fetching event data:", error);
       }
     };
-  
     fetchEventData();
   }, [user]);
   
+  const hideFriendDropDown = async () => {
+    try {
+      if (user) {
+        const joinedEventsData = await getDataFromBackend(`http://localhost:3001/api/events/${user.uid}`);
+        setJoinedEvents(joinedEventsData ? [joinedEventsData] : []);
+        setShowFriendDropDown(false);  
+      }
+    } catch (error) {
+      console.error("Error fetching own event data:", error);
+    }
+  }
+
   const leaveEvent = async (eventId) => {
     let updateData = {
       status: 'left',
@@ -69,7 +84,24 @@ const EventList = () => {
                 </div>
                 <div className="button-container">
                   <button onClick={() => leaveEvent(event.event_id)}>Leave Event</button>
+
+                  {event.event_status.includes('open') && (
+                  <button onClick={() => {
+                      setShowFriendDropDown(true);
+                      setSelectedEventId(event.event_id);
+                    }}
+                    disabled={event.current_guests_count >= event.max_guests_count}
+                    style={{
+                      backgroundColor: event.current_guests_count >= event.max_guests_count ? '#ccc' : '', 
+                      color: event.current_guests_count >= event.max_guests_count ? '#666' : '', 
+                      cursor: event.current_guests_count >= event.max_guests_count ? 'not-allowed' : 'pointer', 
+                      border: '1px solid #ddd', 
+                      padding: '10px', 
+                    }}
+                    >Invite Friends</button>
+                  )}
                 </div>
+                {showFriendDropDown && <FriendDropDown eventId={selectedEventId} onInvite={hideFriendDropDown} creatorUid={creatorUid} />}
               </li>
             ))}
           </ul>
