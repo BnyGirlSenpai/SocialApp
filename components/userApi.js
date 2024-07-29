@@ -8,7 +8,7 @@ let connection = await pool.getConnection();
 router.get('/users/:uid', async (req, res) => {
     try {
       let uid = req.params.uid;
-      let [rows] = await connection.query('SELECT uid, authprovider, email, displayName, photoURL, country, region, username, phoneNumber, address, dateOfBirth, description, created_at FROM users WHERE uid = ?', [uid]);
+      let [rows] = await connection.query('SELECT uid, authprovider, email, display_name, photo_url, country, region, username, phone_number, address, date_of_birth, description, created_at FROM users WHERE uid = ?', [uid]);
       if (rows.length > 0) {
         res.status(200).json(rows);
       } else {
@@ -35,8 +35,9 @@ router.post('/users', async (req, res) => {
         if (userCount > 0) {      
             console.log('User already exists!');
         } else {       
-            let insertQuery = 'INSERT INTO users (uid, authprovider, email, displayName, photoURL) VALUES (?, ?, ?, ?, ?)';
+            let insertQuery = 'INSERT INTO users (uid, authprovider, email, display_name, photo_url) VALUES (?, ?, ?, ?, ?)';
             await connection.query(insertQuery, [uid, providerData?.[0]?.providerId, userData?.email, userData?.displayName, userData?.photoURL]);
+            console.log(userData?.photoURL)
             console.log("User data saved");
         }
     } catch (error) {
@@ -49,7 +50,7 @@ router.post('/users', async (req, res) => {
 });
 
 // API endpoint to update user profile data
-router.post('/users/update', async (req, res) => {
+router.put('/users/update', async (req, res) => {
     console.log(req.body);
     let userData = req.body;
     let uid = userData[8]; 
@@ -63,7 +64,7 @@ router.post('/users/update', async (req, res) => {
         if (userCount === 1) {
             let updateFields = [];
             let updateValues = [];
-            updateFields.push('username = ?, email = ?, dateOfBirth = ?, address = ?, country = ?, region = ?, phoneNumber = ?, description = ?'); 
+            updateFields.push('username = ?, email = ?, date_of_birth = ?, address = ?, country = ?, region = ?, phone_number = ?, description = ?'); 
             
             if (userData.length === 9) { 
                 updateValues = userData.slice(0, 8);

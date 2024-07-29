@@ -8,7 +8,7 @@ let connection = await pool.getConnection();
 router.get('/events/:uid', async (req, res) => {
     try {
         let uid = req.params.uid;
-        let [rows] = await connection.query('SELECT event_id, event_name, event_datetime, location, description, max_guests_count, current_guests_count, invited_guests_count, event_status, event_type , image_url, creator_uid FROM eventsTest WHERE creator_uid = ?', [uid]);
+        let [rows] = await connection.query('SELECT event_id, event_name, event_datetime, location, description, max_guests_count, current_guests_count, invited_guests_count, event_status, event_type , image_url, creator_uid FROM events WHERE creator_uid = ?', [uid]);
         res.status(200).json(rows); 
         console.log(rows);
     } catch (error) {
@@ -24,7 +24,7 @@ router.get('/events/invited/:uid', async (req, res) => {
     try {
         const query = `
             SELECT e.event_id, e.event_name, e.creator_uid, e.event_datetime, e.location, e.event_status, e.event_type, e.image_url, u.username AS creator_username
-            FROM eventsTest AS e
+            FROM events AS e
             JOIN event_guests AS eg ON e.event_id = eg.event_id
             JOIN users AS u ON e.creator_uid = u.uid
             WHERE eg.guest_uid = ? AND status IN ('invited')
@@ -47,7 +47,7 @@ router.get('/events/joined/:uid', async (req, res) => {
     try {
         const query = `
             SELECT e.event_id, e.event_name, e.creator_uid, e.event_datetime, e.location, e.event_status, e.event_type, e.image_url, u.username AS creator_username
-            FROM eventsTest AS e
+            FROM events AS e
             JOIN event_guests AS eg ON e.event_id = eg.event_id
             JOIN users AS u ON e.creator_uid = u.uid
             WHERE eg.guest_uid = ? AND status IN ('joined')
@@ -65,24 +65,33 @@ router.get('/events/joined/:uid', async (req, res) => {
 
 // API endpoint to get all guests ids (invited and joined) for a given event
 router.get('/events/allGuests/:eventId', async (req, res) => {
+    let connection;
     try {
         let eventId = req.params.eventId;
+        connection = await pool.getConnection(); // Ensure the connection is acquired
+
         let [rows] = await connection.query(`
             SELECT guest_uid
             FROM event_guests
-            WHERE event_id = ? AND status IN ('joined', 'invited')`,
-            [eventId]);
+            WHERE event_id = ? AND status IN ('joined', 'invited')
+        `, [eventId]);
 
         if (rows.length === 0) {
             return res.status(404).json({ error: 'Event not found' });
         }
 
-        let allGuests = rows[0]
-        res.status(200).json(allGuests);
+        // Extract guest_uid from each row
+        let allGuests = rows.map(row => row.guest_uid);
+
+        res.status(200).json({ guests: allGuests });
         console.log(allGuests);
     } catch (error) {
         console.error('Error retrieving event guests:', error);
         res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        if (connection) {
+            connection.release(); // Ensure the connection is released
+        }
     }
 });
 
@@ -92,7 +101,7 @@ router.get('/events/eventDetail/:eventId', async (req, res) => {
         let eventId = req.params.eventId;
         let [rows] = await connection.query(`
             SELECT *
-            FROM eventsTest
+            FROM events
             WHERE event_id = ?
         `, [eventId]);
 
@@ -114,7 +123,7 @@ router.get('/public/events', async (req,res) => {
     try {
         let [rows] = await connection.query(`
             SELECT e.event_id, e.event_name, e.location, e.event_datetime, e.current_guests_count, e.max_guests_count, e.description, e.event_type, e.image_url, e.creator_uid, u.username AS creator_username
-            FROM eventsTest AS e
+            FROM events AS e
             JOIN users AS u ON e.creator_uid = u.uid
             WHERE e.event_status = 'public,open'
             AND (e.current_guests_count < e.max_guests_count OR e.current_guests_count IS NULL);

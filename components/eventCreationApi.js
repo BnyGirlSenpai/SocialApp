@@ -14,17 +14,27 @@ router.post('/event/create', async (req, res) => {
         const connection = await pool.getConnection();
         try {
             // Insert the event
-            const insertQuery = 'INSERT INTO eventsTest (event_name, location, event_datetime, description, max_guests_count, event_status, creator_uid, event_type, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
-            const [result] = await connection.query(insertQuery, [eventData.eventName, eventData.location, eventData.eventDateTime, eventData.description, eventData.maxGuests, eventData.eventStatus, eventData.uid, eventData.eventType, eventData.eventImage]);
+            const insertQuery = `
+                INSERT INTO events 
+                (event_name, location, event_datetime, description, max_guests_count, event_status, creator_uid, event_type, image_url) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `;
+            const [result] = await connection.query(insertQuery, [
+                eventData.eventName, 
+                eventData.location, 
+                eventData.eventDateTime, 
+                eventData.description, 
+                eventData.maxGuests, 
+                eventData.eventStatus, 
+                eventData.uid, 
+                eventData.eventType, 
+                eventData.eventImage
+            ]);
 
             // Retrieve the new event_id
             const newEventId = result.insertId;
 
-            // Insert the creator into event_guests
-            const insertGuestQuery = 'INSERT INTO event_guests (event_id, guest_uid, status) VALUES (?, ?, ?)';
-            await connection.query(insertGuestQuery, [newEventId, eventData.uid, 'joined']);
-
-            res.status(200).json({ message: 'Event created successfully' });
+            res.status(200).json({ message: 'Event created successfully', eventId: newEventId });
         } finally {
             connection.release(); // Ensure the connection is released even if an error occurs
         }
@@ -38,7 +48,7 @@ router.post('/event/create', async (req, res) => {
 router.get('/events/edit/:eid', async (req, res) => {
     try {
         let eid = req.params.eid;
-        let [rows] = await connection.query('SELECT event_id, event_name, event_datetime, location, description, max_guests_count, event_status, event_type, image_url  FROM eventsTest WHERE event_id = ?', [eid]);
+        let [rows] = await connection.query('SELECT event_id, event_name, event_datetime, location, description, max_guests_count, event_status, event_type, image_url  FROM events WHERE event_id = ?', [eid]);
         res.status(200).json(rows); 
         console.log(rows);
     } catch (error) {
@@ -48,11 +58,10 @@ router.get('/events/edit/:eid', async (req, res) => {
 });
 
 // API endpoint to delete event 
-router.post('/events/edit/delete', async (req, res) => {
+router.delete('/events/edit/delete/:eid', async (req, res) => {
     try {
-        let eventData = req.body;
-        let eid = eventData[0]; 
-        let [result] = await connection.query('DELETE FROM eventsTest WHERE event_id = ?', [eid]);
+        let eid = req.params.eid;
+        let [result] = await connection.query('DELETE FROM events WHERE event_id = ?', [eid]);
         
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: 'Event not found' });
@@ -67,12 +76,12 @@ router.post('/events/edit/delete', async (req, res) => {
 });
 
 // API endpoint to store updated event data
-router.post('/events/edit/update', async (req, res) => {
+router.put('/events/edit/update', async (req, res) => {
     console.log(req.body);
     let eventData = req.body;
     let eid = eventData[8]; 
 
-    let selectQuery = 'SELECT COUNT(*) AS count FROM eventsTest WHERE event_id = ?';
+    let selectQuery = 'SELECT COUNT(*) AS count FROM events WHERE event_id = ?';
     try {
         let connection = await pool.getConnection();
         let [results] = await connection.query(selectQuery, [eid]);
@@ -91,7 +100,7 @@ router.post('/events/edit/update', async (req, res) => {
                 return res.status(400).json({ error: 'Invalid data format' });
             }
             updateValues.push(eid); 
-            let updateQuery = `UPDATE eventsTest SET ${updateFields} WHERE event_id = ?`;
+            let updateQuery = `UPDATE events SET ${updateFields} WHERE event_id = ?`;
 
             await connection.query(updateQuery, updateValues);
             console.log('Event data updated');

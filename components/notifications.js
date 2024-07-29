@@ -9,7 +9,7 @@ router.get('/users/friendrequests/:uid', async (req, res) => {
     try {
       let uid = req.params.uid;
       connection = await pool.getConnection();
-      let [rows] = await connection.query('SELECT u.photoUrl, u.username , u.uid, ur.created_at FROM friendrequests AS ur JOIN users AS u ON ur.uid_transmitter = u.uid WHERE ur.uid_receiver = ? AND ur.status = "pending"',[uid]);
+      let [rows] = await connection.query('SELECT u.photo_url, u.username , u.uid, ur.created_at FROM friendrequests AS ur JOIN users AS u ON ur.uid_transmitter = u.uid WHERE ur.uid_receiver = ? AND ur.status = "pending"',[uid]);
       console.log(rows);
       res.status(200).json(rows);
     } catch (error) {

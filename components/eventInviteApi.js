@@ -19,7 +19,7 @@ async function updateJoinedGuestsCounts(event_id, connection) {
 
         // Update the event with the new joined guests count
         const updateEventQuery = `
-            UPDATE eventsTest 
+            UPDATE events 
             SET current_guests_count = ? 
             WHERE event_id = ?
         `;
@@ -46,7 +46,7 @@ async function updateInvitedGuestsCounts(event_id, connection) {
         console.log(`Invited guests count for event_id ${event_id}: ${invitedCount}`);
 
         const updateEventQuery = `
-            UPDATE eventsTest 
+            UPDATE events 
             SET invited_guests_count = ? 
             WHERE event_id = ?
         `;
@@ -61,27 +61,34 @@ async function updateInvitedGuestsCounts(event_id, connection) {
 
 // API endpoint to store event invites uid's
 router.post('/events/invites/:eventId', async (req, res) => {
-    console.log(req.body);
-    let eventId = req.params.eventId;
-    let receivedData = JSON.parse(req.body.body); 
-
     try {
         let connection = await pool.getConnection();
-  
-        await updateInvitedGuestsCounts(eventId,connection);
+        console.log(req.body);
+        const eventId = req.params.eventId;
+        const receivedData = JSON.parse(req.body.body);
+        console.log(receivedData);
+
+        const insertQuery = 'INSERT INTO event_guests (event_id, guest_uid, status) VALUES (?, ?, ?)';
+        
+        for (const uid of receivedData) {
+            await connection.query(insertQuery, [eventId, uid, 'invited']);
+        }
+
+        await updateInvitedGuestsCounts(eventId, connection);
 
         res.status(200).json({ success: true, message: 'Event data updated' });
     } catch (error) {
         console.error('Error processing data:', error);
         res.status(500).json({ error: 'Failed to process data' });
-    }
-    finally {
-        connection.release(); 
+    } finally {
+        if (connection) {
+            connection.release();
+        }
     }
 });
 
 // API to update event database after invited_guest interaction
-router.post('/events/userStatus/update', async (req, res) => {
+router.put('/events/userStatus/update', async (req, res) => {
     const connection = await pool.getConnection(); 
 
     try {
@@ -94,7 +101,7 @@ router.post('/events/userStatus/update', async (req, res) => {
         if (status === 'accepted') {
             await connection.query(`
                 UPDATE event_guests
-                SET status = 'accepted'
+                SET status = 'joined'
                 WHERE guest_uid = ? AND event_id = ?
             `, [uid_guest, event_id]);
 
@@ -129,7 +136,7 @@ router.post('/events/userStatus/update', async (req, res) => {
 });
 
 // API to join public events
-router.post('/join/public/event', async (req, res) => {
+router.put('/join/public/event', async (req, res) => {
     try {
         const eventData = req.body;
         console.log(eventData);
