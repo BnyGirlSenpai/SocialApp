@@ -21,7 +21,7 @@ const FriendDropDown = ({ eventId, onInvite }) => {
           console.log("Loaded guests data from server:", guests);
 
           setFriendsData(friends);
-          setGuestsData(guests);
+          setGuestsData(guests || { guests: [] });
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -61,7 +61,8 @@ const FriendDropDown = ({ eventId, onInvite }) => {
       <form onSubmit={formik.handleSubmit}>
         <div className="friend-list">
           {friendsData.map((friend, index) => {
-            const isInvitedOrJoined = guestsData.some(guest => guest.uid === friend.uid);
+            const guestUids = guestsData.guests || [];
+            const isInvitedOrJoined = guestUids.includes(friend.uid);
             return (
               <div key={index} className="friend-item">
                 {isInvitedOrJoined ? (

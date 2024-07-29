@@ -19,7 +19,7 @@ const sendDataToBackend = async (data,endpoint) => {
 
 const updateDataInDb = async (data,endpoint) => {
   try {
-    let response = await axios.post(endpoint,data,
+    let response = await axios.put(endpoint,data,
       {
         headers: { 'Content-Type': 'application/json' } 
       }
@@ -52,4 +52,18 @@ const getDataFromBackend = async (endpoint) => {
   }
 };
 
-export {sendDataToBackend ,getDataFromBackend ,updateDataInDb};
+const deleteDataFromBackend = async (endpoint) => {
+  try {
+    let response = await axios.delete(endpoint);
+
+    if (response.status === 200) {
+      console.log('Data deleted successfully');
+    } else {
+      console.error('Error deleting data:', response);
+    }
+  } catch (error) {
+    console.error('Error deleting data from backend:', error);
+  }
+};
+
+export {sendDataToBackend ,getDataFromBackend ,updateDataInDb ,deleteDataFromBackend};

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef  } from 'react';
 import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend, updateDataInDb } from '../apis/UserDataApi';
+import { formatLocalDateTime } from '../utils/DateUtils'; 
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 
@@ -73,11 +74,11 @@ const ProfileSettings = () => {
                     formikRef.current.setValues({
                         username: data[0]?.username || '',
                         email: data[0]?.email || '',
-                        dateOfBirth: data[0]?.dateOfBirth || '',
+                        dateOfBirth: formatLocalDateTime(data[0]?.date_of_birth || '').split(',')[0].split('.').reverse().join('-'),
                         address: data[0]?.address || '',
                         country: data[0]?.country || '',
                         region: data[0]?.region || '',
-                        phoneNumber: data[0]?.phoneNumber || '',
+                        phoneNumber: data[0]?.phone_number || '',
                         description: data[0]?.description || '',
                     });
                     console.log("Loaded data from server:", data);

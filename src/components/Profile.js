@@ -22,7 +22,7 @@ const Profile = () => {
           setIsCurrentUser(data[0].uid === user.uid);
 
           if (user && !isCurrentUser) {
-            const friendsData = await getDataFromBackend(`http://localhost:3001/api/users/friends/${user.uid}`);//verbessern
+            const friendsData = await getDataFromBackend(`http://localhost:3001/api/users/friends/${user.uid}`);
             setUserFriends(friendsData);
           }
         }
@@ -122,7 +122,7 @@ return (
                         <div className="profile-info-row">
                           <div className="profile-info-name"> Date of Birth: </div>
                           <div className="profile-info-value">
-                            <span>{userData?.[0]?.dateOfBirth}</span>
+                            <span>{formatLocalDateTime(userData?.[0]?.date_of_birth).slice(0,10)}</span>
                           </div>
                         </div>
                         <div className="profile-info-row">

@@ -32,7 +32,7 @@ const EventDetailView = () => {
                     console.log("Loaded guests data from server:", guests);
                     setDateTime(formatLocalDateTime(eventData.event_datetime));
                     setEventData(eventData);
-                    setGuestsData(guests[0]);
+                    setGuestsData(guests || { guests: [] });                
                 }
             } catch (error) {
                 console.error("Error fetching event data:", error);
@@ -71,7 +71,8 @@ const EventDetailView = () => {
         }
     }
 
-    const isUserAlreadyJoined = Array.isArray(guestsData) && guestsData.some(guest => guest.uid === user.uid);
+    const guestUids = guestsData.guests || [];
+    const isInvitedOrJoined = guestUids.includes(user.uid);
 
     return (
         <div className="event-detail-container">
@@ -100,7 +101,7 @@ const EventDetailView = () => {
                 >Invite Friends</button>
             </div>
         ) : (
-            isUserAlreadyJoined ? (
+            isInvitedOrJoined ? (
                 <div className="already-joined">You have already joined this event.</div>
             ) : (
                 <Button variant="contained" onClick={() => joinPublicEvent(eventData.event_id)}>Join</Button>

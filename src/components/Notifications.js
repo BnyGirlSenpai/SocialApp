@@ -64,7 +64,7 @@ const Notifications = () => {
             event_id: targetEventId,
             uid_guest: user.uid
         };
-        updateDataInDb(updateData,`http://localhost:3001/api/events/update`)
+        updateDataInDb(updateData,`http://localhost:3001/api/events/userStatus/update`)
     };
     
     const rejectEventRequest = async (targetEventId) => {
@@ -73,7 +73,7 @@ const Notifications = () => {
             event_id: targetEventId,
             uid_guest: user.uid
         };
-        updateDataInDb(updateData,`http://localhost:3001/api/events/update`)
+        updateDataInDb(updateData,`http://localhost:3001/api/events/userStatus/update`)
     };
 
     //----------------------------------Form---------------------------------------------------//

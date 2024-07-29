@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom'; 
-import { updateDataInDb,getDataFromBackend } from '../apis/UserDataApi';
+import { updateDataInDb,getDataFromBackend,deleteDataFromBackend } from '../apis/UserDataApi';
 import { UserAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
@@ -113,9 +113,7 @@ const EditEventForm = () => {
   const handleDeleteEvent = async () => { 
       try {
           if (user) {
-              const deleteData = [event_id];
-              console.log('Data to server:', deleteData);
-              await updateDataInDb(JSON.stringify(deleteData), 'http://localhost:3001/api/events/edit/delete'); 
+              await deleteDataFromBackend(`http://localhost:3001/api/events/edit/delete/${event_id}`); 
               setIsDeleteButtonClicked(true);
               setTimeout(() => {
                   setIsDeleteButtonClicked(false);
