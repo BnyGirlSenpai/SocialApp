@@ -61,17 +61,36 @@ async function updateInvitedGuestsCounts(event_id, connection) {
 
 // API endpoint to store event invites uid's
 router.post('/events/invites/:eventId', async (req, res) => {
+    let connection;
     try {
-        let connection = await pool.getConnection();
+        connection = await pool.getConnection();
         console.log(req.body);
         const eventId = req.params.eventId;
         const receivedData = JSON.parse(req.body.body);
         console.log(receivedData);
 
-        const insertQuery = 'INSERT INTO event_guests (event_id, guest_uid, status) VALUES (?, ?, ?)';
+        const checkQuery = `
+            SELECT guest_uid 
+            FROM event_guests 
+            WHERE event_id = ? AND guest_uid = ? AND status = 'invited'
+        `;
+        const insertOrUpdateQuery = `
+            INSERT INTO event_guests (event_id, guest_uid, status)
+            VALUES (?, ?, ?)
+            ON DUPLICATE KEY UPDATE status = VALUES(status)
+        `;
         
         for (const uid of receivedData) {
-            await connection.query(insertQuery, [eventId, uid, 'invited']);
+            // Check if the user is already invited
+            const [existingInvitation] = await connection.query(checkQuery, [eventId, uid]);
+
+            if (existingInvitation.length > 0) {
+                // If the user is already invited, update their status
+                await connection.query(insertOrUpdateQuery, [eventId, uid, 'invited']);
+            } else {
+                // If the user is not invited, insert a new record
+                await connection.query(insertOrUpdateQuery, [eventId, uid, 'invited']);
+            }
         }
 
         await updateInvitedGuestsCounts(eventId, connection);

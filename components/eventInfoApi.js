@@ -64,11 +64,10 @@ router.get('/events/joined/:uid', async (req, res) => {
 });
 
 // API endpoint to get all guests ids (invited and joined) for a given event
-router.get('/events/allGuests/:eventId', async (req, res) => {
-    let connection;
+router.get('/events/guestIds/:eventId', async (req, res) => {
     try {
         let eventId = req.params.eventId;
-        connection = await pool.getConnection(); // Ensure the connection is acquired
+        let connection = await pool.getConnection(); 
 
         let [rows] = await connection.query(`
             SELECT guest_uid
@@ -80,7 +79,6 @@ router.get('/events/allGuests/:eventId', async (req, res) => {
             return res.status(404).json({ error: 'Event not found' });
         }
 
-        // Extract guest_uid from each row
         let allGuests = rows.map(row => row.guest_uid);
 
         res.status(200).json({ guests: allGuests });
@@ -90,7 +88,36 @@ router.get('/events/allGuests/:eventId', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     } finally {
         if (connection) {
-            connection.release(); // Ensure the connection is released
+            connection.release(); 
+        }
+    }
+});
+
+// API endpoint to get admin info for a given event
+
+router.get('/events/ownerInfo/:eventId', async (req, res) => {
+    try {
+        let eventId = req.params.eventId;
+        let connection = await pool.getConnection(); 
+
+        let [rows] = await connection.query(`
+            SELECT *
+            FROM events
+            WHERE event_id = ? 
+        `, [eventId]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+
+        res.status(200).json(rows);
+        console.log(rows);
+    } catch (error) {
+        console.error('Error retrieving event guests:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        if (connection) {
+            connection.release(); 
         }
     }
 });
