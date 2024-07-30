@@ -64,7 +64,7 @@ router.get('/events/joined/:uid', async (req, res) => {
 });
 
 // API endpoint to get all guests ids (invited and joined) for a given event
-router.get('/events/guest/:eventId', async (req, res) => {
+router.get('/events/guests/:eventId', async (req, res) => {
     let connection;
     try {
         let eventId = req.params.eventId;

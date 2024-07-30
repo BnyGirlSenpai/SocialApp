@@ -59,15 +59,61 @@ async function updateInvitedGuestsCounts(event_id, connection) {
     }
 }
 
+async function isEventJoinable(event_id, event_guests_id = null, connection) {
+
+    const checkEventQuery = `
+        SELECT event_status, creator_uid
+        FROM events 
+        WHERE event_id = ?  
+    `;
+    const [eventRows] = await connection.query(checkEventQuery, [event_id]);
+    const eventStatus = eventRows[0].event_status; 
+    const statuses = eventStatus.split(','); 
+
+    if (eventRows.length === 0) {
+        console.log(`Event ${event_id} not found`);
+        throw new Error('Event not found');
+    }
+
+    if (statuses.includes('public') && statuses.includes('open')){
+        console.log(`Event ${event_id} is joinable`);
+        return true; 
+    } else {
+            const checkInviteQuery = `
+            SELECT invited_by_uid
+            FROM event_guests 
+            WHERE event_id = ? AND guest_uid = ?
+        `
+        const [inviteRows] = await connection.query(checkInviteQuery,[event_id,event_guests_id]); 
+        const eventCreator = eventRows[0].creator_uid; 
+        const inviter = inviteRows[0].invited_by_uid;
+        console.log(`Event ${event_id} status: ${eventStatus}, Creator UID: ${eventCreator} Invite from:${inviter}`);
+
+        if (statuses.includes('private') && statuses.includes('open')) {
+            console.log(`Event ${event_id} is joinable`);
+            return true; 
+        } else {
+            if(eventCreator === inviter) {
+                console.log(`Event ${event_id} is joinable`);
+                return true; 
+            } else {(statuses.includes('private') || statuses.includes('closed')) 
+                console.log(`Event ${event_id} is not joinable (status: ${eventStatus})`);
+                throw new Error('Cannot join this event');
+            }
+        }
+    }
+}
+
 // API endpoint to store event invites uid's
 router.post('/events/invites/:eventId', async (req, res) => {
-    let connection;
     try {
-        connection = await pool.getConnection();
-        console.log(req.body);
         const eventId = req.params.eventId;
         const receivedData = JSON.parse(req.body.body);
-        console.log(receivedData);
+        const invited_by_uid = receivedData.pop(); 
+        const guestUIDs = receivedData;
+
+        console.log("receivedData:", guestUIDs);
+        console.log("invited_by_uid:", invited_by_uid);
 
         const checkQuery = `
             SELECT guest_uid 
@@ -75,21 +121,18 @@ router.post('/events/invites/:eventId', async (req, res) => {
             WHERE event_id = ? AND guest_uid = ? AND status = 'invited'
         `;
         const insertOrUpdateQuery = `
-            INSERT INTO event_guests (event_id, guest_uid, status)
-            VALUES (?, ?, ?)
-            ON DUPLICATE KEY UPDATE status = VALUES(status)
+            INSERT INTO event_guests (event_id, guest_uid, status, invited_by_uid)
+            VALUES (?, ?, ? ,?)
+            ON DUPLICATE KEY UPDATE status = VALUES(status) , invited_by_uid = VALUES(invited_by_uid)
         `;
         
-        for (const uid of receivedData) {
-            // Check if the user is already invited
+        for (const uid of guestUIDs) {
             const [existingInvitation] = await connection.query(checkQuery, [eventId, uid]);
 
             if (existingInvitation.length > 0) {
-                // If the user is already invited, update their status
-                await connection.query(insertOrUpdateQuery, [eventId, uid, 'invited']);
+                await connection.query(insertOrUpdateQuery, [eventId, uid, 'invited',invited_by_uid]);
             } else {
-                // If the user is not invited, insert a new record
-                await connection.query(insertOrUpdateQuery, [eventId, uid, 'invited']);
+                await connection.query(insertOrUpdateQuery, [eventId, uid, 'invited',invited_by_uid]);
             }
         }
 
@@ -106,10 +149,8 @@ router.post('/events/invites/:eventId', async (req, res) => {
     }
 });
 
-// API to update event database after invited_guest interaction
+// API to update event database after invited guest interaction
 router.put('/events/userStatus/update', async (req, res) => {
-    const connection = await pool.getConnection(); 
-
     try {
         const receivedData = req.body;
         console.log('Received data:', receivedData);
@@ -117,7 +158,18 @@ router.put('/events/userStatus/update', async (req, res) => {
 
         await connection.beginTransaction();
 
-        if (status === 'accepted') {
+        if (status === 'accepted') {  
+            try {
+                await isEventJoinable(receivedData.event_id,receivedData.uid_guest, connection);
+            } catch (error) {
+                if (error.message === 'Event not found') {
+                    return res.status(404).json({ error: 'Event not found' });
+                }
+                if (error.message === 'Cannot join this event') {
+                    return res.status(403).json({ error: 'Cannot join this event' });
+                }
+                throw error;
+            }
             await connection.query(`
                 UPDATE event_guests
                 SET status = 'joined'
@@ -160,8 +212,19 @@ router.put('/join/public/event', async (req, res) => {
         const eventData = req.body;
         console.log(eventData);
 
-        const connection = await pool.getConnection();
         try {
+            try {
+                await isEventJoinable(eventData.event_id, eventData.uid_guest, connection);
+            } catch (error) {
+                if (error.message === 'Event not found') {
+                    return res.status(404).json({ error: 'Event not found' });
+                }
+                if (error.message === 'Cannot join this event') {
+                    return res.status(403).json({ error: 'Cannot join this event' });
+                }
+                throw error;
+            }
+
             const checkUserQuery = `
                 SELECT status 
                 FROM event_guests 
