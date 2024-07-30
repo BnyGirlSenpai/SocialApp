@@ -59,6 +59,7 @@ async function updateInvitedGuestsCounts(event_id, connection) {
     }
 }
 
+// Check if a event is joinable 
 async function isEventJoinable(event_id, event_guests_id = null, connection) {
 
     const checkEventQuery = `
