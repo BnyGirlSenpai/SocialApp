@@ -90,10 +90,11 @@ const EditEventForm = () => {
                     values.eventType,
                     values.eventImage,
                     eventStatus,
+                    user.uid,
                     event_id
                 ];
                 console.log('Data to server:', updatedData);
-                await updateDataInDb(JSON.stringify(updatedData), 'http://localhost:3001/api/events/edit/update'); 
+                await updateDataInDb(JSON.stringify(updatedData),'http://localhost:3001/api/events/edit/update'); 
                 setTimeout(() => navigate('/EventPage'), 1000);
             } else {
                 console.log("Event not found!");
