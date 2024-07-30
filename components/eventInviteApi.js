@@ -62,17 +62,24 @@ async function updateInvitedGuestsCounts(event_id, connection) {
 async function isEventJoinable(event_id, event_guests_id = null, connection) {
 
     const checkEventQuery = `
-        SELECT event_status, creator_uid
+        SELECT event_status, current_guests_count, max_guests_count, creator_uid 
         FROM events 
         WHERE event_id = ?  
     `;
     const [eventRows] = await connection.query(checkEventQuery, [event_id]);
     const eventStatus = eventRows[0].event_status; 
+    const currentGuests = eventRows[0].current_guests_count;
+    const maxGuests = eventRows[0].max_guests_count;
     const statuses = eventStatus.split(','); 
 
     if (eventRows.length === 0) {
         console.log(`Event ${event_id} not found`);
         throw new Error('Event not found');
+    }
+    
+    if(currentGuests === maxGuests){
+        console.log(`Event ${event_id} is not joinable (status: ${eventStatus})`);
+        throw new Error('Cannot join this event');
     }
 
     if (statuses.includes('public') && statuses.includes('open')){
