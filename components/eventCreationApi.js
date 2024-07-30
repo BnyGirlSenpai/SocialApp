@@ -79,7 +79,7 @@ router.delete('/events/edit/delete/:eid', async (req, res) => {
 router.put('/events/edit/update', async (req, res) => {
     console.log(req.body);
     let eventData = req.body;
-    let eid = eventData[8]; 
+    let eid = eventData[9]; 
 
     let selectQuery = 'SELECT COUNT(*) AS count FROM events WHERE event_id = ?';
     try {
@@ -90,11 +90,11 @@ router.put('/events/edit/update', async (req, res) => {
         if (eventCount === 1) {
             let updateFields = [];
             let updateValues = [];
-            updateFields.push('event_name = ?, location = ?, event_datetime = ?, description = ?, max_guests_count = ?, event_type = ?, image_url = ?, event_status = ?'); 
+            updateFields.push('event_name = ?, location = ?, event_datetime = ?, description = ?, max_guests_count = ?, event_type = ?, image_url = ?, event_status = ?, updated_by_uid = ?'); 
             
-            if (eventData.length === 9) { 
-                updateValues = eventData.slice(0, 9);
-                updateValues.push(eventData[9]); 
+            if (eventData.length === 10) { 
+                updateValues = eventData.slice(0, 10);
+                updateValues.push(eventData[10]); 
             } else {
                 console.log('Invalid data format');
                 return res.status(400).json({ error: 'Invalid data format' });
