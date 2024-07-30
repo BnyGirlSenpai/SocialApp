@@ -72,7 +72,7 @@ return (
                   <div className="row">
                     <div className="col-xs-12 col-sm-3 center">
                       <span className="profile-picture">
-                       <img className="editable img-responsive" src={userData?.[0]?.photoURL} alt={userData?.[0]?.username} id="avatar2"/>
+                       <img className="editable img-responsive" src={userData?.[0]?.photo_url} alt={userData?.[0]?.username} id="avatar2"/>
                       </span> 
                       {!isCurrentUser && (isFriend(userData[0].uid) ? (
                         <div>

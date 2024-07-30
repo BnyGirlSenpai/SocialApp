@@ -87,7 +87,7 @@ const EventList = () => {
 
                   {event.event_status.includes('open') && (
                   <button onClick={() => {
-                      setShowFriendDropDown(true);
+                      setShowFriendDropDown(!showFriendDropDown);
                       setSelectedEventId(event.event_id);
                     }}
                     disabled={event.current_guests_count >= event.max_guests_count}

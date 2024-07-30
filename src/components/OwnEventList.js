@@ -75,7 +75,7 @@ const EventList = () => {
                   <div className="button-container">                   
                     <a href={`/EditEventFormPage/${event.event_id}`}><button>Edit Event</button></a>                   
                     <button onClick={() => {
-                      setShowFriendDropDown(true);
+                      setShowFriendDropDown(!showFriendDropDown);
                       setSelectedEventId(event.event_id);
                     }}
                     disabled={event.current_guests_count >= event.max_guests_count}

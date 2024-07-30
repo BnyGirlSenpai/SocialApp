@@ -25,7 +25,7 @@ const Signin = () => {
 
   return (
     <div> 
-      <img className="login-background" src="images/background/bg-01.jpg" alt="background image" />
+      <img className="login-background" src="images/background/bg-01.jpg" alt="background" />
 
       <Button variant="contained" onClick={handleGoogleSignIn} className='sign-in-button'>
         Sign In with Google

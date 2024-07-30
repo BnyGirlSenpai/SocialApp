@@ -19,16 +19,15 @@ const EventDetailView = () => {
     const isOwner = eventData.creator_uid === user.uid;
     const navigate = useNavigate();
     const [redirect, setRedirect] = useState(false);
-    const [guestsData, setGuestsData] = useState([]);
+    const [guestsData, setGuestsData] = useState({ guests: [] });
     const [dateTime, setDateTime] = useState([]);
-    const [ownerData, setOwnerData] = useState(null);
 
     useEffect(() => {
         const fetchEventData = async () => {
             try {
                 if (user) {
                     const eventData = await getDataFromBackend(`http://localhost:3001/api/events/eventDetail/${event_id }`);
-                    const  guests = await getDataFromBackend(`http://localhost:3001/api/events/guestIds/${event_id}`);
+                    const  guests = await getDataFromBackend(`http://localhost:3001/api/events/guests/${event_id}`);
                     console.log("Loaded Event Data from server:", eventData);
                     console.log("Loaded guests data from server:", guests);
                     setDateTime(formatLocalDateTime(eventData.event_datetime));
@@ -47,23 +46,6 @@ const EventDetailView = () => {
             navigate('/EventPage');
         }
     }, [redirect, navigate]);
-
-    useEffect(() => {
-        const fetchOwnerInfo = async () => {
-            if (isOwner) {
-                try {
-                    const response = await fetch(`http://localhost:3001/api/events/ownerInfo/${event_id}`);
-                    const data = await response.json();
-                    console.log(data);
-                    setOwnerData(data); 
-                } catch (error) {
-                    console.error('Failed to fetch owner info:', error);
-                }
-            }
-        };
-
-        fetchOwnerInfo();
-    }, [isOwner, eventData.event_id]);
 
     const joinPublicEvent = async (targetEventId) => {
         let updateData = {
@@ -89,7 +71,7 @@ const EventDetailView = () => {
         }
     }
 
-    const guestUids = guestsData.guests || [];
+    const guestUids =  guestsData.guests.map(guest => guest.guest_uid) || [];
     const isInvitedOrJoined = guestUids.includes(user.uid);
 
     return (
@@ -101,24 +83,44 @@ const EventDetailView = () => {
             <div className="event-location">Location: {eventData.location}</div>
         </div>
         {isOwner ? (
-            <div className="button-container">                   
-                <a href={`/EditEventFormPage/${eventData.event_id}`}><button>Edit Event</button></a>     
-                ownerInfo();              
-                <button 
-                    onClick={() => {
-                        setShowFriendDropDown(true);
-                        setSelectedEventId(eventData.event_id);
-                    }}
-                    disabled={eventData.current_guests_count >= eventData.max_guests_count}
-                    style={{
-                        backgroundColor: eventData.current_guests_count >= eventData.max_guests_count ? '#ccc' : '', 
-                        color: eventData.current_guests_count >= eventData.max_guests_count ? '#666' : '', 
-                        cursor: eventData.current_guests_count >= eventData.max_guests_count ? 'not-allowed' : 'pointer', 
-                        border: '1px solid #ddd', 
-                        padding: '10px', 
-                    }}
-                >Invite Friends</button>
-            </div>
+            <>
+                <div className="button-container">                   
+                    <a href={`/EditEventFormPage/${eventData.event_id}`}><button>Edit Event</button></a>     
+                    <button onClick={() => {
+                            setShowFriendDropDown(!showFriendDropDown);
+                            setSelectedEventId(eventData.event_id);
+                        }}
+                        disabled={eventData.current_guests_count >= eventData.max_guests_count}
+                        style={{
+                            backgroundColor: eventData.current_guests_count >= eventData.max_guests_count ? '#ccc' : '', 
+                            color: eventData.current_guests_count >= eventData.max_guests_count ? '#666' : '', 
+                            cursor: eventData.current_guests_count >= eventData.max_guests_count ? 'not-allowed' : 'pointer', 
+                            border: '1px solid #ddd', 
+                            padding: '10px', 
+                        }}>
+                        Invite Friends
+                    </button>
+                </div>
+                <div className="container">
+                    <h2>Guestlist</h2>
+                    <div className="guest-list">
+                        <div className="row">    
+                        {guestsData.guests.map((guest, index) => (
+                            <div className="col-md-4 col-sm-6" key={index}>
+                            <div className="guest-card">
+                                <div className="card-info">
+                                <div className="guest-info">                                
+                                    <h5><a href={`/profilepage/${guest.guest_uid}`} className="profile-link">{guest.username}</a></h5> 
+                                    <img src={guest.photo_url} alt={guest.username} />
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                        ))}
+                        </div>
+                    </div>
+                </div>
+            </>
         ) : (
             isInvitedOrJoined ? (
                 <div className="already-joined">You have already joined this event.</div>

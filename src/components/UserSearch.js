@@ -102,7 +102,7 @@ const UserSearch = () => {
                       <div key={searchUser.uid} className="nearby-user">
                         <div className="row">
                           <div className="col-md-2 col-sm-2">
-                            <img src={searchUser.photoURL} alt={searchUser.username} className="profile-photo-lg" />
+                            <img src={searchUser.photo_url} alt={searchUser.username} className="profile-photo-lg" />
                           </div>
                           <div className="col-md-7 col-sm-7">
                             <h5><a href={`/profilepage/${searchUser.uid}`} className="profile-link">{searchUser.username}</a></h5>

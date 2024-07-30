@@ -33,7 +33,7 @@ const FriendList = () => {
                 <div className="card-info">
                   <div className="friend-info">                                
                     <h5><a href={`/profilepage/${friend.uid}`} className="profile-link">{friend.username}</a></h5> 
-                    <img src={friend.photoUrl} alt={friend.username} />
+                    <img src={friend.photo_url} alt={friend.username} />
                   </div>
                 </div>
               </div>

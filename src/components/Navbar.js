@@ -54,7 +54,7 @@ function Navbar() {
           </div>
           
           <div className="ccol-12 col-lg-auto mb-3 mb-lg-0 me-lg-3">
-            <img src={user.photoURL} alt={user.username} className="profile-photo-lg" />
+            <img src={user.photo_url} alt={user.username} className="profile-photo-lg" />
           </div>
 
         </div>

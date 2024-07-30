@@ -98,7 +98,7 @@ const ProfileSettings = () => {
                     </div>
                     <div className="user text-center">
                         <div className="profile">
-                            <img src={user?.photoURL} className="rounded-circle" width="80" alt="Profile" />
+                            <img src={user?.photo_url} className="rounded-circle" width="80" alt="Profile" />
                         </div>
                         <p>{user?.displayName}</p>
                     </div>

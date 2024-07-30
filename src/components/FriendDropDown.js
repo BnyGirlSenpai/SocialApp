@@ -14,7 +14,7 @@ const FriendDropDown = ({ eventId, onInvite, creatorUid}) => {
       try {
         if (user) {
           const friends = await getDataFromBackend(`http://localhost:3001/api/users/friends/${user.uid}`);
-          const guests = await getDataFromBackend(`http://localhost:3001/api/events/guestIds/${eventId}`);
+          const guests = await getDataFromBackend(`http://localhost:3001/api/events/guests/${eventId}`);
 
           console.log("Loaded friends data from server:", friends);
           console.log("Loaded guests data from server:", guests);
@@ -39,8 +39,10 @@ const FriendDropDown = ({ eventId, onInvite, creatorUid}) => {
     onSubmit: async (values) => {
       try {
         console.log("Inviting friends to event with ID:", eventId);
-        console.log("Selected friends:", values.selectedFriends);
-        await sendDataToBackend(values.selectedFriends, `http://localhost:3001/api/events/invites/${eventId}`);
+        let invitationData = values.selectedFriends;
+        invitationData.push(user.uid);
+        console.log("Invite data:", invitationData);
+        await sendDataToBackend(invitationData, `http://localhost:3001/api/events/invites/${eventId}`);
         onInvite();
       } catch (error) {
         console.error("Error sending invites:", error);
@@ -60,16 +62,16 @@ const FriendDropDown = ({ eventId, onInvite, creatorUid}) => {
       <form onSubmit={formik.handleSubmit}>
         <div className="friend-list">
           {friendsData.map((friend, index) => {
-            const guestUids = guestsData.guests || [];
+            const guestUids = guestsData.guests.map(guest => guest.guest_uid);
             const isInvitedOrJoined = guestUids.includes(friend.uid);
             const isOwner = friend.uid === creatorUid;
             return (
               <div key={index} className="friend-item">
                 {isOwner ? (
-                  <span>Owner </span> // Display "Owner" if the friend is the creator
+                  <span>Owner </span> 
                 ) : (
                   isInvitedOrJoined ? (
-                    <span>Already Invited </span> // Display "Already Invited" if the friend is already invited
+                    <span>Already Invited </span>
                   ) : (
                     <input
                       type="checkbox"
@@ -81,7 +83,7 @@ const FriendDropDown = ({ eventId, onInvite, creatorUid}) => {
                   )
                 )}
                 <label htmlFor={`friend-${friend.uid}`}>{friend.username}</label>
-                <img src={friend.photoUrl} alt={friend.username} />
+                <img src={friend.photo_url} alt={friend.username} />
               </div>
             );
           })}
