@@ -15,7 +15,6 @@ const EditEventForm = () => {
   const [, setIsDeleteButtonClicked] = useState(false);
   const navigate = useNavigate();
   const [redirect, setRedirect] = useState(false);
-
   const validationSchema = Yup.object().shape({
     eventName: Yup.string().required('Event name is required'),
     location: Yup.string().required('Location is required'),
@@ -62,7 +61,6 @@ const EditEventForm = () => {
       description: '',
       maxGuests: '',
       eventType: '',
-      eventImage: '',
       eventStatusPublic: false,
       eventStatusOpen: false
   },
@@ -81,6 +79,8 @@ const EditEventForm = () => {
                     values.eventStatusOpen
                   ].filter(status => status).join(',');
 
+                console.log('Image_url',  );
+
                 const updatedData = [
                     values.eventName,
                     values.location,
@@ -88,11 +88,12 @@ const EditEventForm = () => {
                     values.description,
                     values.maxGuests,
                     values.eventType,
-                    values.eventImage,
+                    selectedFile ? selectedFile.name : '',
                     eventStatus,
                     user.uid,
                     event_id
                 ];
+                
                 console.log('Data to server:', updatedData);
                 await updateDataInDb(JSON.stringify(updatedData),'http://localhost:3001/api/events/edit/update'); 
                 setTimeout(() => navigate('/EventPage'), 1000);

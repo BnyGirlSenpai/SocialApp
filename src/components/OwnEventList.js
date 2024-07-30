@@ -3,6 +3,7 @@ import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend } from '../apis/UserDataApi';
 import FriendDropDown from './FriendDropDown';
 import { formatLocalDateTime } from '../utils/DateUtils'; 
+import ItemList from '../components/ItemList';
 import '../styles/eventpage.css'; 
 
 const EventList = () => {
@@ -69,7 +70,8 @@ const EventList = () => {
                         <p>Status: {event.event_status}</p>
                         <p>Type: {event.event_type}</p>
                         <p>Image: {event.image_url}</p>
-                      </div>                 
+                      </div>
+                      <ItemList />  
                     </div>
                   </div>
                   <div className="button-container">                   
@@ -87,6 +89,7 @@ const EventList = () => {
                       padding: '10px', 
                     }}
                     >Invite Friends</button>
+                      <a href={`/EditItemListFormPage/${event.event_id}`}><button>Edit Item List</button></a> 
                   </div>
                   {showFriendDropDown && <FriendDropDown eventId={selectedEventId} onInvite={hideFriendDropDown} />}
                 </li>

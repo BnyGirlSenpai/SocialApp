@@ -3,6 +3,7 @@ import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend , updateDataInDb } from '../apis/UserDataApi';
 import { formatLocalDateTime } from '../utils/DateUtils'; 
 import FriendDropDown from './FriendDropDown';
+import ItemList from '../components/ItemList';
 import '../styles/eventpage.css'; 
 
 const EventList = () => {
@@ -80,11 +81,11 @@ const EventList = () => {
                       <p>Location: {event.location}</p>
                       <p>Status: {event.event_status}</p>
                     </div>                 
+                    <ItemList /> 
                   </div>
                 </div>
                 <div className="button-container">
                   <button onClick={() => leaveEvent(event.event_id)}>Leave Event</button>
-
                   {event.event_status.includes('open') && (
                   <button onClick={() => {
                       setShowFriendDropDown(!showFriendDropDown);

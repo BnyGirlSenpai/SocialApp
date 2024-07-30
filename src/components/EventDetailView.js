@@ -100,6 +100,7 @@ const EventDetailView = () => {
                         }}>
                         Invite Friends
                     </button>
+                    <a href={`/EditItemListFormPage/${eventData.event_id}`}><button>Edit Item List</button></a> 
                 </div>
                 <div className="container">
                     <h2>Guestlist</h2>

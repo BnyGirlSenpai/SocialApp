@@ -14,6 +14,8 @@ import Notifications from './pages/NotificationPage';
 import ProfileSettingspage from './pages/ProfileSettingsPage';
 import EventFormpage from './pages/EventFormPage';
 import EditEventFormpage from './pages/EditEventFormPage';
+import EditItemListFormpage from './pages/EditItemListFormPage';
+
 import EventDetailpage from './pages/EventDetailPage';
 import './App.css';
 
@@ -33,6 +35,7 @@ const App = () => {
               <Route path='/ProfilePage/:uid' element={<Protected><Profilepage /></Protected>} />
               <Route path='/ProfileSettingsPage' element={<Protected><ProfileSettingspage /></Protected>} />
               <Route path='/EventFormPage' element={<Protected><EventFormpage /></Protected>} />
+              <Route path='/EditItemListFormPage/:event_id' element={<Protected><EditItemListFormpage /></Protected>} />
               <Route path='/EditEventFormPage/:event_id' element={<Protected><EditEventFormpage /></Protected>} />
               <Route path='/EventPage/EventDetailPage/:event_id' element={<Protected><EventDetailpage /></Protected>} />
               <Route path='/HomePage' element={<Protected><HomePage /></Protected>} />
