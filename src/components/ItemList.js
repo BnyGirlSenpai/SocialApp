@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getDataFromBackend, sendDataToBackend, updateDataInDb } from '../apis/UserDataApi';
+import { getDataFromBackend, updateDataInDb } from '../apis/UserDataApi';
 import { UserAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Formik, Field, Form, ErrorMessage, FieldArray } from 'formik';

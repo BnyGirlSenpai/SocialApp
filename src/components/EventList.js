@@ -100,7 +100,7 @@ const EventList = () => {
                     >Invite Friends</button>
                   )}
                 </div>
-                {showFriendDropDown && <FriendDropDown eventId={event.event_id} onInvite={hideFriendDropDown} creatorUid={creatorUid} />}
+                {showFriendDropDown && <FriendDropDown event_id={event.event_id} onInvite={hideFriendDropDown} creatorUid={creatorUid} />}
               </li>
             ))}
           </ul>
