@@ -59,8 +59,22 @@ router.get('/events/itemlist/:event_id',async (req, res) => {
     }
 });
 
-router.delete('/events/itemlist/delete/:event_id',async (req, res) => {
+router.delete('/events/itemslist/delete/:label/:event_id',async (req, res) => {
+    try {
+        let event_id = req.params.event_id;
+        let label = req.params.label;
+        let [result] = await connection.query('DELETE FROM event_items WHERE event_id = ? AND label = ?', [event_id, label]);
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
 
+        res.status(200).json({ message: 'Event deleted successfully' });
+        console.log(`Item ${label} deleted successfully`);
+    } catch (error) {
+        console.error('Error deleting event:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 
 export default router;
