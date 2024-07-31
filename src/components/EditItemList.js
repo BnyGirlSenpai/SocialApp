@@ -11,8 +11,6 @@ const EditItemList = () => {
     const { user } = UserAuth();
     const { event_id } = useParams(); 
     const navigate = useNavigate();
-
-
     const [initialValues, setInitialValues] = useState({ items: [] });
     console.log(initialValues)
 

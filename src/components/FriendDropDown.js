@@ -5,16 +5,17 @@ import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend, sendDataToBackend } from '../apis/UserDataApi';
 import '../styles/friendDropDown.css';
 
-const FriendDropDown = ({ eventId, onInvite, creatorUid}) => {
+const FriendDropDown = ({ event_id, onInvite, creatorUid}) => {
   const { user } = UserAuth();
   const [friendsData, setFriendsData] = useState([]);
   const [guestsData, setGuestsData] = useState([]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         if (user) {
           const friends = await getDataFromBackend(`http://localhost:3001/api/users/friends/${user.uid}`);
-          const guests = await getDataFromBackend(`http://localhost:3001/api/events/guests/${eventId}`);
+          const guests = await getDataFromBackend(`http://localhost:3001/api/events/guests/${event_id}`);
 
           console.log("Loaded friends data from server:", friends);
           console.log("Loaded guests data from server:", guests);
@@ -27,7 +28,7 @@ const FriendDropDown = ({ eventId, onInvite, creatorUid}) => {
       }
     };
     fetchData();
-  }, [user, eventId]);
+  }, [user, event_id]);
 
   const formik = useFormik({
     initialValues: {
@@ -36,13 +37,14 @@ const FriendDropDown = ({ eventId, onInvite, creatorUid}) => {
     validationSchema: Yup.object({
       selectedFriends: Yup.array().min(1, 'At least one friend must be selected').required('Required'),
     }),
+    
     onSubmit: async (values) => {
       try {
-        console.log("Inviting friends to event with ID:", eventId);
+        console.log("Inviting friends to event with ID:", event_id);
         let invitationData = values.selectedFriends;
         invitationData.push(user.uid);
         console.log("Invite data:", invitationData);
-        await sendDataToBackend(invitationData, `http://localhost:3001/api/events/invites/${eventId}`);
+        await sendDataToBackend(invitationData, `http://localhost:3001/api/events/invites/${event_id}`);
         onInvite();
       } catch (error) {
         console.error("Error sending invites:", error);

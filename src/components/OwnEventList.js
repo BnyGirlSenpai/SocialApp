@@ -7,10 +7,9 @@ import ItemList from '../components/ItemList';
 import '../styles/eventpage.css'; 
 
 const EventList = () => {
-  const { user  } = UserAuth(); 
+  const { user } = UserAuth(); 
   const [ownEvents, setOwnEvents] = useState([]);
   const [showFriendDropDown, setShowFriendDropDown] = useState(false);
-  const [selectedEventId, setSelectedEventId] = useState(null); 
 
   useEffect(() => {
     const fetchEventData = async () => {
@@ -71,14 +70,13 @@ const EventList = () => {
                         <p>Type: {event.event_type}</p>
                         <p>Image: {event.image_url}</p>
                       </div>
-                      <ItemList />  
+                      {<ItemList event_id={event.event_id} />}
                     </div>
                   </div>
                   <div className="button-container">                   
                     <a href={`/EditEventFormPage/${event.event_id}`}><button>Edit Event</button></a>                   
                     <button onClick={() => {
                       setShowFriendDropDown(!showFriendDropDown);
-                      setSelectedEventId(event.event_id);
                     }}
                     disabled={event.current_guests_count >= event.max_guests_count}
                     style={{
@@ -91,7 +89,7 @@ const EventList = () => {
                     >Invite Friends</button>
                       <a href={`/EditItemListFormPage/${event.event_id}`}><button>Edit Item List</button></a> 
                   </div>
-                  {showFriendDropDown && <FriendDropDown eventId={selectedEventId} onInvite={hideFriendDropDown} />}
+                  {showFriendDropDown && <FriendDropDown event_id={event.event_id} onInvite={hideFriendDropDown} />}
                 </li>
               ))}
             </ul>         

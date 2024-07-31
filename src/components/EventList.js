@@ -10,7 +10,6 @@ const EventList = () => {
   const { user  } = UserAuth(); 
   const [joinedEvents, setJoinedEvents] = useState([]);
   const [showFriendDropDown, setShowFriendDropDown] = useState(false);
-  const [selectedEventId, setSelectedEventId] = useState(null);
   const [creatorUid, setCreatorUid] = useState(null)
   
   useEffect(() => {
@@ -81,7 +80,7 @@ const EventList = () => {
                       <p>Location: {event.location}</p>
                       <p>Status: {event.event_status}</p>
                     </div>                 
-                    <ItemList /> 
+                    {<ItemList event_id={event.event_id} />}
                   </div>
                 </div>
                 <div className="button-container">
@@ -89,7 +88,6 @@ const EventList = () => {
                   {event.event_status.includes('open') && (
                   <button onClick={() => {
                       setShowFriendDropDown(!showFriendDropDown);
-                      setSelectedEventId(event.event_id);
                     }}
                     disabled={event.current_guests_count >= event.max_guests_count}
                     style={{
@@ -102,7 +100,7 @@ const EventList = () => {
                     >Invite Friends</button>
                   )}
                 </div>
-                {showFriendDropDown && <FriendDropDown eventId={selectedEventId} onInvite={hideFriendDropDown} creatorUid={creatorUid} />}
+                {showFriendDropDown && <FriendDropDown eventId={event.event_id} onInvite={hideFriendDropDown} creatorUid={creatorUid} />}
               </li>
             ))}
           </ul>
