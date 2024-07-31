@@ -59,6 +59,33 @@ router.get('/events/itemlist/:event_id',async (req, res) => {
     }
 });
 
+router.put('/events/itemlist/update/:event_id', async (req, res) => {
+    console.log(req.body);
+    try {
+        let event_id = req.params.event_id;
+        let items = req.body; 
+
+        for (let item of items) {
+            let { label, count } = item; 
+
+            let [result] = await connection.query(
+                'UPDATE event_items SET count = ? WHERE event_id = ? AND label = ?',
+                [count, event_id, label]
+            );
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ error: `Event item with label ${label} not found` });
+            }
+        }
+
+        res.status(200).json({ message: 'Item counts updated successfully' });
+        console.log('Item counts updated successfully');
+    } catch (error) {
+        console.error('Error updating counts:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 router.delete('/events/itemslist/delete/:label/:event_id',async (req, res) => {
     try {
         let event_id = req.params.event_id;
@@ -66,13 +93,13 @@ router.delete('/events/itemslist/delete/:label/:event_id',async (req, res) => {
         let [result] = await connection.query('DELETE FROM event_items WHERE event_id = ? AND label = ?', [event_id, label]);
         
         if (result.affectedRows === 0) {
-            return res.status(404).json({ error: 'Event not found' });
+            return res.status(404).json({ error: 'Item not found' });
         }
 
-        res.status(200).json({ message: 'Event deleted successfully' });
+        res.status(200).json({ message: 'Item deleted successfully' });
         console.log(`Item ${label} deleted successfully`);
     } catch (error) {
-        console.error('Error deleting event:', error);
+        console.error('Error deleting Item:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
