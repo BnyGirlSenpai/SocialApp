@@ -1,24 +1,28 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom'; 
-import { updateDataInDb, getDataFromBackend, deleteDataFromBackend } from '../apis/UserDataApi';
+import { getDataFromBackend, deleteDataFromBackend, sendDataToBackend } from '../apis/UserDataApi';
 import { UserAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Formik, Field, Form, ErrorMessage, FieldArray } from 'formik';
 import * as Yup from 'yup';
 import '../styles/itemlist.css';
 
-
 const EditItemList = () => {
     const { user } = UserAuth();
     const { event_id } = useParams(); 
+    const navigate = useNavigate();
+
+
+    const [initialValues, setInitialValues] = useState({ items: [] });
+    console.log(initialValues)
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 if (user) {
-                    const data = await getDataFromBackend(`http://localhost:3001/api/events/itemList/edit/${event_id}`);
-                   
-                    console.log("Loaded data from server:", data);
+                    const initialData = await getDataFromBackend(`http://localhost:3001/api/events/itemlist/${event_id}`);
+                    console.log("Loaded data from server:", initialData);
+                    setInitialValues({ items: initialData });
                 }  
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -27,127 +31,164 @@ const EditItemList = () => {
         fetchData();
     }, [user, event_id]);
 
-    const initialData = [
-        { id: 0, label: 'First item', count: 0, maxCount: 10 },
-        { id: 1, label: 'Second item', count: 0, maxCount: 5 },
-        { id: 2, label: 'Third item', count: 0, maxCount: 8 }
-    ];
-
-    const initialValues = { items: initialData };
-
     const validationSchema = Yup.object({
         items: Yup.array().of(
             Yup.object({
                 label: Yup.string().required('Label is required'),
                 count: Yup.number().min(0, 'Count cannot be negative').required('Count is required'),
-                maxCount: Yup.number().min(1, 'Max count must be at least 1').required('Max count is required')
+                min_count: Yup.number().min(0, 'Min count cannot be negative').required('Min count is required'),
+                max_count: Yup.number().min(1, 'Max count must be at least 1').required('Max count is required')
             })
         )
     });
 
+    const handleDeleteItem = async (label) => { 
+        try {
+            if (user) {
+                await deleteDataFromBackend(`http://localhost:3001/api/events/itemslist/delete/${label}/${event_id}`); 
+            } else {
+                console.log("Item not found!");
+            }
+        } catch (error) {
+            console.error('Error deleting Item:', error);
+        }
+    }; 
+
     return (
         <div>
-            <h1>Your Item List for </h1>
-            <Formik
-                initialValues={initialValues}
-                validationSchema={validationSchema}
-                onSubmit={async (values) => {
-                    await new Promise((r) => setTimeout(r, 500));
-                    alert(JSON.stringify(values, null, 2));
-                    // Add your API call here, e.g., sendDataToBackend(values);
-                }}
-            >
-                {({ values, setFieldValue }) => (
-                    <Form>
-                        <FieldArray name="items">
-                            {({ insert, remove, push }) => (
-                                <div>
-                                    {values.items.length > 0 &&
-                                        values.items.map((item, index) => (
-                                            <div className="row" key={index}>
-                                                <div className="col">
-                                                    <label htmlFor={`items.${index}.label`}>Label</label>
-                                                    <Field
-                                                        name={`items.${index}.label`}
-                                                        placeholder="Item Label"
-                                                        type="text"
-                                                    />
-                                                    <ErrorMessage
-                                                        name={`items.${index}.label`}
-                                                        component="div"
-                                                        className="field-error"
-                                                    />
-                                                </div>
-                                                <div className="col">
-                                                    <label>Count</label>
-                                                    <div>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                const newCount = Math.max(item.count - 1, 0);
-                                                                setFieldValue(`items.${index}.count`, newCount);
-                                                            }}
-                                                        >
-                                                            -
-                                                        </button>
-                                                        <span>{item.count}</span>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                const newCount = Math.min(item.count + 1, item.maxCount);
-                                                                setFieldValue(`items.${index}.count`, newCount);
-                                                            }}
-                                                        >
-                                                            +
-                                                        </button>
-                                                    </div>
-                                                    <ErrorMessage
-                                                        name={`items.${index}.count`}
-                                                        component="div"
-                                                        className="field-error"
-                                                    />
-                                                </div>
-                                                <div className="col">
-                                                    <label htmlFor={`items.${index}.maxCount`}>Max Count</label>
-                                                    <Field
-                                                        name={`items.${index}.maxCount`}
-                                                        placeholder="Max Count"
-                                                        type="number"
-                                                    />
-                                                    <ErrorMessage
-                                                        name={`items.${index}.maxCount`}
-                                                        component="div"
-                                                        className="field-error"
-                                                    />
-                                                </div>
-                                                <div className="col">
+        <h1>Your Item List for </h1>
+        <Formik
+            enableReinitialize 
+            initialValues={initialValues}
+            validationSchema={validationSchema}
+            onSubmit={async (values) => {
+                try {
+                    if (user) {      
+                        const itemData = values.items.map(item => ({
+                            Label: item.label,
+                            Count: item.count,
+                            min_count: item.min_count,
+                            max_count: item.max_count,
+                        }));
+
+                        console.log(itemData);
+                        await sendDataToBackend(itemData,`http://localhost:3001/api/events/itemlist/edit/${event_id}`);     
+                        setTimeout(() => navigate('/EventPage'), 1000);   
+                    } else {
+                        console.log("Event not found!");
+                    }
+                } catch (error) {
+                    console.error('Error updating Event data:', error);
+                }
+            }}
+        >
+            {({ values, setFieldValue }) => (
+                <Form>
+                    <FieldArray name="items">
+                        {({ insert, remove, push }) => (
+                            <div>
+                                {values.items.length > 0 &&
+                                    values.items.map((item, index) => (
+                                        <div className="row" key={index}>
+                                            <div className="col">
+                                                <label htmlFor={`items.${index}.label`}>Label</label>
+                                                <Field
+                                                    name={`items.${index}.label`}
+                                                    placeholder="Item Label"
+                                                    type="text"
+                                                />
+                                                <ErrorMessage
+                                                    name={`items.${index}.label`}
+                                                    component="div"
+                                                    className="field-error"
+                                                />
+                                            </div>
+                                            <div className="col">
+                                                <label>Count</label>
+                                                <div>
                                                     <button
                                                         type="button"
-                                                        className="secondary"
-                                                        onClick={() => remove(index)}
+                                                        onClick={() => {
+                                                            const newCount = Math.max(item.count - 1, item.min_count);
+                                                            setFieldValue(`items.${index}.count`, newCount);
+                                                        }}
                                                     >
-                                                        X
+                                                        -
+                                                    </button>
+                                                    <span>{item.count}</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const newCount = Math.min(item.count + 1, item.max_count);
+                                                            setFieldValue(`items.${index}.count`, newCount);
+                                                        }}
+                                                    >
+                                                        +
                                                     </button>
                                                 </div>
+                                                <ErrorMessage
+                                                    name={`items.${index}.count`}
+                                                    component="div"
+                                                    className="field-error"
+                                                />
                                             </div>
-                                        ))}
-                                    <button
-                                        type="button"
-                                        className="secondary"
-                                        onClick={() =>
-                                            push({ id: values.items.length, label: '', count: 0, maxCount: 1 })
-                                        }
-                                    >
-                                        Add Item
-                                    </button>
-                                </div>
-                            )}
-                        </FieldArray>
-                        <button type="submit">Save</button>
-                    </Form>
-                )}
-            </Formik>
-        </div>
+                                            <div className="col">
+                                                <label htmlFor={`items.${index}.min_count`}>Min Count</label>
+                                                <Field
+                                                    name={`items.${index}.min_count`}
+                                                    placeholder="Min Count"
+                                                    type="number"
+                                                />
+                                                <ErrorMessage
+                                                    name={`items.${index}.min_count`}
+                                                    component="div"
+                                                    className="field-error"
+                                                />
+                                            </div>
+                                            <div className="col">
+                                                <label htmlFor={`items.${index}.max_count`}>Max Count</label>
+                                                <Field
+                                                    name={`items.${index}.max_count`}
+                                                    placeholder="Max Count"
+                                                    type="number"
+                                                />
+                                                <ErrorMessage
+                                                    name={`items.${index}.max_count`}
+                                                    component="div"
+                                                    className="field-error"
+                                                />
+                                            </div>
+                                            <div className="col">
+                                                <button
+                                                    type="button"
+                                                    className="secondary"
+                                                    onClick={() => { 
+                                                        remove(index)
+                                                        handleDeleteItem(item.label); 
+                                                    }}
+                                                >
+                                                    X
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                <button
+                                    type="button"
+                                    className="secondary"
+                                    onClick={() =>
+                                        push({ label: '', count: 0, min_count: 0, max_count: 1 })
+                                    }
+                                >
+                                    Add Item
+                                </button>
+                            </div>
+                        )}
+                    </FieldArray>
+                    <button type="submit">Save</button>
+                </Form>
+            )}
+        </Formik>
+    </div>
     );
 };
 
