@@ -113,9 +113,9 @@ async function isEventJoinable(event_id, event_guests_id = null, connection) {
 }
 
 // API endpoint to store event invites uid's
-router.post('/events/invites/:eventId', async (req, res) => {
+router.post('/events/invites/:event_id', async (req, res) => {
     try {
-        const eventId = req.params.eventId;
+        const event_id = req.params.event_id;
         const receivedData = JSON.parse(req.body.body);
         const invited_by_uid = receivedData.pop(); 
         const guestUIDs = receivedData;
@@ -135,16 +135,16 @@ router.post('/events/invites/:eventId', async (req, res) => {
         `;
         
         for (const uid of guestUIDs) {
-            const [existingInvitation] = await connection.query(checkQuery, [eventId, uid]);
+            const [existingInvitation] = await connection.query(checkQuery, [event_id, uid]);
 
             if (existingInvitation.length > 0) {
-                await connection.query(insertOrUpdateQuery, [eventId, uid, 'invited',invited_by_uid]);
+                await connection.query(insertOrUpdateQuery, [event_id, uid, 'invited',invited_by_uid]);
             } else {
-                await connection.query(insertOrUpdateQuery, [eventId, uid, 'invited',invited_by_uid]);
+                await connection.query(insertOrUpdateQuery, [event_id, uid, 'invited',invited_by_uid]);
             }
         }
 
-        await updateInvitedGuestsCounts(eventId, connection);
+        await updateInvitedGuestsCounts(event_id, connection);
 
         res.status(200).json({ success: true, message: 'Event data updated' });
     } catch (error) {

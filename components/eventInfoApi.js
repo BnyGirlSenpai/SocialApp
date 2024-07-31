@@ -64,18 +64,15 @@ router.get('/events/joined/:uid', async (req, res) => {
 });
 
 // API endpoint to get all guests ids (invited and joined) for a given event
-router.get('/events/guests/:eventId', async (req, res) => {
-    let connection;
+router.get('/events/guests/:event_id', async (req, res) => {
     try {
-        let eventId = req.params.eventId;
-        connection = await pool.getConnection();
-
+        let event_id = req.params.event_id;
         let [rows] = await connection.query(`
             SELECT eg.guest_uid, u.username, u.photo_url
             FROM event_guests eg
             JOIN users u ON eg.guest_uid = u.uid
             WHERE eg.event_id = ? AND eg.status IN ('joined', 'invited')
-        `, [eventId]);
+        `, [event_id]);
 
         if (rows.length === 0) {
             return res.status(404).json({ error: 'Event not found' });
@@ -100,14 +97,14 @@ router.get('/events/guests/:eventId', async (req, res) => {
 });
 
 // API endpoint to fetch event detail information
-router.get('/events/eventDetail/:eventId', async (req, res) => {
+router.get('/events/eventDetail/:event_id', async (req, res) => {
     try {
-        let eventId = req.params.eventId;
+        let event_id = req.params.event_id;
         let [rows] = await connection.query(`
             SELECT *
             FROM events
             WHERE event_id = ?
-        `, [eventId]);
+        `, [event_id]);
 
         if (rows.length === 0) {
             return res.status(404).json({ error: 'Event not found' });

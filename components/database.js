@@ -8,8 +8,8 @@ const pool = createPool({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     waitForConnections: true,
-    connectionLimit: 100,
-    queueLimit: 10000,
+    connectionLimit: 1000,
+    queueLimit: 0,
     connectTimeout: 10000, 
 });
 

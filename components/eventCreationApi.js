@@ -11,7 +11,6 @@ router.post('/event/create', async (req, res) => {
     console.log(eventData);
 
     try {
-        const connection = await pool.getConnection();
         try {
             // Insert the event
             const insertQuery = `
@@ -30,13 +29,10 @@ router.post('/event/create', async (req, res) => {
                 eventData.eventType, 
                 eventData.eventImage
             ]);
-
-            // Retrieve the new event_id
             const newEventId = result.insertId;
-
             res.status(200).json({ message: 'Event created successfully', eventId: newEventId });
         } finally {
-            connection.release(); // Ensure the connection is released even if an error occurs
+            connection.release();
         }
     } catch (error) {
         console.error('Error processing data:', error);

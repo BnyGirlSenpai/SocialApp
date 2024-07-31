@@ -4,24 +4,63 @@ import pool from './database.js';
 const router = express.Router();
 let connection = await pool.getConnection();
 
-router.post('/events/itemList/edit/:eventId', (req, res) => {
-    const { eventId } = req.params;
-    const { items } = req.body;
+router.post('/events/itemlist/edit/:event_id',async (req, res) => {
+    const receivedData = JSON.parse(req.body.body);
+    const items = receivedData;
+    console.log("items:", items);
 
-    // Validate and process data here
-    if (!items || !Array.isArray(items)) {
-        return res.status(400).send({ message: 'Invalid item list' });
+    if (!Array.isArray(items)) {
+        console.error('Invalid items data:', items);
+        return res.status(400).send({ error: 'Invalid items data' });
     }
+    try {          
+        items.forEach(async (item) => {
+            const { Label, Count, min_count, max_count } = item;
 
-    // Find or create event in the database
-    let event = connection.events.find(e => e.id === eventId);
-    if (!event) {
-        event = { id: eventId, items: [] };
-        connection.events.push(event);
+            if (typeof Label !== 'string' || typeof Count !== 'number' ||
+                typeof min_count !== 'number' || typeof max_count !== 'number') {
+                throw new Error('Invalid item properties');
+            }
+
+            await connection.query(
+                `INSERT INTO event_items (label, count, min_count, max_count, event_id) 
+                 VALUES (?, ?, ?, ?, ?) 
+                 ON DUPLICATE KEY UPDATE count = VALUES(count), 
+                                         max_count = VALUES(max_count), 
+                                         min_count = VALUES(min_count)`,
+                [Label, Count, min_count, max_count, req.params.event_id]
+            );
+        })
+        res.status(200).send({ message: 'Items saved successfully' });
+    } catch (error) {
+        console.error('Error processing data:', error);
+        res.status(500).send({ error: error.message });
     }
-
-    // Update event's item list
-    event.items = items;
-
-    res.status(200).send({ message: 'Item list updated successfully' });
 });
+
+router.get('/events/itemlist/:event_id',async (req, res) => {
+    try {
+        let event_id = req.params.event_id;
+        let [rows] = await connection.query(`
+            SELECT label, count, max_count, min_count
+            FROM event_items
+            WHERE event_id = ?
+        `, [event_id]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+        
+        res.status(200).json(rows);
+        console.log(rows);
+    } catch (error) {
+        console.error('Error retrieving event details:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+router.delete('/events/itemlist/delete/:event_id',async (req, res) => {
+
+});
+
+export default router;

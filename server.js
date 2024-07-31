@@ -10,7 +10,8 @@ import eventInviteApi from './components/eventInviteApi.js';
 import searchApi from './components/searchApi.js';
 import eventCreationApi from './components/eventCreationApi.js';
 import eventInfoApi from './components/eventInfoApi.js';
-import notificaion from './components/notifications.js';
+import notificaionApi from './components/notificationsApi.js';
+import itemListApi from './components/itemListApi.js';
 
 dotenv.config();
 
@@ -40,8 +41,9 @@ setInterval(async () => {
 }, 60000); 
 
 let limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, 
-    max: 1000 
+    windowMs: 60000, 
+    max: 1000, 
+    reset: 1630694271
 });
   
 app.use('/api/', limiter);
@@ -72,7 +74,7 @@ app.use(helmet.hsts({
 app.use(express.static('build'));
 
 app.use(cors({
-    origin: ['http://localhost:3000','http://localhost:3000/HomePage', 'http://localhost:3000/ProfileSettingsPage','http://localhost:3000/FriendPage','http://localhost:3000/NotificationPage'], // Allow requests from your frontend's origin
+    origin: ['http://localhost:3000','http://localhost:3000/EditItemListFormPage','http://localhost:3000/HomePage', 'http://localhost:3000/ProfileSettingsPage','http://localhost:3000/EventPage','http://localhost:3000/EditEventFormPage','http://localhost:3000/FriendPage','http://localhost:3000/NotificationPage'], // Allow requests from your frontend's origin
     credentials: true // Optional, to allow cookies if needed
 }));
 
@@ -82,7 +84,8 @@ app.use('/api', eventInviteApi);
 app.use('/api', searchApi);
 app.use('/api', eventCreationApi);
 app.use('/api', eventInfoApi);
-app.use('/api', notificaion);
+app.use('/api', notificaionApi);
+app.use('/api', itemListApi)
 
 app.use((err, req, res, next) => {
     if (!err.statusCode) {
