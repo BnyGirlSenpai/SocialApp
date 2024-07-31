@@ -95,21 +95,28 @@ async function isEventJoinable(event_id, event_guests_id = null, connection) {
         const [inviteRows] = await connection.query(checkInviteQuery,[event_id,event_guests_id]); 
         const eventCreator = eventRows[0].creator_uid; 
         const inviter = inviteRows[0].invited_by_uid;
-        console.log(`Event ${event_id} status: ${eventStatus}, Creator UID: ${eventCreator} Invite from:${inviter}`);
+        console.log(`Event ${event_id} status: ${eventStatus}, Creator UID: ${eventCreator} Invite from: ${inviter}`);
 
-        if (statuses.includes('private') && statuses.includes('open')) {
+        if (statuses.includes('public') && statuses.includes('closed') && String(eventCreator === inviter)){
             console.log(`Event ${event_id} is joinable`);
             return true; 
-        } else {
-            if(eventCreator === inviter) {
-                console.log(`Event ${event_id} is joinable`);
-                return true; 
-            } else {(statuses.includes('private') || statuses.includes('closed')) 
+        } 
+        if (statuses.includes('private') || statuses.includes('closed') && String(eventCreator === inviter)) {
+            console.log(`Event ${event_id} is joinable`);
+            return true;
+        } 
+        if (statuses.includes('private') && statuses.includes('open')) {
+            if (String(inviter === null)) {
                 console.log(`Event ${event_id} is not joinable (status: ${eventStatus})`);
                 throw new Error('Cannot join this event');
             }
-        }
-    }
+            console.log(`Event ${event_id} is joinable`);
+            return true; 
+        } else {
+            console.log(`Event ${event_id} is not joinable (status: ${eventStatus})`);
+            throw new Error('Cannot join this event');
+        } 
+    } 
 }
 
 // API endpoint to store event invites uid's
