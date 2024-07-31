@@ -41,8 +41,8 @@ setInterval(async () => {
 }, 60000); 
 
 let limiter = rateLimit({
-    windowMs: 60000, 
-    max: 1000, 
+    windowMs: 15 * 60 * 1000, 
+    max: 1000 
 });
   
 app.use('/api/', limiter);
