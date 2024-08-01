@@ -9,7 +9,7 @@ import '../styles/eventpage.css';
 const OwnEventList = () => {
   const { user } = UserAuth(); 
   const [ownEvents, setOwnEvents] = useState([]);
-  const [showFriendDropDown, setShowFriendDropDown] = useState(false);
+  const [friendDropDownVisible, setFriendDropDownVisible] = useState({}); // New state for dropdown visibility
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -66,20 +66,23 @@ const OwnEventList = () => {
     };
   }, [loading, hasMore]);
 
-  const hideFriendDropDown = async () => {
+  const hideFriendDropDown = async (eventId) => {
     try {
       if (user) {
         const ownEventData = await getDataFromBackend(`http://localhost:3001/api/events/${user.uid}?page=${page}&limit=10`);
         setOwnEvents(ownEventData ? ownEventData.events : []);
-        setShowFriendDropDown(false);  
+        setFriendDropDownVisible(prevState => ({ ...prevState, [eventId]: false }));  
       }
     } catch (error) {
       console.error("Error fetching own event data:", error);
     }
   };
 
-  const handleInviteClick = () => {
-    setShowFriendDropDown(!showFriendDropDown);
+  const handleInviteClick = (eventId) => {
+    setFriendDropDownVisible(prevState => ({ 
+      ...prevState, 
+      [eventId]: !prevState[eventId] 
+    }));
   };
 
   if (loading && page === 1) { 
@@ -117,7 +120,7 @@ const OwnEventList = () => {
                   <div className="button-container">                   
                     <a href={`/EditEventFormPage/${event.event_id}`}><button>Edit Event</button></a>                   
                     <button 
-                      onClick={handleInviteClick}
+                      onClick={() => handleInviteClick(event.event_id)} // Update the click handler
                       disabled={event.current_guests_count >= event.max_guests_count}
                       style={{
                         backgroundColor: event.current_guests_count >= event.max_guests_count ? '#ccc' : '', 
@@ -131,7 +134,7 @@ const OwnEventList = () => {
                     </button>
                     <a href={`/EditItemListFormPage/${event.event_id}`}><button>Edit Item List</button></a> 
                   </div>
-                  {showFriendDropDown && <FriendDropDown event_id={event.event_id} onInvite={hideFriendDropDown} />}
+                  {friendDropDownVisible[event.event_id] && <FriendDropDown event_id={event.event_id} onInvite={() => hideFriendDropDown(event.event_id)} />}
                 </li>
               ))}
             </ul>

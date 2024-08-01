@@ -85,7 +85,7 @@ const EventForm = () => {
           setIsButtonClicked(true);
           setTimeout(() => {
             setIsButtonClicked(false);
-            navigate('/EventPage');
+            navigate('/OwnEventsPage');
           }, 1000);
         } else {
           console.log("User not found!");
@@ -240,7 +240,7 @@ const EventForm = () => {
           type="button"
           onClick={() => document.getElementById('eventImage').click()}
         >
-          {selectedFile ? selectedFile.name : 'Choose Image'}
+          {selectedFile ? selectedFile.name : 'Choose Event Image'}
         </button>
         <p>Drag & drop an image here or click to select</p>
       </div>

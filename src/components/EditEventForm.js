@@ -96,7 +96,7 @@ const EditEventForm = () => {
                 
                 console.log('Data to server:', updatedData);
                 await updateDataInDb(JSON.stringify(updatedData),'http://localhost:3001/api/events/edit/update'); 
-                setTimeout(() => navigate('/EventPage'), 1000);
+                setTimeout(() => navigate('/OwnEventsPage'), 1000);
             } else {
                 console.log("Event not found!");
             }
@@ -159,7 +159,7 @@ const EditEventForm = () => {
 
     useEffect(() => {
         if (redirect) {
-            navigate('/EventPage');
+            navigate('/OwnEventsPage');
         }
     }, [redirect, navigate]);
 
@@ -269,7 +269,7 @@ const EditEventForm = () => {
           <div className="error">{formik.errors.maxGuests}</div>
       ) : null}
 
-<label htmlFor="eventType">Event Type</label>
+      <label htmlFor="eventType">Event Type</label>
       <select
         id="eventType"
         name="eventType"
@@ -306,7 +306,7 @@ const EditEventForm = () => {
           type="button"
           onClick={() => document.getElementById('eventImage').click()}
         >
-          {selectedFile ? selectedFile.name : 'Choose Image'}
+          {selectedFile ? selectedFile.name : 'Choose Event Image'}
         </button>
         <p>Drag & drop an image here or click to select</p>
       </div>
