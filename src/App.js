@@ -4,7 +4,8 @@ import Protected from './components/Protected';
 import { AuthContextProvider } from './context/AuthContext';
 import HomePage from './pages/HomePage';
 import Signinpage from './pages/SignInPage';
-import Eventpage from './pages/EventPage';
+import OwnEventpage from './pages/OwnEventPage';
+import JoinedEventpage from './pages/JoinedEventPage';
 import Friendpage from './pages/FriendPage';
 import Mappage from './pages/MapPage';
 import Calenderpage from './pages/CalenderPage';
@@ -15,7 +16,6 @@ import ProfileSettingspage from './pages/ProfileSettingsPage';
 import EventFormpage from './pages/EventFormPage';
 import EditEventFormpage from './pages/EditEventFormPage';
 import EditItemListFormpage from './pages/EditItemListFormPage';
-
 import EventDetailpage from './pages/EventDetailPage';
 import './App.css';
 
@@ -26,7 +26,8 @@ const App = () => {
           <BrowserRouter>
             <Routes>
               <Route path='/' element={<Signinpage />} />
-              <Route path='/EventPage' element={<Protected><Eventpage /></Protected>} />
+              <Route path='/OwnEventsPage' element={<Protected><OwnEventpage /></Protected>} />
+              <Route path='/JoinedEventsPage' element={<Protected><JoinedEventpage /></Protected>} />
               <Route path='/FriendPage' element={<Protected><Friendpage /></Protected>} />
               <Route path='/MapPage' element={<Protected><Mappage /></Protected>} />
               <Route path='/CalenderPage' element={<Protected><Calenderpage /></Protected>} />

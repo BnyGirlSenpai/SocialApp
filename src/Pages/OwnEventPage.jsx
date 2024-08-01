@@ -1,16 +1,14 @@
 import React from 'react';
-import EventList from '../components/EventList';
 import OwnEventList from '../components/OwnEventList';
 import Navbar from '../components/Navbar';
 
-function Eventpage() {
+function OwnEventpage() {
   return (
     <div>
        <Navbar />
        <OwnEventList/>
-       <EventList />
     </div>
   )
 };
 
-export default Eventpage;
+export default OwnEventpage;

@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { getDataFromBackend, updateDataInDb } from '../apis/UserDataApi';
 import { UserAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import { Formik, Field, Form, ErrorMessage, FieldArray } from 'formik';
 import * as Yup from 'yup';
 import '../styles/itemlist.css';
 
 const ItemList = ({event_id}) => {
     const { user } = UserAuth();
-    const navigate = useNavigate();
     const [initialValues, setInitialValues] = useState({ items: [] });
     console.log(initialValues)
 
@@ -35,6 +33,10 @@ const ItemList = ({event_id}) => {
         )
     });
 
+    if (!initialValues.items || initialValues.items.length === 0) {
+        return null;
+    }
+    
     return (
         <div>
         <h1>Item List</h1>
@@ -45,13 +47,10 @@ const ItemList = ({event_id}) => {
             onSubmit={async (values) => {
                 try {
                     if (user) {      
-                      
                         const itemData = values.items.map(item => ({
                             label: item.label,
                             count: item.count
-                        }));
-                        
-                        console.log(itemData);
+                        })); 
                         await updateDataInDb(JSON.stringify(itemData),`http://localhost:3001/api/events/itemlist/update/${event_id}`);  
                     } else {
                         console.log("Event not found!");

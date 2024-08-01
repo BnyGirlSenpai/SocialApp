@@ -43,7 +43,7 @@ const EventDetailView = () => {
 
     useEffect(() => {
         if (redirect) {
-            navigate('/EventPage');
+            setTimeout(() => navigate(`/JoinedEventsPage`), 1000);    
         }
     }, [redirect, navigate]);
 

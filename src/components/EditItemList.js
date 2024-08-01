@@ -20,7 +20,7 @@ const EditItemList = () => {
                 if (user) {
                     const initialData = await getDataFromBackend(`http://localhost:3001/api/events/itemlist/${event_id}`);
                     console.log("Loaded data from server:", initialData);
-                    setInitialValues({ items: initialData });
+                    setInitialValues({ items: initialData || [] });
                 }  
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -71,7 +71,7 @@ const EditItemList = () => {
 
                         console.log(itemData);
                         await sendDataToBackend(itemData,`http://localhost:3001/api/events/itemlist/edit/${event_id}`);     
-                        setTimeout(() => navigate('/EventPage'), 1000);   
+                        setTimeout(() => navigate(`/EventPage/EventDetailPage/${event_id}`), 1000);    
                     } else {
                         console.log("Event not found!");
                     }

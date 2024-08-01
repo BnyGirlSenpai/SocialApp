@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend } from '../apis/UserDataApi';
 import { formatLocalDateTime } from '../utils/DateUtils'; 
@@ -9,42 +9,81 @@ const Home = () => {
   const { user } = UserAuth();
   const [publicEvents, setPublicEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const observer = useRef();
 
   useEffect(() => {
     const fetchEventData = async () => {
       try {
         if (user) {
-          const publicEventsData = await getDataFromBackend('http://localhost:3001/api/public/events');
-          console.log("Loaded public Event Data from server:", publicEventsData);
-
-          if (publicEventsData && publicEventsData.length > 0) {
-            setPublicEvents([publicEventsData]);
+          const publicEventsData = await getDataFromBackend(`http://localhost:3001/api/public/events?page=${page}`);
+          console.log('Fetched data:', publicEventsData);
+          
+          if (publicEventsData.events && publicEventsData.events.length > 0) {
+            setPublicEvents(prevEvents => [...prevEvents, ...publicEventsData.events]);
+            setHasMore(publicEventsData.hasMore);
           } else {
-            setPublicEvents([]);
+            setHasMore(false);
           }
           setLoading(false); 
         }
       } catch (error) {
-        console.error("Error fetching event data:", error);
+        console.error('Error fetching event data:', error);
         setLoading(false); 
       }
     };
-  
-    fetchEventData();
-  }, [user]);
 
-  if (loading) {
+    fetchEventData();
+  }, [user, page]);
+
+  useEffect(() => {
+    if (loading) return;
+
+    const handleObserver = (entities) => {
+      console.log('IntersectionObserver triggered:', entities);
+      const target = entities[0];
+      if (target.isIntersecting && hasMore) {
+        console.log('Loading more events...');
+        setPage(prevPage => prevPage + 1);
+      }
+    };
+
+    const options = {
+      root: null,
+      rootMargin: '20px',
+      threshold: 0.1
+    };
+
+    observer.current = new IntersectionObserver(handleObserver, options);
+    const target = document.querySelector('#load-more');
+    if (target) {
+      observer.current.observe(target);
+    } else {
+      console.warn('Target element not found');
+    }
+
+    return () => {
+      if (observer.current) observer.current.disconnect();
+    };
+  }, [loading, hasMore]);
+
+  if (loading && page === 1) {
     return <p>Loading...</p>; 
   }
+
+  console.log('Rendering events:', publicEvents);
+  console.log('Loading:', loading);
+  console.log('Has more:', hasMore);
 
   return (
     <div>
       <div className="event-container">
         <div className="column">
           <h2>Public Events</h2>
-          {publicEvents[0] ? (
+          {publicEvents.length > 0 ? (
             <ul className="events" id="next-events">
-              {publicEvents[0].map((event, index) => (
+              {publicEvents.map((event, index) => (
                 <li key={index}>
                   <div className="event-card">
                     <div className="card-info">
@@ -60,7 +99,7 @@ const Home = () => {
                         <p>Image: {event.image_url}</p>
                       </div>
                       <a href={`/EventPage/EventDetailPage/${event.event_id}`}>
-                        <Button variant="contained" >Details</Button >
+                        <Button variant="contained">Details</Button>
                       </a>
                     </div>
                   </div>
@@ -72,10 +111,10 @@ const Home = () => {
           )}
         </div>
       </div>
+      {loading && <p>Loading more events...</p>}
+      {hasMore && <div id="load-more" style={{ height: '1px' }}></div>}
     </div>
   );
 }
 
 export default Home;
-
-
