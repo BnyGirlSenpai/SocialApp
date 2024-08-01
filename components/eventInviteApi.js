@@ -97,21 +97,27 @@ async function isEventJoinable(event_id, event_guests_id = null, connection) {
         const inviter = inviteRows[0].invited_by_uid;
         console.log(`Event ${event_id} status: ${eventStatus}, Creator UID: ${eventCreator} Invite from: ${inviter}`);
 
-        if (statuses.includes('public') && statuses.includes('closed') && String(eventCreator === inviter)){
+        if (statuses.includes('public') && statuses.includes('closed') && eventCreator === inviter){
+            console.log("public,closed",(inviter))
             console.log(`Event ${event_id} is joinable`);
             return true; 
         } 
-        if (statuses.includes('private') || statuses.includes('closed') && String(eventCreator === inviter)) {
+        
+        if (statuses.includes('private') && statuses.includes('closed') && eventCreator === inviter) {
             console.log(`Event ${event_id} is joinable`);
+            console.log("privat,closed",(inviter))
             return true;
         } 
+
         if (statuses.includes('private') && statuses.includes('open')) {
-            if (String(inviter === null)) {
+            if (inviter != null) {
+                console.log("privat,open",(inviter))
+                console.log(`Event ${event_id} is joinable`);
+                return true
+            } else {
                 console.log(`Event ${event_id} is not joinable (status: ${eventStatus})`);
                 throw new Error('Cannot join this event');
             }
-            console.log(`Event ${event_id} is joinable`);
-            return true; 
         } else {
             console.log(`Event ${event_id} is not joinable (status: ${eventStatus})`);
             throw new Error('Cannot join this event');
@@ -252,7 +258,7 @@ router.put('/join/public/event', async (req, res) => {
                 if (currentStatus === 'left' || currentStatus === 'invited') {
                     const updateStatusQuery = `
                         UPDATE event_guests 
-                        SET status = 'joined' 
+                        SET status = 'joined' , invited_by_uid = NULL
                         WHERE event_id = ? AND guest_uid = ?
                     `;
                     await connection.query(updateStatusQuery, [eventData.event_id, eventData.uid_guest]);
