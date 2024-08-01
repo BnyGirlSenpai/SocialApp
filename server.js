@@ -12,6 +12,7 @@ import eventCreationApi from './components/eventCreationApi.js';
 import eventInfoApi from './components/eventInfoApi.js';
 import notificaionApi from './components/notificationsApi.js';
 import itemListApi from './components/itemListApi.js';
+import calendarApi from './components/calendarApi.js';
 
 dotenv.config();
 
@@ -73,7 +74,7 @@ app.use(helmet.hsts({
 app.use(express.static('build'));
 
 app.use(cors({
-    origin: ['http://localhost:3000','http://localhost:3000/EditItemListFormPage','http://localhost:3000/HomePage', 'http://localhost:3000/ProfileSettingsPage','http://localhost:3000/EventPage','http://localhost:3000/EditEventFormPage','http://localhost:3000/FriendPage','http://localhost:3000/NotificationPage','http://localhost:3000/EventPage'], // Allow requests from your frontend's origin
+    origin: ['http://localhost:3000','http://localhost:3000/EditItemListFormPage','http://localhost:3000/HomePage', 'http://localhost:3000/ProfileSettingsPage','http://localhost:3000/EventPage','http://localhost:3000/EditEventFormPage','http://localhost:3000/FriendPage','http://localhost:3000/NotificationPage','http://localhost:3000/OwnEventPage','http://localhost:3000/JoinedEventPage'], // Allow requests from your frontend's origin
     credentials: true // Optional, to allow cookies if needed
 }));
 
@@ -84,7 +85,8 @@ app.use('/api', searchApi);
 app.use('/api', eventCreationApi);
 app.use('/api', eventInfoApi);
 app.use('/api', notificaionApi);
-app.use('/api', itemListApi)
+app.use('/api', itemListApi);
+app.use('/api', calendarApi);
 
 app.use((err, req, res, next) => {
     if (!err.statusCode) {
