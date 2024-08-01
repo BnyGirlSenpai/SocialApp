@@ -4,6 +4,8 @@ import dotenv from 'dotenv';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import pool from './components/database.js';
+import compression from 'compression';
+import morgan from 'morgan';
 import friendSystemApi from './components/friendSystemApi.js';
 import userApi from './components/userApi.js';
 import eventInviteApi from './components/eventInviteApi.js';
@@ -13,11 +15,14 @@ import eventInfoApi from './components/eventInfoApi.js';
 import notificaionApi from './components/notificationsApi.js';
 import itemListApi from './components/itemListApi.js';
 import calendarApi from './components/calendarApi.js';
+import http from 'http';
 
 dotenv.config();
 
-const app = express(); 
-const port = 3001;
+const app = express();
+const port = 3001; // in die dotenv!!!!
+const asyncHandler = fn => (req, res, next) =>
+    Promise.resolve(fn(req, res, next)).catch(next);
 
 let connection;
 try {
@@ -39,7 +44,7 @@ setInterval(async () => {
     } catch (error) {
         console.error('Error in keep-alive query:', error);
     }
-}, 60000); 
+}, 60000);
 
 let limiter = rateLimit({
     windowMs: 15 * 60 * 1000, 
@@ -49,7 +54,12 @@ let limiter = rateLimit({
 app.use('/api/', limiter);
 app.use(express.json());
 app.use(helmet());
-
+app.use(compression());
+app.use(express.static('build', {
+    maxAge: '1d',
+    etag: false
+}));
+app.use(morgan('combined'));
 app.use(
     helmet.contentSecurityPolicy({
       useDefaults: true,
@@ -78,19 +88,19 @@ app.use(cors({
     credentials: true // Optional, to allow cookies if needed
 }));
 
-app.use('/api', friendSystemApi);
-app.use('/api', userApi);
-app.use('/api', eventInviteApi);
-app.use('/api', searchApi);
-app.use('/api', eventCreationApi);
-app.use('/api', eventInfoApi);
-app.use('/api', notificaionApi);
-app.use('/api', itemListApi);
-app.use('/api', calendarApi);
+app.use('/api', asyncHandler(friendSystemApi));
+app.use('/api', asyncHandler(userApi));
+app.use('/api', asyncHandler(eventInviteApi));
+app.use('/api', asyncHandler(searchApi));
+app.use('/api', asyncHandler(eventCreationApi));
+app.use('/api', asyncHandler(eventInfoApi));
+app.use('/api', asyncHandler(notificaionApi));
+app.use('/api', asyncHandler(itemListApi));
+app.use('/api', asyncHandler(calendarApi));
 
 app.use((err, req, res, next) => {
     if (!err.statusCode) {
-        err.statusCode = 500; 
+        err.statusCode = 500;
     }
     res.status(err.statusCode).json({
         error: {
@@ -100,7 +110,25 @@ app.use((err, req, res, next) => {
     });
 });
 
-app.listen(port, () => {
+app.get('/health', (req, res) => {
+    res.status(200).send('OK');
+});
+
+
+const server = http.createServer(app);
+
+server.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
 
+
+const shutdown = (signal) => {
+    console.log(`${signal} signal received. Closing HTTP server...`);
+    server.close(() => {
+        console.log('HTTP server closed');
+        process.exit(0); 
+    });
+};
+
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));
