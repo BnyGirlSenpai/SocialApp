@@ -3,7 +3,6 @@ import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend, updateDataInDb } from '../apis/UserDataApi';
 import { formatLocalDateTime } from '../utils/DateUtils'; 
 import FriendDropDown from './FriendDropDown';
-import ItemList from './ItemList';
 import '../styles/eventpage.css'; 
 
 const JoinedEventList = () => {
@@ -12,8 +11,8 @@ const JoinedEventList = () => {
   const [showFriendDropDown, setShowFriendDropDown] = useState(false);
   const [creatorUid, setCreatorUid] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1); // Track the current page
-  const [hasMore, setHasMore] = useState(true); // Check if more events are available
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true); 
   const observer = useRef();
 
   useEffect(() => {
@@ -39,7 +38,7 @@ const JoinedEventList = () => {
     };
 
     fetchEventData();
-  }, [user, page]); // Re-fetch when `user` or `page` changes
+  }, [user, page]); 
 
   useEffect(() => {
     if (loading) return;
@@ -97,7 +96,7 @@ const JoinedEventList = () => {
     }
   };
 
-  if (loading && page === 1) { // Show loading only for the first page
+  if (loading && page === 1) { 
     return <p>Loading...</p>; 
   }
 
@@ -119,7 +118,6 @@ const JoinedEventList = () => {
                         <p>Location: {event.location}</p>
                         <p>Status: {event.event_status}</p>
                       </div>                 
-                      <ItemList event_id={event.event_id} />
                     </div>
                   </div>
                   <div className="button-container">
@@ -149,7 +147,7 @@ const JoinedEventList = () => {
           )}
         </div>
       </div>
-      {hasMore && <div id="load-more" style={{ height: '1px' }}></div>} {/* The target for IntersectionObserver */}
+      {hasMore && <div id="load-more" style={{ height: '1px' }}></div>} {}
     </div>
   );
 };

@@ -2,14 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend } from '../apis/UserDataApi';
 import FriendDropDown from './FriendDropDown';
-import { formatLocalDateTime } from '../utils/DateUtils'; 
-import ItemList from '../components/ItemList';
+import { formatLocalDateTime } from '../utils/DateUtils';
 import '../styles/eventpage.css'; 
 
 const OwnEventList = () => {
   const { user } = UserAuth(); 
   const [ownEvents, setOwnEvents] = useState([]);
-  const [friendDropDownVisible, setFriendDropDownVisible] = useState({}); // New state for dropdown visibility
+  const [friendDropDownVisible, setFriendDropDownVisible] = useState({}); 
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -94,7 +93,7 @@ const OwnEventList = () => {
       <div className="event-container">
         <div className="column">
           <h2>My Events</h2>
-          <a href="/EventFormpage"><button className="add-event-button">Add Own Event</button></a>
+          <button className="add-event-button"><a href="/EventFormpage">Add Own Event</a></button>
           {ownEvents.length > 0 ? (
             <ul className="events" id="manage-events">
               {ownEvents.map((event, index) => (
@@ -114,13 +113,12 @@ const OwnEventList = () => {
                         <p>Type: {event.event_type}</p>
                         <p>Image: {event.image_url}</p>
                       </div>
-                      <ItemList event_id={event.event_id} />
                     </div>
                   </div>
                   <div className="button-container">                   
                     <a href={`/EditEventFormPage/${event.event_id}`}><button>Edit Event</button></a>                   
                     <button 
-                      onClick={() => handleInviteClick(event.event_id)} // Update the click handler
+                      onClick={() => handleInviteClick(event.event_id)}
                       disabled={event.current_guests_count >= event.max_guests_count}
                       style={{
                         backgroundColor: event.current_guests_count >= event.max_guests_count ? '#ccc' : '', 
@@ -143,7 +141,7 @@ const OwnEventList = () => {
           )}
         </div>
       </div>
-      {hasMore && <div id="load-more" style={{ height: '1px' }}></div>} {/* The target for IntersectionObserver */}
+      {hasMore && <div id="load-more" style={{ height: '1px' }}></div>} {}
     </div>
   );
 };

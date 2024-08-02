@@ -1,0 +1,7 @@
+.map {
+    height: 100vh; 
+}
+
+.map.samll {
+    height: 40vh;
+}

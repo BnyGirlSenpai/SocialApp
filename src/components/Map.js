@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import '../styles/map.css';
 
 const Map = () => {
 
@@ -10,7 +11,7 @@ const Map = () => {
   const map = useRef(null)
 
   useEffect(() => {
-    if(map.curernt) return;
+    if(map.current) return;
 
     map.current = new maplibregl.Map({
         style: `https://maps.hstin.de/styles/hstin-dark-3d-v0`,
@@ -38,7 +39,7 @@ const Map = () => {
   },[]);
 
   return (
-    <div style={{ height: '100vh' }}>
+    <div className='map'>
       <div ref={mapContainer} style={{ height: '100%' }}></div>
     </div>
   );

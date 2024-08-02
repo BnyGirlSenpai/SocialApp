@@ -35,6 +35,10 @@
   border-radius: 5px;
   cursor: pointer;
   text-decoration: none;
+  a {
+    color: white;
+    text-decoration: underline;
+  }
 }
 
 /* CSS for Event Cards */

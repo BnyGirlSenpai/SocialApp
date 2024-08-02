@@ -1,0 +1,14 @@
+.event-info {
+    display: flex;
+    justify-content: space-between;
+}
+
+.map-detail-view{
+    width: 50%;
+}
+
+a {
+    color: #007bff;
+    text-decoration: underline;
+}
+
