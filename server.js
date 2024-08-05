@@ -70,34 +70,27 @@ app.use(
       },
     })
 );
-
 app.use(helmet.xssFilter());
 app.use(helmet.frameguard({ action: 'deny' }));
 app.use(helmet.referrerPolicy({ policy: 'same-origin' }));
-
 app.use(helmet.hsts({
     maxAge: 31536000, // 1 year in seconds
     includeSubDomains: true,
     preload: true
 }));
-
-app.use(express.static('build'));
-
 app.use(cors({
     origin: ['http://localhost:3000','http://localhost:3000/EditItemListFormPage','http://localhost:3000/HomePage', 'http://localhost:3000/ProfileSettingsPage','http://localhost:3000/EventPage','http://localhost:3000/EditEventFormPage','http://localhost:3000/FriendPage','http://localhost:3000/NotificationPage','http://localhost:3000/OwnEventPage','http://localhost:3000/JoinedEventPage'], // Allow requests from your frontend's origin
     credentials: true // Optional, to allow cookies if needed
 }));
-
-app.use('/api', asyncHandler(friendSystemApi));
-app.use('/api', asyncHandler(userApi));
-app.use('/api', asyncHandler(eventInviteApi));
-app.use('/api', asyncHandler(searchApi));
-app.use('/api', asyncHandler(eventCreationApi));
-app.use('/api', asyncHandler(eventInfoApi));
-app.use('/api', asyncHandler(notificaionApi));
-app.use('/api', asyncHandler(itemListApi));
-app.use('/api', asyncHandler(calendarApi));
-
+app.use('/api', asyncHandler(friendSystemApi),limiter);
+app.use('/api', asyncHandler(userApi),limiter);
+app.use('/api', asyncHandler(eventInviteApi),limiter);
+app.use('/api', asyncHandler(searchApi),limiter);
+app.use('/api', asyncHandler(eventCreationApi),limiter);
+app.use('/api', asyncHandler(eventInfoApi),limiter);
+app.use('/api', asyncHandler(notificaionApi),limiter);
+app.use('/api', asyncHandler(itemListApi),limiter);
+app.use('/api', asyncHandler(calendarApi),limiter);
 app.use((err, req, res, next) => {
     if (!err.statusCode) {
         err.statusCode = 500;
@@ -109,18 +102,15 @@ app.use((err, req, res, next) => {
         }
     });
 });
-
 app.get('/health', (req, res) => {
     res.status(200).send('OK');
 });
-
 
 const server = http.createServer(app);
 
 server.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
-
 
 const shutdown = (signal) => {
     console.log(`${signal} signal received. Closing HTTP server...`);
