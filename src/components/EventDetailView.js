@@ -24,7 +24,6 @@ const EventDetailView = () => {
     const [redirect, setRedirect] = useState(false);
     const [guestsData, setGuestsData] = useState({ guests: [] });
     const [dateTime, setDateTime] = useState([]);
-    const [isMapSmall, setIsMapSmall] = useState(true); // State to control map size
 
     useEffect(() => {
         const fetchEventData = async () => {
@@ -97,9 +96,16 @@ const EventDetailView = () => {
     const guestUids =  guestsData.guests.map(guest => guest.guest_uid) || [];
     const isInvitedOrJoined = guestUids.includes(user.uid);
 
+    useEffect(() => {
+        const mapElements = document.querySelectorAll('.map');
+        mapElements.forEach(element => {
+            element.classList.add('small');
+        });
+    }, []); 
+
     return (
     <div className="event-detail-container">
-        <div className="event-info">
+        <div className="event-detail-info">
             <div className='event-text'>
                 <h1>{eventData.event_name}</h1>
                 <p>Date: {dateTime.slice(0,10)}</p>
@@ -113,13 +119,8 @@ const EventDetailView = () => {
                 <p>Type: {eventData.event_type}</p>
                 <p>Image: {eventData.image_url}</p>
             </div>
-            <div className={`map ${isMapSmall ? 'map-detail-view' : ''}`}>
-                <Map />
-                <div className="button-container">                   
-                    <Button id="toggleMapButton" onClick={() => setIsMapSmall(!isMapSmall)}>
-                        Toggle Map Size
-                    </Button>
-                </div>
+            <div className="map-detail-view">
+                <Map className="small"/>
             </div>
         </div>                
         {isOwner ? (
