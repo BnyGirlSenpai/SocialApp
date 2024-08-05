@@ -51,7 +51,6 @@ let limiter = rateLimit({
     max: 1000 
 });
   
-app.use('/api/', limiter);
 app.use(express.json());
 app.use(helmet());
 app.use(compression());
@@ -82,15 +81,16 @@ app.use(cors({
     origin: ['http://localhost:3000','http://localhost:3000/EditItemListFormPage','http://localhost:3000/HomePage', 'http://localhost:3000/ProfileSettingsPage','http://localhost:3000/EventPage','http://localhost:3000/EditEventFormPage','http://localhost:3000/FriendPage','http://localhost:3000/NotificationPage','http://localhost:3000/OwnEventPage','http://localhost:3000/JoinedEventPage'], // Allow requests from your frontend's origin
     credentials: true // Optional, to allow cookies if needed
 }));
-app.use('/api', asyncHandler(friendSystemApi),limiter);
-app.use('/api', asyncHandler(userApi),limiter);
-app.use('/api', asyncHandler(eventInviteApi),limiter);
-app.use('/api', asyncHandler(searchApi),limiter);
-app.use('/api', asyncHandler(eventCreationApi),limiter);
-app.use('/api', asyncHandler(eventInfoApi),limiter);
-app.use('/api', asyncHandler(notificaionApi),limiter);
-app.use('/api', asyncHandler(itemListApi),limiter);
-app.use('/api', asyncHandler(calendarApi),limiter);
+app.use('/api/', limiter);
+app.use('/api', asyncHandler(friendSystemApi));
+app.use('/api', asyncHandler(userApi));
+app.use('/api', asyncHandler(eventInviteApi));
+app.use('/api', asyncHandler(searchApi));
+app.use('/api', asyncHandler(eventCreationApi));
+app.use('/api', asyncHandler(eventInfoApi));
+app.use('/api', asyncHandler(notificaionApi));
+app.use('/api', asyncHandler(itemListApi));
+app.use('/api', asyncHandler(calendarApi));
 app.use((err, req, res, next) => {
     if (!err.statusCode) {
         err.statusCode = 500;

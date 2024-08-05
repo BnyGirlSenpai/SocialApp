@@ -2,12 +2,20 @@ import express from 'express';
 import pool from './database.js';
 
 const router = express.Router();
-let connection = await pool.getConnection();
+const getConnection = async () => {
+    try {
+        return await pool.getConnection();
+    } catch (error) {
+        throw new Error('Failed to get database connection');
+    }
+};
 
 // API endpoint to get events the current user is either the owner or invited
 router.get('/calendar/:uid', async (req, res) => {
-    const uid = req.params.uid;
+    let connection;
     try {
+        connection = await getConnection();
+        const uid = req.params.uid;
         const [rows] = await connection.query(
             `SELECT DISTINCT e.event_id, e.event_name, e.event_datetime
              FROM events e

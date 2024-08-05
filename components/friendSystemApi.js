@@ -2,12 +2,19 @@ import express from 'express';
 import pool from './database.js';
 
 const router = express.Router();
-let connection = await pool.getConnection();
+const getConnection = async () => {
+    try {
+        return await pool.getConnection();
+    } catch (error) {
+        throw new Error('Failed to get database connection');
+    }
+};
 
 // API endpoint to update pending friendrequests data
 router.put('/users/update/friendrequests', async (req, res) => {
+    let connection;
     try {
-        connection = await pool.getConnection();
+        connection = await getConnection();
         const receivedData = req.body;
         console.log(receivedData);
 
@@ -37,8 +44,9 @@ router.put('/users/update/friendrequests', async (req, res) => {
 
 // API endpoint to store pending friendrequests 
 router.post('/users/friendrequests', async (req, res) => {
+    let connection;
     try {
-        connection = await pool.getConnection();
+        connection = await getConnection();
         let receivedData = req.body;
         let friendrequestData = JSON.parse(receivedData.body);
         console.log(friendrequestData);
@@ -91,7 +99,9 @@ router.post('/users/friendrequests', async (req, res) => {
 
 // API endpoint to get friends data
 router.get('/users/friends/:uid', async (req, res) => {
+    let connection;
     try {
+        connection = await getConnection();
       let uid = req.params.uid;
       let [rows] = await connection.query('SELECT u.photo_url, u.username, u.uid FROM friendrequests AS f JOIN users AS u ON (f.uid_transmitter = u.uid OR f.uid_receiver = u.uid) WHERE ((f.uid_transmitter = ? OR f.uid_receiver = ?) AND f.status = ?) AND u.uid != ?', [uid, uid, 'accepted', uid]);
       res.status(200).json(rows);

@@ -2,7 +2,13 @@ import express from 'express';
 import pool from './database.js';
 
 const router = express.Router();
-let connection = await pool.getConnection();
+const getConnection = async () => {
+    try {
+        return await pool.getConnection();
+    } catch (error) {
+        throw new Error('Failed to get database connection');
+    }
+};
 
 // Update Joined Guests Counters
 async function updateJoinedGuestsCounts(event_id, connection) {
@@ -127,7 +133,9 @@ async function isEventJoinable(event_id, event_guests_id = null, connection) {
 
 // API endpoint to store event invites uid's
 router.post('/events/invites/:event_id', async (req, res) => {
+    let connection;
     try {
+        connection = await getConnection();
         const event_id = req.params.event_id;
         const receivedData = JSON.parse(req.body.body);
         const invited_by_uid = receivedData.pop(); 
@@ -172,7 +180,9 @@ router.post('/events/invites/:event_id', async (req, res) => {
 
 // API to update event database after invited guest interaction
 router.put('/events/userStatus/update', async (req, res) => {
+    let connection;
     try {
+        connection = await getConnection();
         const receivedData = req.body;
         console.log('Received data:', receivedData);
         const { uid_guest, event_id, status } = receivedData;
@@ -229,7 +239,9 @@ router.put('/events/userStatus/update', async (req, res) => {
 
 // API to join public events
 router.put('/join/public/event', async (req, res) => {
+    let connection;
     try {
+        connection = await getConnection();
         const eventData = req.body;
         console.log(eventData);
 

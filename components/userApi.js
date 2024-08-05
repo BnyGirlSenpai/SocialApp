@@ -2,81 +2,85 @@ import express from 'express';
 import pool from './database.js';
 
 const router = express.Router();
-let connection = await pool.getConnection();
+
+// Helper function to get a database connection and handle errors
+const getConnection = async () => {
+    try {
+        return await pool.getConnection();
+    } catch (error) {
+        throw new Error('Failed to get database connection');
+    }
+};
 
 // API endpoint to get user profile data
 router.get('/users/:uid', async (req, res) => {
+    let connection;
     try {
-      let uid = req.params.uid;
-      let [rows] = await connection.query('SELECT uid, authprovider, email, display_name, photo_url, country, region, username, phone_number, address, date_of_birth, description, created_at FROM users WHERE uid = ?', [uid]);
-      if (rows.length > 0) {
-        res.status(200).json(rows);
-      } else {
-        res.status(404).json({ error: 'User not found' });
-      }
+        connection = await getConnection();
+        const uid = req.params.uid;
+        const [rows] = await connection.query(
+            'SELECT uid, authprovider, email, display_name, photo_url, country, region, username, phone_number, address, date_of_birth, description, created_at FROM users WHERE uid = ?', 
+            [uid]
+        );
+        if (rows.length > 0) {
+            res.status(200).json(rows);
+        } else {
+            res.status(404).json({ error: 'User not found' });
+        }
     } catch (error) {
-      console.error('Error retrieving user data:', error);
-      res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error retrieving user data:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    } finally {
+        if (connection) connection.release();
     }
 });
 
 // API endpoint to store init user data
 router.post('/users', async (req, res) => {
-    let receivedData = req.body;
-    let userData = JSON.parse(receivedData.body);
-    let providerData = userData.providerData;
-    let uid = userData.uid;
-    let selectQuery = 'SELECT COUNT(*) AS count FROM users WHERE uid = ?';
-
+    let connection;
     try {
-        let [results] = await connection.query(selectQuery, [uid]);
-        let userCount = results[0].count;
+        const { uid, providerData, email, displayName, photoURL } = req.body;
 
-        if (userCount > 0) {      
+        connection = await getConnection();
+        const [results] = await connection.query('SELECT COUNT(*) AS count FROM users WHERE uid = ?', [uid]);
+        const userCount = results[0].count;
+
+        if (userCount > 0) {
             console.log('User already exists!');
-        } else {       
-            let insertQuery = 'INSERT INTO users (uid, authprovider, email, display_name, photo_url) VALUES (?, ?, ?, ?, ?)';
-            await connection.query(insertQuery, [uid, providerData?.[0]?.providerId, userData?.email, userData?.displayName, userData?.photoURL]);
-            console.log(userData?.photoURL)
-            console.log("User data saved");
+            res.status(200).json({ message: 'User already exists' });
+        } else {
+            await connection.query(
+                'INSERT INTO users (uid, authprovider, email, display_name, photo_url) VALUES (?, ?, ?, ?, ?)',
+                [uid, providerData?.[0]?.providerId, email, displayName, photoURL]
+            );
+            console.log('User data saved');
+            res.status(201).json({ success: true, message: 'User data saved' });
         }
     } catch (error) {
         console.error('Error processing data:', error);
         res.status(500).json({ error: 'Failed to process data' });
-    }
-    finally {
-        connection.release();
+    } finally {
+        if (connection) connection.release();
     }
 });
 
 // API endpoint to update user profile data
 router.put('/users/update', async (req, res) => {
-    console.log(req.body);
-    let userData = req.body;
-    let uid = userData[8]; 
-
-    let selectQuery = 'SELECT COUNT(*) AS count FROM users WHERE uid = ?';
+    let connection;
     try {
-        let connection = await pool.getConnection();
-        let [results] = await connection.query(selectQuery, [uid]);
-        let userCount = results[0].count;
+        const { uid, username, email, date_of_birth, address, country, region, phone_number, description } = req.body;
+
+        connection = await getConnection();
+        const [results] = await connection.query('SELECT COUNT(*) AS count FROM users WHERE uid = ?', [uid]);
+        const userCount = results[0].count;
 
         if (userCount === 1) {
-            let updateFields = [];
-            let updateValues = [];
-            updateFields.push('username = ?, email = ?, date_of_birth = ?, address = ?, country = ?, region = ?, phone_number = ?, description = ?'); 
-            
-            if (userData.length === 9) { 
-                updateValues = userData.slice(0, 8);
-                updateValues.push(userData[8]); 
-            } else {
-                console.log('Invalid data format');
-                return res.status(400).json({ error: 'Invalid data format' });
-            }
-            updateValues.push(uid); 
-            let updateQuery = `UPDATE users SET ${updateFields} WHERE uid = ?`;
-
-            await connection.query(updateQuery, updateValues);
+            const updateQuery = `
+                UPDATE users 
+                SET username = ?, email = ?, date_of_birth = ?, address = ?, country = ?, region = ?, phone_number = ?, description = ? 
+                WHERE uid = ?
+            `;
+            await connection.query(updateQuery, [username, email, date_of_birth, address, country, region, phone_number, description, uid]);
             console.log('User data updated');
             res.status(200).json({ success: true, message: 'User data updated' });
         } else {
@@ -86,9 +90,8 @@ router.put('/users/update', async (req, res) => {
     } catch (error) {
         console.error('Error processing data:', error);
         res.status(500).json({ error: 'Failed to process data' });
-    }
-    finally {
-        connection.release();
+    } finally {
+        if (connection) connection.release();
     }
 });
 

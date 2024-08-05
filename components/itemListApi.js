@@ -2,9 +2,16 @@ import express from 'express';
 import pool from './database.js';
 
 const router = express.Router();
-let connection = await pool.getConnection();
+const getConnection = async () => {
+    try {
+        return await pool.getConnection();
+    } catch (error) {
+        throw new Error('Failed to get database connection');
+    }
+};
 
 router.post('/events/itemlist/edit/:event_id',async (req, res) => {
+    let connection;
     const receivedData = JSON.parse(req.body.body);
     const items = receivedData;
     console.log("items:", items);
@@ -13,7 +20,8 @@ router.post('/events/itemlist/edit/:event_id',async (req, res) => {
         console.error('Invalid items data:', items);
         return res.status(400).send({ error: 'Invalid items data' });
     }
-    try {          
+    try {   
+        connection = await getConnection();       
         items.forEach(async (item) => {
             const { Label, Count, min_count, max_count } = item;
 
@@ -39,7 +47,9 @@ router.post('/events/itemlist/edit/:event_id',async (req, res) => {
 });
 
 router.get('/events/itemlist/:event_id',async (req, res) => {
+    let connection;
     try {
+        connection = await getConnection();
         let event_id = req.params.event_id;
         let [rows] = await connection.query(`
             SELECT label, count, max_count, min_count
@@ -61,7 +71,9 @@ router.get('/events/itemlist/:event_id',async (req, res) => {
 
 router.put('/events/itemlist/update/:event_id', async (req, res) => {
     console.log(req.body);
+    let connection;
     try {
+        connection = await getConnection();
         let event_id = req.params.event_id;
         let items = req.body; 
 
@@ -87,7 +99,9 @@ router.put('/events/itemlist/update/:event_id', async (req, res) => {
 });
 
 router.delete('/events/itemslist/delete/:label/:event_id',async (req, res) => {
+    let connection;
     try {
+        connection = await getConnection();
         let event_id = req.params.event_id;
         let label = req.params.label;
         let [result] = await connection.query('DELETE FROM event_items WHERE event_id = ? AND label = ?', [event_id, label]);

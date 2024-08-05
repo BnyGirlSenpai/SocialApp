@@ -2,15 +2,22 @@ import express from 'express';
 import pool from './database.js';
 
 const router = express.Router();
-let connection = await pool.getConnection();
+const getConnection = async () => {
+    try {
+        return await pool.getConnection();
+    } catch (error) {
+        throw new Error('Failed to get database connection');
+    }
+};
 
 // Ensure you get the event_id after inserting an event
 router.post('/event/create', async (req, res) => {
-    let receivedData = req.body;
-    let eventData = JSON.parse(receivedData.body);
     console.log(eventData);
-
+    let connection;
     try {
+        connection = await getConnection();
+        let receivedData = req.body;
+        let eventData = JSON.parse(receivedData.body);
         try {
             // Insert the event
             const insertQuery = `
@@ -42,7 +49,9 @@ router.post('/event/create', async (req, res) => {
 
 // API endpoint to edited events 
 router.get('/events/edit/:eid', async (req, res) => {
+    let connection;
     try {
+        connection = await getConnection();
         let eid = req.params.eid;
         let [rows] = await connection.query('SELECT event_id, event_name, event_datetime, location, description, max_guests_count, event_status, event_type, image_url  FROM events WHERE event_id = ?', [eid]);
         res.status(200).json(rows); 
@@ -55,7 +64,9 @@ router.get('/events/edit/:eid', async (req, res) => {
 
 // API endpoint to delete event 
 router.delete('/events/edit/delete/:eid', async (req, res) => {
+    let connection;
     try {
+        connection = await getConnection();
         let eid = req.params.eid;
         let [result] = await connection.query('DELETE FROM events WHERE event_id = ?', [eid]);
         
@@ -74,12 +85,12 @@ router.delete('/events/edit/delete/:eid', async (req, res) => {
 // API endpoint to store updated event data
 router.put('/events/edit/update', async (req, res) => {
     console.log(req.body);
-    let eventData = req.body;
-    let eid = eventData[9]; 
-
-    let selectQuery = 'SELECT COUNT(*) AS count FROM events WHERE event_id = ?';
+    let connection;
     try {
-        let connection = await pool.getConnection();
+        connection = await getConnection();
+        let eventData = req.body;
+        let eid = eventData[9]; 
+        let selectQuery = 'SELECT COUNT(*) AS count FROM events WHERE event_id = ?';
         let [results] = await connection.query(selectQuery, [eid]);
         let eventCount = results[0].count;
 

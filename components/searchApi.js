@@ -2,11 +2,19 @@ import express from 'express';
 import pool from './database.js';
 
 const router = express.Router();
-let connection = await pool.getConnection();
+const getConnection = async () => {
+  try {
+      return await pool.getConnection();
+  } catch (error) {
+      throw new Error('Failed to get database connection');
+  }
+};
 
 // API endpoint to get user search data 
 router.get('/users/search/:username', async (req, res) => {
+  let connection;
     try {
+      connection = await getConnection();
       let username = req.params.username;
       console.log(username);
       let [rows] = await connection.query('SELECT uid, photo_url, username FROM users WHERE username LIKE CONCAT(\'%\', ?, \'%\')', [username]);
