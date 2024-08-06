@@ -10,6 +10,7 @@ const getConnection = async () => {
     }
 };
 
+// API endpoint to edit and create Item Lists 
 router.post('/events/itemlist/edit/:event_id',async (req, res) => {
     let connection;
     const receivedData = JSON.parse(req.body.body);
@@ -46,6 +47,7 @@ router.post('/events/itemlist/edit/:event_id',async (req, res) => {
     }
 });
 
+// API endpoint to get Item Lists 
 router.get('/events/itemlist/:event_id',async (req, res) => {
     let connection;
     try {
@@ -69,6 +71,7 @@ router.get('/events/itemlist/:event_id',async (req, res) => {
     }
 });
 
+// API endpoint to update Item Lists 
 router.put('/events/itemlist/update/:event_id', async (req, res) => {
     console.log(req.body);
     let connection;
@@ -98,6 +101,7 @@ router.put('/events/itemlist/update/:event_id', async (req, res) => {
     }
 });
 
+// API endpoint to delete Item Lists 
 router.delete('/events/itemslist/delete/:label/:event_id',async (req, res) => {
     let connection;
     try {
@@ -116,6 +120,21 @@ router.delete('/events/itemslist/delete/:label/:event_id',async (req, res) => {
         console.error('Error deleting Item:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
+});
+
+// API endpoint to store user item distribution 
+router.post('',async (req,res) => {
+ //add uid item_id and d_count into user_item_distrubution 
+})
+
+// API endpoint to get user item distribution 
+router.get('',async (req,res) => {
+    //get uid item_id d_count user_item_distrubution AND event_id from event_items where item_id = ?   
+})
+
+// API endpoint to update user item distribution 
+router.put('',async (req,res) => {
+
 });
 
 export default router;

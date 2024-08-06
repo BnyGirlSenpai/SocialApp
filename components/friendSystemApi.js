@@ -53,7 +53,6 @@ router.post('/users/friendrequests', async (req, res) => {
         let uid_transmitter = friendrequestData.senderUserUid;
         let uid_receiver = friendrequestData.targetUserUid;
 
-        // Check if friend request already exists
         let checkQuery = `
             SELECT status 
             FROM friendrequests 
@@ -64,7 +63,6 @@ router.post('/users/friendrequests', async (req, res) => {
         if (rows.length > 0) {
             let status = rows[0].status;
             if (status === 'unfriended') {
-                // Update the status to 'pending'
                 let updateStatusQuery = `
                     UPDATE friendrequests 
                     SET status = 'pending' 
@@ -78,7 +76,6 @@ router.post('/users/friendrequests', async (req, res) => {
                 res.status(200).json({ success: false, message: 'Friend request already exists' });
             }
         } else {
-            // Insert new friend request
             let insertQuery = `
                 INSERT INTO friendrequests (uid_transmitter, uid_receiver, status) 
                 VALUES (?, ?, 'pending')

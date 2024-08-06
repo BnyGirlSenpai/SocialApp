@@ -23,7 +23,6 @@ async function updateJoinedGuestsCounts(event_id, connection) {
         const joinedCount = rows[0].joined_count;
         console.log(`Joined guests count for event_id ${event_id}: ${joinedCount}`);
 
-        // Update the event with the new joined guests count
         const updateEventQuery = `
             UPDATE events 
             SET current_guests_count = ? 

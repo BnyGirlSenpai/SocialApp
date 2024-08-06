@@ -19,7 +19,6 @@ router.post('/event/create', async (req, res) => {
         let receivedData = req.body;
         let eventData = JSON.parse(receivedData.body);
         try {
-            // Insert the event
             const insertQuery = `
                 INSERT INTO events 
                 (event_name, location, event_datetime, description, max_guests_count, event_status, creator_uid, event_type, image_url) 

@@ -100,15 +100,12 @@ router.get('/events/:uid', async (req, res) => {
     try {
         connection = await getConnection();
         const uid = req.params.uid;
-        const page = parseInt(req.query.page) || 1; // Default to page 1
-        const limit = parseInt(req.query.limit) || 1; // Default to 10 events per page
+        const page = parseInt(req.query.page) || 1; 
+        const limit = parseInt(req.query.limit) || 1;
         const offset = (page - 1) * limit;
-        // Total count query for hasMore calculation
         const [totalRows] = await connection.query('SELECT COUNT(*) AS count FROM events WHERE creator_uid = ?', [uid]);
         const totalCount = totalRows[0].count;
         const hasMore = (totalCount > page * limit);
-
-        // Fetch paginated events
         const [rows] = await connection.query(
             'SELECT event_id, event_name, event_datetime, location, description, max_guests_count, current_guests_count, invited_guests_count, event_status, event_type, image_url, creator_uid FROM events WHERE creator_uid = ? LIMIT ? OFFSET ?',
             [uid, limit, offset]
@@ -128,15 +125,12 @@ router.get('/events/joined/:uid', async (req, res) => {
     try {
         connection = await getConnection();
         const uid = req.params.uid;
-        const page = parseInt(req.query.page) || 1; // Default to page 1
-        const limit = parseInt(req.query.limit) || 3; // Default to 10 events per page
+        const page = parseInt(req.query.page) || 1; 
+        const limit = parseInt(req.query.limit) || 3; 
         const offset = (page - 1) * limit;
-        // Total count query for hasMore calculation
         const [totalRows] = await connection.query('SELECT COUNT(*) AS count FROM events AS e JOIN event_guests AS eg ON e.event_id = eg.event_id WHERE eg.guest_uid = ? AND eg.status IN ("joined")', [uid]);
         const totalCount = totalRows[0].count;
         const hasMore = (totalCount > page * limit);
-
-        // Fetch paginated events
         const [rows] = await connection.query(
             `SELECT e.event_id, e.event_name, e.creator_uid, e.event_datetime, e.location, e.event_status, e.event_type, e.image_url, u.username AS creator_username
             FROM events AS e
