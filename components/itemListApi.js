@@ -122,19 +122,40 @@ router.delete('/events/itemslist/delete/:label/:event_id',async (req, res) => {
     }
 });
 
-// API endpoint to store user item distribution 
-router.post('',async (req,res) => {
- //add uid item_id and d_count into user_item_distrubution 
-})
-
-// API endpoint to get user item distribution 
-router.get('',async (req,res) => {
-    //get uid item_id d_count user_item_distrubution AND event_id from event_items where item_id = ?   
-})
-
-// API endpoint to update user item distribution 
-router.put('',async (req,res) => {
-
+// API endpoint to store user item distribution
+router.post('/events/itemslist/add/count', async (req, res) => {
+    let connection;
+    try {
+        connection = await getConnection();
+        const { uid, label, distributed_count } =JSON.parse(req.body);
+        
+        await connection.query('INSERT INTO user_item_distribution (uid, item_id, distributed_count) VALUES (?, ?, ?)', [uid, label, distributed_count]);
+        
+        res.status(201).json({ message: 'User item distribution added successfully' });
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred while storing user item distribution' });
+    }
 });
+
+// API endpoint to get user item distribution
+router.get('/events/itemslist/get/count/:event_id', async (req, res) => {
+    let connection;
+    try {
+        connection = await getConnection();
+        const event_id = req.params.event_id;
+        // Assuming you have tables named 'user_item_distribution' and 'event_items'
+        const results = await connection.query(`
+            SELECT uid, item_id, d_count, event_id 
+            FROM user_item_distribution 
+            LEFT JOIN event_items ON user_item_distribution.item_id = event_items.item_id 
+            WHERE user_item_distribution.item_id = ?`, [item_id]);
+        
+        res.status(200).json(results);
+    } catch (error) {
+        res.status(500).json({ error: 'An error occurred while retrieving user item distribution' });
+    }
+});
+
+
 
 export default router;
