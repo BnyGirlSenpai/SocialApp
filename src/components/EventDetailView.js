@@ -30,7 +30,7 @@ const EventDetailView = () => {
             try {
                 if (user) {
                     const eventData = await getDataFromBackend(`http://localhost:3001/api/events/eventDetail/${event_id }`);
-                    const  guests = await getDataFromBackend(`http://localhost:3001/api/events/guests/${event_id}`);
+                    const guests = await getDataFromBackend(`http://localhost:3001/api/events/guests/${event_id}`);
                     console.log("Loaded Event Data from server:", eventData);
                     console.log("Loaded guests data from server:", guests);
                     setDateTime(formatLocalDateTime(eventData.event_datetime));
