@@ -13,8 +13,7 @@ const getConnection = async () => {
 // API endpoint to edit and create Item Lists 
 router.post('/events/itemlist/edit/:event_id',async (req, res) => {
     let connection;
-    const receivedData = JSON.parse(req.body.body);
-    const items = receivedData;
+    const items = JSON.parse(req.body.body);
     console.log("items:", items);
 
     if (!Array.isArray(items)) {
@@ -31,12 +30,12 @@ router.post('/events/itemlist/edit/:event_id',async (req, res) => {
                 throw new Error('Invalid item properties');
             }
 
-            await connection.query(
-                `INSERT INTO event_items (label, count, min_count, max_count, event_id) 
-                 VALUES (?, ?, ?, ?, ?) 
-                 ON DUPLICATE KEY UPDATE count = VALUES(count), 
-                                         max_count = VALUES(max_count), 
-                                         min_count = VALUES(min_count)`,
+            await connection.query(`
+                INSERT INTO event_items (label, count, min_count, max_count, event_id) 
+                VALUES (?, ?, ?, ?, ?) 
+                ON DUPLICATE KEY UPDATE count = VALUES(count), 
+                                        max_count = VALUES(max_count), 
+                                        min_count = VALUES(min_count)`,
                 [Label, Count, min_count, max_count, req.params.event_id]
             );
         })
@@ -125,37 +124,69 @@ router.delete('/events/itemslist/delete/:label/:event_id',async (req, res) => {
 // API endpoint to store user item distribution
 router.post('/events/itemslist/add/count', async (req, res) => {
     let connection;
-    try {
-        connection = await getConnection();
-        const { uid, label, distributed_count } =JSON.parse(req.body);
-        
-        await connection.query('INSERT INTO user_item_distribution (uid, item_id, distributed_count) VALUES (?, ?, ?)', [uid, label, distributed_count]);
-        
-        res.status(201).json({ message: 'User item distribution added successfully' });
+    const items = JSON.parse(req.body.body);
+    console.log("items:", items);
+
+    if (!Array.isArray(items)) {
+        console.error('Invalid items data:', items);
+        return res.status(400).send({ error: 'Invalid items data' });
+    }
+    try {   
+        connection = await getConnection();       
+        items.forEach(async (item) => {
+            const { uid, label, distributed_count } = item;
+
+            if (typeof uid !== 'string' || typeof label !== 'string' ||
+                typeof distributed_count !== 'number') {
+                throw new Error('Invalid item properties');
+            }
+
+            const [rows] = await connection.query(`
+                SELECT item_id
+                FROM event_items
+                WHERE label = ?;
+            `, [label]);
+            const item_id = rows.length > 0 ? rows[0].item_id : null; 
+            console.log('item_id:', item_id);
+
+            await connection.query(`
+                INSERT INTO user_item_distribution (uid, item_id, distributed_count)
+                VALUES (?, ?, ?)
+                ON DUPLICATE KEY UPDATE distributed_count = VALUES(distributed_count);
+            `, [uid, item_id, distributed_count]);
+        })
+        res.status(200).send({ message: 'Items saved successfully' });
     } catch (error) {
-        res.status(500).json({ error: 'An error occurred while storing user item distribution' });
+        console.error('Error processing data:', error);
+        res.status(500).send({ error: error.message });
     }
 });
 
 // API endpoint to get user item distribution
-router.get('/events/itemslist/get/count/:event_id', async (req, res) => {
+router.get('/events/itemslist/get/count/:uid/:event_id', async (req, res) => {
     let connection;
     try {
         connection = await getConnection();
         const event_id = req.params.event_id;
-        // Assuming you have tables named 'user_item_distribution' and 'event_items'
-        const results = await connection.query(`
-            SELECT uid, item_id, d_count, event_id 
-            FROM user_item_distribution 
-            LEFT JOIN event_items ON user_item_distribution.item_id = event_items.item_id 
-            WHERE user_item_distribution.item_id = ?`, [item_id]);
+        const uid = req.params.uid;
+        const [results] = await connection.query(`
+            SELECT e.label, COALESCE(u.distributed_count, 0) AS total_count
+            FROM event_items e
+            LEFT JOIN user_item_distribution u ON e.item_id = u.item_id 
+            WHERE e.event_id = ? AND u.uid = ?
+            GROUP BY e.item_id;
+        `, [event_id, uid]);
         
         res.status(200).json(results);
+        console.log(results);
     } catch (error) {
+        console.error('Error retrieving user item distribution:', error);
         res.status(500).json({ error: 'An error occurred while retrieving user item distribution' });
+    } finally {
+        if (connection) {
+            connection.release(); 
+        }
     }
 });
-
-
 
 export default router;
