@@ -8,18 +8,24 @@ import '../styles/itemlist.css';
 const ItemList = ({event_id}) => {
     const { user } = UserAuth();
     const [initialValues, setInitialValues] = useState({ items: [] });
-    const [userItemCountData, setUserItemCountData] = useState([]);
+    const [userItemCount, setUserItemCount] = useState({});
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 if (user) {
                     const initialData = await getDataFromBackend(`http://localhost:3001/api/events/itemlist/${event_id}`);
-                    const itemCountData = await getDataFromBackend(`http://localhost:3001/api/events/itemslist/add/count/${event_id}`);
-                    console.log("Loaded Item Count Data:", itemCountData);
+                    const itemCountData = await getDataFromBackend(`http://localhost:3001/api/events/itemslist/get/count/${user.uid}/${event_id}`);
+                    const itemCountDataParsed = itemCountData.reduce((acc, item) => {
+                        acc[item.label] = parseInt(item.total_count, 10);                                         
+                        return acc;
+                    }, {});
+                    
+                    console.log("Loaded Item Count:", itemCountData);
                     console.log("Loaded data from server:", initialData);
+                    console.log("Loaded Item Count Data:", itemCountDataParsed);
                     setInitialValues({ items: initialData });
-                    setUserItemCountData(itemCountData);
+                    setUserItemCount(itemCountDataParsed);
                 }  
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -58,11 +64,10 @@ const ItemList = ({event_id}) => {
                         const userItemCountPayload = values.items.map(item => ({
                             uid: user.uid,
                             label: item.label,
-                            distributed_count: userItemCountData
+                            distributed_count: userItemCount[item.label] || 0
                         }));
-
                         await updateDataInDb(JSON.stringify(itemData),`http://localhost:3001/api/events/itemlist/update/${event_id}`); 
-                        await sendDataToBackend(JSON.stringify(userItemCountPayload),`http://localhost:3001/api/events/itemslist/add/count`);
+                        await sendDataToBackend(userItemCountPayload,`http://localhost:3001/api/events/itemslist/add/count`);
                         console.log(userItemCountPayload); 
                     } else {
                         console.log("Event not found!");
@@ -100,17 +105,15 @@ const ItemList = ({event_id}) => {
                                                     <button
                                                         type="button"
                                                         onClick={() => {
-                                                            const newCount = Math.max(item.count - 1, item.min_count);
+                                                            const newCount = Math.max(item.count - 1, 0);
                                                             setFieldValue(`items.${index}.count`, newCount);
 
-                                                            if (userItemCountData > 0) {
-                                                                const itemCount = userItemCountData - 1;
-                                                                setUserItemCountData(itemCount);
-                                                                console.log(itemCount);
-                                                                console.log("Max removable Items:", itemCount - 1);
-                                                            }
+                                                            setUserItemCount(prevData => ({
+                                                                ...prevData,
+                                                                [item.label]: Math.max((prevData[item.label] || 0) - 1, 0)
+                                                            }));
                                                         }}
-                                                        disabled={userItemCountData <= 0}
+                                                        disabled={userItemCount[item.label] <= 0}
                                                     >
                                                         -
                                                     </button>
@@ -120,12 +123,10 @@ const ItemList = ({event_id}) => {
                                                         onClick={() => {
                                                             const newCount = Math.min(item.count + 1, item.max_count);
                                                             setFieldValue(`items.${index}.count`, newCount);                                    
-                                                            if(item.max_count - item.count > 0){
-                                                                const itemCount =  userItemCountData + 1;
-                                                                setUserItemCountData(itemCount);
-                                                                console.log(itemCount)
-                                                                console.log("Max addeble Items:",item.max_count - item.count -1)
-                                                            }
+                                                            setUserItemCount(prevData => ({
+                                                                ...prevData,
+                                                                [item.label]: (prevData[item.label] || 0) + 1
+                                                            }));
                                                         }}
                                                     >
                                                         +
