@@ -85,8 +85,8 @@ const ItemList = ({event_id}) => {
                         );
 
                         if (hasChanged) {
-                            await updateDataInDb(JSON.stringify(itemData),`http://localhost:3001/api/events/itemlist/update/${event_id}`);
                             await sendDataToBackend(userItemCountPayload,`http://localhost:3001/api/events/itemslist/add/count`);
+                            await updateDataInDb(JSON.stringify(itemData),`http://localhost:3001/api/events/itemlist/update/${event_id}`);
                             setTimeout(() => {
                                 setRedirect(true);
                             }, 1000);

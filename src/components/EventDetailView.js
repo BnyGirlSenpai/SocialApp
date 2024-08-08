@@ -120,9 +120,9 @@ const EventDetailView = () => {
                 <p>Image: {eventData.image_url}</p>
             </div>
             <div className="map-detail-view">
-                <Map className="small"/>
             </div>
         </div>                
+
         {isOwner ? (
             <>
                 <div className="button-container">                   
