@@ -107,7 +107,7 @@ const EditItemList = () => {
                                                     <button
                                                         type="button"
                                                         onClick={() => {
-                                                            const newCount = Math.max(item.count - 1, item.min_count);
+                                                            const newCount = Math.max(item.count - 1,0);
                                                             setFieldValue(`items.${index}.count`, newCount);
                                                         }}
                                                     >

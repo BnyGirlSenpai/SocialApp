@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getDataFromBackend, sendDataToBackend, updateDataInDb } from '../apis/UserDataApi';
 import { UserAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { Formik, Field, Form, ErrorMessage, FieldArray } from 'formik';
 import * as Yup from 'yup';
 import '../styles/itemlist.css';
@@ -9,23 +10,24 @@ const ItemList = ({event_id}) => {
     const { user } = UserAuth();
     const [initialValues, setInitialValues] = useState({ items: [] });
     const [userItemCount, setUserItemCount] = useState({});
+    const navigate = useNavigate();
+    const [redirect, setRedirect] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 if (user) {
-                    const initialData = await getDataFromBackend(`http://localhost:3001/api/events/itemlist/${event_id}`);
-                    const itemCountData = await getDataFromBackend(`http://localhost:3001/api/events/itemslist/get/count/${user.uid}/${event_id}`);
-                    const itemCountDataParsed = itemCountData.reduce((acc, item) => {
-                        acc[item.label] = parseInt(item.total_count, 10);                                         
+                    const itemCountData = await getDataFromBackend(`http://localhost:3001/api/events/itemlist/${event_id}`);
+                    const distributedItemCount = await getDataFromBackend(`http://localhost:3001/api/events/itemslist/get/count/${user.uid}/${event_id}`);
+                    const distributedItemCountParsed = distributedItemCount.reduce((acc, item) => {
+                        acc[item.label] = parseInt(item.user_item_count, 10);                                         
                         return acc;
                     }, {});
                     
-                    console.log("Loaded Item Count:", itemCountData);
-                    console.log("Loaded data from server:", initialData);
-                    console.log("Loaded Item Count Data:", itemCountDataParsed);
-                    setInitialValues({ items: initialData });
-                    setUserItemCount(itemCountDataParsed);
+                    console.log("Loaded User Item Count:", distributedItemCount);
+                    console.log("Loaded Items from server:", itemCountData);
+                    setInitialValues({ items: itemCountData });
+                    setUserItemCount(distributedItemCountParsed);
                 }  
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -33,6 +35,12 @@ const ItemList = ({event_id}) => {
         };
         fetchData();
     }, [user, event_id]);
+
+    useEffect(() => {
+        if (redirect) {
+            setTimeout(() => window.location.reload(), 1000);    
+        }
+    }, [redirect,event_id, navigate]);
 
     const validationSchema = Yup.object({
         items: Yup.array().of(
@@ -43,7 +51,12 @@ const ItemList = ({event_id}) => {
     });
 
     if (!initialValues.items || initialValues.items.length === 0) {
-        return null;
+        return (
+            <div>
+                <h1>No Items Available</h1>
+                <p>There are currently no items available for this event.</p>
+            </div>
+        );
     }
     
     return (
@@ -64,11 +77,23 @@ const ItemList = ({event_id}) => {
                         const userItemCountPayload = values.items.map(item => ({
                             uid: user.uid,
                             label: item.label,
-                            distributed_count: userItemCount[item.label] || 0
+                            user_distributed_count: userItemCount[item.label] || 0
                         }));
-                        await updateDataInDb(JSON.stringify(itemData),`http://localhost:3001/api/events/itemlist/update/${event_id}`); 
-                        await sendDataToBackend(userItemCountPayload,`http://localhost:3001/api/events/itemslist/add/count`);
-                        console.log(userItemCountPayload); 
+
+                        const hasChanged = itemData.some((item, index) => 
+                            item.count !== initialValues.items[index].count
+                        );
+
+                        if (hasChanged) {
+                            await updateDataInDb(JSON.stringify(itemData),`http://localhost:3001/api/events/itemlist/update/${event_id}`);
+                            await sendDataToBackend(userItemCountPayload,`http://localhost:3001/api/events/itemslist/add/count`);
+                            setTimeout(() => {
+                                setRedirect(true);
+                            }, 1000);
+                            console.log(userItemCountPayload);
+                        } else {
+                            console.log('No changes detected, nothing to submit.');
+                        }
                     } else {
                         console.log("Event not found!");
                     }
@@ -113,7 +138,7 @@ const ItemList = ({event_id}) => {
                                                                 [item.label]: Math.max((prevData[item.label] || 0) - 1, 0)
                                                             }));
                                                         }}
-                                                        disabled={userItemCount[item.label] <= 0}
+                                                        disabled={Object.keys(userItemCount).length === 0 || userItemCount[item.label] <= 0}
                                                     >
                                                         -
                                                     </button>
@@ -128,6 +153,7 @@ const ItemList = ({event_id}) => {
                                                                 [item.label]: (prevData[item.label] || 0) + 1
                                                             }));
                                                         }}
+                                                        disabled={item.count >= item.max_count}
                                                     >
                                                         +
                                                     </button>
@@ -171,7 +197,7 @@ const ItemList = ({event_id}) => {
                             </div>
                         )}
                     </FieldArray>
-                    <button type="submit">Save</button>
+                    <button type="submit" disabled={values.items.length === 0}>Save</button>
                 </Form>
             )}
         </Formik>
