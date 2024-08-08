@@ -3,20 +3,21 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import pool from './components/database.js';
+import { getConnection } from './config/db.js';
 import compression from 'compression';
 import morgan from 'morgan';
-import friendSystemApi from './components/friendSystemApi.js';
-import userApi from './components/userApi.js';
-import eventInviteApi from './components/eventInviteApi.js';
-import searchApi from './components/searchApi.js';
-import eventCreationApi from './components/eventCreationApi.js';
-import eventInfoApi from './components/eventInfoApi.js';
-import notificaionApi from './components/notificationsApi.js';
-import itemListApi from './components/itemListApi.js';
-import calendarApi from './components/calendarApi.js';
+import friendSystemApi from './routes/friendSystemApi.js';
+import userApi from './routes/userApi.js';
+import eventInviteApi from './routes/eventInviteApi.js';
+import searchApi from './routes/searchApi.js';
+import eventCreationApi from './routes/eventCreationApi.js';
+import eventInfoApi from './routes/eventInfoApi.js';
+import notificaionApi from './routes/notificationsApi.js';
+import itemListApi from './routes/itemListApi.js';
+import calendarApi from './routes/calendarApi.js';
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io'; 
+import redisClient from './config/redis.js'; 
 
 dotenv.config();
 
@@ -27,7 +28,7 @@ const asyncHandler = fn => (req, res, next) =>
 
 let connection;
 try {
-    connection = await pool.getConnection();
+    connection = await getConnection();
 } catch (error) {
     console.error('Error executing query:', error);
 } finally {
@@ -36,22 +37,11 @@ try {
     }
 }
 
-setInterval(async () => {
-    try {
-        const connection = await pool.getConnection();
-        await connection.ping();
-        connection.release();
-        console.log('Keep-alive query executed successfully');
-    } catch (error) {
-        console.error('Error in keep-alive query:', error);
-    }
-}, 60000);
-
 let limiter = rateLimit({
     windowMs: 15 * 60 * 1000, 
     max: 1000 
 });
-  
+
 app.use(express.json());
 app.use(helmet());
 app.use(compression());
@@ -135,12 +125,29 @@ server.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
 
-const shutdown = (signal) => {
-    console.log(`${signal} signal received. Closing HTTP server...`);
-    server.close(() => {
-        console.log('HTTP server closed');
-        process.exit(0); 
-    });
+const shutdown = async (signal) => {
+    console.log(`${signal} signal received. Closing HTTP server and Redis client...`);
+    try {
+        await new Promise((resolve, reject) => {
+            server.close(err => {
+                if (err) {
+                    console.error('Error closing HTTP server:', err);
+                    reject(err);
+                } else {
+                    console.log('HTTP server closed');
+                    resolve();
+                }
+            });
+        });
+
+        await redisClient.quit();
+        console.log('Redis client disconnected');
+        
+        process.exit(0);
+    } catch (error) {
+        console.error('Error during shutdown:', error);
+        process.exit(1);
+    }
 };
 
 process.on('SIGINT', () => shutdown('SIGINT'));
