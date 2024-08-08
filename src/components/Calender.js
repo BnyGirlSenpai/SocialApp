@@ -17,7 +17,7 @@ const Calendar = () => {
       try {
         if (user) {
           const response = await getDataFromBackend(`http://localhost:3001/api/calendar/${user.uid}`);
-          
+          console.log(response);
           if (response.events) {
             const formattedEvents = response.events.map(event => ({
               event_date: formatLocalDateTime(event.event_datetime).slice(0, 10), 
