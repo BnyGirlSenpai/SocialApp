@@ -16,7 +16,7 @@ const pool = createPool({
     database: process.env.DB_NAME,
     waitForConnections: true,
     connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT) || 100,  
-    queueLimit: parseInt(process.env.DB_QUEUE_LIMIT) || 50,          
+    queueLimit: parseInt(process.env.DB_QUEUE_LIMIT) || 100,          
     enableKeepAlive: true,
     keepAliveInitialDelay: parseInt(process.env.DB_KEEPALIVE_DELAY) || 0,
     idleTimeout: parseInt(process.env.DB_IDLE_TIMEOUT) || 60000,       

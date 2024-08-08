@@ -16,6 +16,7 @@ import notificaionApi from './components/notificationsApi.js';
 import itemListApi from './components/itemListApi.js';
 import calendarApi from './components/calendarApi.js';
 import http from 'http';
+import { Server as SocketIOServer } from 'socket.io'; 
 
 dotenv.config();
 
@@ -107,6 +108,28 @@ app.get('/health', (req, res) => {
 });
 
 const server = http.createServer(app);
+
+const io = new SocketIOServer(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
+
+io.on('connection', (socket) => {
+    console.log('A user connected');
+
+    // Handle real-time updates
+    socket.on('Update', (data) => {
+        console.log('Received Update data:', data);
+        // Broadcast the update to all connected clients
+        io.emit('Update ', data);
+    });
+
+    socket.on('disconnect', () => {
+        console.log('User disconnected');
+    });
+});
 
 server.listen(port, () => {
     console.log(`Server is running on port ${port}`);

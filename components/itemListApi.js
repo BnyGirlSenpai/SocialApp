@@ -133,28 +133,56 @@ router.post('/events/itemslist/add/count', async (req, res) => {
     }
     try {   
         connection = await getConnection();       
-        items.forEach(async (item) => {
-            const { uid, label, distributed_count } = item;
+
+        const itemGroups = {};
+        for (const item of items) {
+            const { uid, label, user_distributed_count } = item;
 
             if (typeof uid !== 'string' || typeof label !== 'string' ||
-                typeof distributed_count !== 'number') {
+                typeof user_distributed_count !== 'number') {
                 throw new Error('Invalid item properties');
             }
 
+            const [rows] = await connection.query(`
+                SELECT item_id, max_count
+                FROM event_items
+                WHERE label = ?;
+            `, [label]);
+            const item_id = rows.length > 0 ? rows[0].item_id : null; 
+            const max_count = rows.length > 0 ? rows[0].max_count : null; 
+            console.log('item_id:', item_id, 'max_count:', max_count);
+
+            if (!item_id) {
+                throw new Error(`Item with label ${label} not found`);
+            }
+
+            if (!itemGroups[item_id]) {
+                itemGroups[item_id] = { totalDistributedCount: 0, maxCount: max_count };
+            }
+            itemGroups[item_id].totalDistributedCount += user_distributed_count;
+
+            if (itemGroups[item_id].totalDistributedCount > itemGroups[item_id].maxCount) {
+                throw new Error(`Total distributed count for item_id ${item_id} exceeds max_count`);
+            }
+        }
+
+        for (const item of items) {
+            const { uid, label, user_distributed_count } = item;
+            
             const [rows] = await connection.query(`
                 SELECT item_id
                 FROM event_items
                 WHERE label = ?;
             `, [label]);
             const item_id = rows.length > 0 ? rows[0].item_id : null; 
-            console.log('item_id:', item_id);
 
             await connection.query(`
                 INSERT INTO user_item_distribution (uid, item_id, distributed_count)
                 VALUES (?, ?, ?)
                 ON DUPLICATE KEY UPDATE distributed_count = VALUES(distributed_count);
-            `, [uid, item_id, distributed_count]);
-        })
+            `, [uid, item_id, user_distributed_count]);
+        }
+
         res.status(200).send({ message: 'Items saved successfully' });
     } catch (error) {
         console.error('Error processing data:', error);
@@ -170,7 +198,7 @@ router.get('/events/itemslist/get/count/:uid/:event_id', async (req, res) => {
         const event_id = req.params.event_id;
         const uid = req.params.uid;
         const [results] = await connection.query(`
-            SELECT e.label, COALESCE(u.distributed_count, 0) AS total_count
+            SELECT e.label, COALESCE(u.distributed_count, 0) AS user_item_count
             FROM event_items e
             LEFT JOIN user_item_distribution u ON e.item_id = u.item_id 
             WHERE e.event_id = ? AND u.uid = ?
