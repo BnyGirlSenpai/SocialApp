@@ -17,7 +17,7 @@ import itemListApi from './routes/itemListApi.js';
 import calendarApi from './routes/calendarApi.js';
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io'; 
-import redisClient from './config/redis.js'; 
+//import redisClient from './config/redis.js'; 
 
 dotenv.config();
 
@@ -140,8 +140,8 @@ const shutdown = async (signal) => {
             });
         });
 
-        await redisClient.quit();
-        console.log('Redis client disconnected');
+        //await redisClient.quit();
+        //console.log('Redis client disconnected');
         
         process.exit(0);
     } catch (error) {
