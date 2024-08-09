@@ -82,7 +82,7 @@ router.delete('/events/edit/delete/:eid', async (req, res) => {
     }
 });
 
-// API endpoint to store updated event data
+// API endpoint to store updated event data //clean up cache
 router.put('/events/edit/update', async (req, res) => {
     console.log(req.body);
     let connection;
@@ -111,6 +111,7 @@ router.put('/events/edit/update', async (req, res) => {
 
             await connection.query(updateQuery, updateValues);
             console.log('Event data updated');
+            await redisClient.del(`edit:${eid}`); 
             res.status(200).json({ success: true, message: 'Event data updated' });
         } else {
             console.log('Event not found');

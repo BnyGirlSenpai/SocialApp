@@ -67,9 +67,8 @@ router.post('/users', async (req, res) => {
 router.put('/users/update', async (req, res) => {
     let connection;
     try {
-        const { uid, username, email, date_of_birth, address, country, region, phone_number, description } = req.body;
-
         connection = await getConnection();
+        const [ username, email, date_of_birth, address, country, region, phone_number, description, uid] = req.body;
         const [results] = await connection.query('SELECT COUNT(*) AS count FROM users WHERE uid = ?', [uid]);
         const userCount = results[0].count;
 
@@ -81,6 +80,7 @@ router.put('/users/update', async (req, res) => {
             `;
             await connection.query(updateQuery, [username, email, date_of_birth, address, country, region, phone_number, description, uid]);
             console.log('User data updated');
+            await redisClient.del(`user:${uid}`); 
             res.status(200).json({ success: true, message: 'User data updated' });
         } else {
             console.log('User not found');
