@@ -1,13 +1,16 @@
-import React, { useEffect, useRef  } from 'react';
+import React, { useEffect, useRef, useState  } from 'react';
 import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend, updateDataInDb } from '../apis/UserDataApi';
 import { formatLocalDateTime } from '../utils/DateUtils'; 
+import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 
 const ProfileSettings = () => {
     const { user } = UserAuth();
-
+    const navigate = useNavigate();
+    const [redirect, setRedirect] = useState(false);   
+    const [initialData, setInitialData] = useState(null);
     const validationSchema = Yup.object().shape({
         username: Yup.string().required('Username is required'),
         email: Yup.string().email('Invalid email format').required('Email is required'),
@@ -36,6 +39,15 @@ const ProfileSettings = () => {
         },
         validationSchema: validationSchema,
         onSubmit: async (values) => {
+            if ((values) === (initialData)) {
+                console.log('No changes detected, no need to update.');
+                return;
+            }
+
+            setTimeout(() => {
+                setRedirect(true);
+            }, 1000);
+
             try {
                 if (user) {
                     const updatedData = [
@@ -59,8 +71,14 @@ const ProfileSettings = () => {
             }
         },
     });
-
+    
     const formikRef = useRef(formik);
+
+    useEffect(() => {
+        if (redirect) {
+            setTimeout(() => window.location.reload(), 1000);    
+        }
+    }, [redirect, navigate]);
 
     useEffect(() => {
         formikRef.current = formik;
@@ -71,7 +89,7 @@ const ProfileSettings = () => {
             try {
                 if (user) {
                     const data = await getDataFromBackend(`http://localhost:3001/api/users/${user.uid}`);
-                    formikRef.current.setValues({
+                    const initialFormData = {
                         username: data[0]?.username || '',
                         email: data[0]?.email || '',
                         dateOfBirth: formatLocalDateTime(data[0]?.date_of_birth || '').split(',')[0].split('.').reverse().join('-'),
@@ -80,7 +98,9 @@ const ProfileSettings = () => {
                         region: data[0]?.region || '',
                         phoneNumber: data[0]?.phone_number || '',
                         description: data[0]?.description || '',
-                    });
+                    };
+                    setInitialData(initialFormData);
+                    formikRef.current.setValues(initialFormData);  
                     console.log("Loaded data from server:", data);
                 }
             } catch (error) {
