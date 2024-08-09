@@ -78,9 +78,7 @@ export const update = async (req, res) => {
         }
 
         res.status(200).json({ message: 'Item counts updated successfully' });
-        console.log('Item counts updated successfully');
     } catch (error) {
-        console.error('Error updating counts:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
@@ -132,32 +130,47 @@ export const saveUserItemDistribution = async (req, res) => {
     const items = JSON.parse(req.body.body);
 
     if (!Array.isArray(items)) {
-        console.error('Invalid items data:', items);
         return res.status(400).send({ error: 'Invalid items data' });
     }
-    try {   
-        connection = await getConnection();       
-        items.forEach(async (item) => {
+
+    try {
+        connection = await getConnection();
+
+        for (const item of items) {
             const { uid, label, user_distributed_count } = item;
 
-            if (typeof uid !== 'string' || typeof label !== 'string' ||
-                typeof user_distributed_count !== 'number') {
+            if (typeof uid !== 'string' || typeof label !== 'string' || typeof user_distributed_count !== 'number') {
                 throw new Error('Invalid item properties');
             }
 
             const [rows] = await connection.query(`
-                SELECT item_id, max_count , count 
+                SELECT item_id, max_count, count 
                 FROM event_items
                 WHERE label = ?;
             `, [label]);
-            
-            const item_id = rows.length > 0 ? rows[0].item_id : null; 
-            const max_count = rows.length > 0 ? rows[0].max_count : null; 
-            const count = rows.length > 0 ? rows[0].count : null; 
 
-            if (user_distributed_count + count > max_count) {
-                console.error(`Skipping item with label ${label} for user ${uid} as it exceeds max_count`);
-                return;
+            const item_id = rows.length > 0 ? rows[0].item_id : null;
+            const max_count = rows.length > 0 ? rows[0].max_count : null;
+            const current_count = rows.length > 0 ? rows[0].count : null;
+
+            if (item_id === null || max_count === null || current_count === null) {
+                console.error(`Item with label ${label} not found`);
+                continue;
+            }
+
+            const [userItemRows] = await connection.query(`
+                SELECT distributed_count 
+                FROM user_item_distribution
+                WHERE uid = ? AND item_id = ?;
+            `, [uid, item_id]);
+
+            const existing_distributed_count = userItemRows.length > 0 ? userItemRows[0].distributed_count : 0;
+            const count_difference = user_distributed_count - existing_distributed_count;
+            const new_total_count = current_count + count_difference;
+
+            if (new_total_count < 0 || new_total_count > max_count) {
+                console.error(`Skipping item with label ${label} for user ${uid} as it results in an invalid total count`);
+                continue;
             }
 
             await connection.query(`
@@ -165,9 +178,20 @@ export const saveUserItemDistribution = async (req, res) => {
                 VALUES (?, ?, ?)
                 ON DUPLICATE KEY UPDATE distributed_count = VALUES(distributed_count);
             `, [uid, item_id, user_distributed_count]);
-        })
+
+            await connection.query(`
+                UPDATE event_items
+                SET count = ?
+                WHERE item_id = ?;
+            `, [new_total_count, item_id]);
+        }
+
         res.status(200).send({ message: 'Items saved successfully' });
     } catch (error) {
         res.status(500).send({ error: error.message });
+    } finally {
+        if (connection) {
+            connection.release();
+        }
     }
 };
