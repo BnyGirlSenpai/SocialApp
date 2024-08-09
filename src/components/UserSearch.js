@@ -3,6 +3,7 @@ import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend, sendDataToBackend } from '../apis/UserDataApi';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { Button } from '@mui/material';
 import '../styles/userlist.css';
 
 const UserSearch = () => {
@@ -90,7 +91,7 @@ const UserSearch = () => {
               {formik.touched.searchTerm && formik.errors.searchTerm ? (
                 <div className="error">{formik.errors.searchTerm}</div>
               ) : null}
-              <button type="submit" disabled={formik.isSubmitting}>Search</button>
+              <Button variant='contained' type="submit" disabled={formik.isSubmitting}>Search</Button>
             </form>
 
             <div className="people-nearby">
@@ -112,7 +113,7 @@ const UserSearch = () => {
                               isFriend(searchUser.uid) ? (
                                 <p>Already Friends</p>
                               ) : (
-                                <button className="btn btn-primary pull-right" onClick={() => handleSendFriendRequest(searchUser.uid)}>Add Friend</button>
+                                <Button variant='contained' className="btn btn-primary pull-right" onClick={() => handleSendFriendRequest(searchUser.uid)}>Add Friend</Button>
                               )
                             )}
                           </div>

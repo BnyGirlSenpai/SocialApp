@@ -4,6 +4,7 @@ import { UserAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Formik, Field, Form, ErrorMessage, FieldArray } from 'formik';
 import * as Yup from 'yup';
+import { Button } from '@mui/material';
 import '../styles/itemlist.css';
 
 const ItemList = ({event_id}) => {
@@ -127,7 +128,7 @@ const ItemList = ({event_id}) => {
                                             <div className="col">
                                                 <label>Count</label>
                                                 <div>
-                                                    <button
+                                                    <Button variant='contained'
                                                         type="button"
                                                         onClick={() => {
                                                             const newCount = Math.max(item.count - 1, 0);
@@ -141,9 +142,9 @@ const ItemList = ({event_id}) => {
                                                         disabled={Object.keys(userItemCount).length === 0 || userItemCount[item.label] <= 0}
                                                     >
                                                         -
-                                                    </button>
+                                                    </Button>
                                                     <span>{item.count}</span>
-                                                    <button
+                                                    <Button variant='contained'
                                                         type="button"
                                                         onClick={() => {
                                                             const newCount = Math.min(item.count + 1, item.max_count);
@@ -156,7 +157,7 @@ const ItemList = ({event_id}) => {
                                                         disabled={item.count >= item.max_count}
                                                     >
                                                         +
-                                                    </button>
+                                                    </Button>
                                                 </div>
                                                 <ErrorMessage
                                                     name={`items.${index}.count`}
@@ -197,7 +198,7 @@ const ItemList = ({event_id}) => {
                             </div>
                         )}
                     </FieldArray>
-                    <button type="submit" disabled={values.items.length === 0}>Save</button>
+                    <Button variant='contained' type="submit" disabled={values.items.length === 0}>Save</Button>
                 </Form>
             )}
         </Formik>

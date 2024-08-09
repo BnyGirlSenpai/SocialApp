@@ -4,6 +4,7 @@ import * as Yup from 'yup';
 import { sendDataToBackend } from '../apis/UserDataApi';
 import { UserAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import Button from '@mui/material/Button';
 import '../styles/eventform.css';
 
 const EventForm = () => {
@@ -63,11 +64,8 @@ const EventForm = () => {
     onSubmit: async (values) => {
       try {
         if (user) {
-
           const localDateTime = new Date(`${values.eventDate}T${values.eventTime}`);
-          // Convert to UTC and format as required for MySQL datetime
           const utcDateTime = localDateTime.toISOString().slice(0, 19).replace('T', ' ');
-
           const eventData = {
             eventName: values.eventName,
             location: values.location,
@@ -236,32 +234,32 @@ const EventForm = () => {
           onChange={handleFileChange}
           style={{ display: 'none' }}
         />
-        <button
+       <Button variant='contained'
           type="button"
           onClick={() => document.getElementById('eventImage').click()}
         >
           {selectedFile ? selectedFile.name : 'Choose Event Image'}
-        </button>
+        </Button>
         <p>Drag & drop an image here or click to select</p>
       </div>
 
       <div className="mt-3">
-        <button
-          type="button"
+      <Button variant='contained'       
+         type="button"
           className="btn btn-sm btn-secondary"
           onClick={() => formik.setFieldValue('eventStatus', !formik.values.eventStatus)}
         >
           {formik.values.eventStatus ? 'Private' : 'Public'}
-        </button>
+        </Button>
       </div>
 
       <div className="mt-5 text-center">
-        <button
+        <Button variant='contained'
           className={`btn ${isButtonClicked ? 'btn-success' : 'btn-primary'} profile-button`}
           type="submit"
         >
           {isButtonClicked ? 'Event Created' : 'Create Event'}
-        </button>
+        </Button>
       </div>
     </form>
   );

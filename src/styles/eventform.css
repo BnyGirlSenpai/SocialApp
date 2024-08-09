@@ -1,41 +1,21 @@
 .event-form {
-    max-width: 400px;
-    margin: 0 auto;
-  }
+  max-width: 400px;
+  margin: 0 auto;
+}
   
-  .event-form input,
-  .event-form textarea,
-  .event-form button {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-  }
-  
-.button {
-  color: #fff;
-  cursor: pointer;
-  border: none; 
-  padding: 10px 20px;
-  transition: background-color 0.3s ease, transform 0.3s ease; 
+.event-form input,
+.event-form textarea,
+.event-form button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
 }
 
-.save-event {
-  background-color: #007bff; 
-}
 
-.save-event:hover {
-  background-color: #0056b3; 
-}
 
-.delete-event {
-  background-color: #ff0000; 
-}
 
-.delete-event:hover {
-  background-color: #cc0000; 
-}
   

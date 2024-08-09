@@ -3,11 +3,11 @@ import { getDataFromBackend } from '../apis/UserDataApi';
 import { UserAuth } from '../context/AuthContext';
 import { useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
-import Button from '@mui/material/Button';
 import { updateDataInDb } from '../apis/UserDataApi';
 import FriendDropDown from './FriendDropDown';
 import { formatLocalDateTime } from '../utils/DateUtils'; 
 import ItemList from '../components/ItemList';
+import Button from '@mui/material/Button';
 import Map from '../components/Map';
 import '../styles/eventDetailView.css';
 import '../styles/map.css';
@@ -126,22 +126,16 @@ const EventDetailView = () => {
         {isOwner ? (
             <>
                 <div className="button-container">                   
-                    <a href={`/EditEventFormPage/${eventData.event_id}`}><Button>Edit Event</Button></a>     
-                    <Button onClick={() => {
+                    <a href={`/EditEventFormPage/${eventData.event_id}`}><Button variant='contained'>Edit Event</Button></a>     
+                    <Button variant='contained' onClick={() => {
                             setShowFriendDropDown(!showFriendDropDown);
                             setSelectedEventId(eventData.event_id);
                         }}
                         disabled={eventData.current_guests_count >= eventData.max_guests_count}
-                        style={{
-                            backgroundColor: eventData.current_guests_count >= eventData.max_guests_count ? '#ccc' : '', 
-                            color: eventData.current_guests_count >= eventData.max_guests_count ? '#666' : '', 
-                            cursor: eventData.current_guests_count >= eventData.max_guests_count ? 'not-allowed' : 'pointer', 
-                            border: '1px solid #ddd', 
-                            padding: '10px', 
-                        }}>
+                        >
                         Invite Friends
                     </Button>
-                    <a href={`/EditItemListFormPage/${eventData.event_id}`}><Button>Edit Item List</Button></a> 
+                    <a href={`/EditItemListFormPage/${eventData.event_id}`}><Button variant='contained'>Edit Item List</Button></a> 
                 </div>
                 <div className='Itemlist'>
                     <ItemList event_id={eventData.event_id} />
@@ -168,7 +162,7 @@ const EventDetailView = () => {
             isInvitedOrJoined ? (
                 <>
                     <div className="button-container">         
-                        <Button onClick={() => leaveEvent(eventData.event_id)}>Leave Event</Button>
+                        <Button variant='contained' onClick={() => leaveEvent(eventData.event_id)}>Leave Event</Button>
                     </div>
                     <ItemList event_id={eventData.event_id} />
                     <div className="container">

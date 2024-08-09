@@ -3,6 +3,7 @@ import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend, updateDataInDb } from '../apis/UserDataApi';
 import { formatLocalDateTime } from '../utils/DateUtils'; 
 import FriendDropDown from './FriendDropDown';
+import { Button } from '@mui/material';
 import '../styles/eventpage.css'; 
 
 const JoinedEventList = () => {
@@ -121,9 +122,9 @@ const JoinedEventList = () => {
                     </div>
                   </div>
                   <div className="button-container">
-                    <button onClick={() => leaveEvent(event.event_id)}>Leave Event</button>
+                    <Button variant='contained' onClick={() => leaveEvent(event.event_id)}>Leave Event</Button>
                     {event.event_status.includes('open') && (
-                      <button 
+                     <Button variant='contained' 
                         onClick={() => setShowFriendDropDown(!showFriendDropDown)}
                         disabled={event.current_guests_count >= event.max_guests_count}
                         style={{
@@ -135,7 +136,7 @@ const JoinedEventList = () => {
                         }}
                       >
                         Invite Friends
-                      </button>
+                      </Button>
                     )}
                   </div>
                   {showFriendDropDown && <FriendDropDown event_id={event.event_id} onInvite={hideFriendDropDown} creatorUid={creatorUid} />}

@@ -3,6 +3,7 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend, sendDataToBackend } from '../apis/UserDataApi';
+import Button from '@mui/material/Button';
 import '../styles/friendDropDown.css';
 
 const FriendDropDown = ({ event_id, onInvite, creatorUid}) => {
@@ -93,10 +94,8 @@ const FriendDropDown = ({ event_id, onInvite, creatorUid}) => {
         {formik.touched.selectedFriends && formik.errors.selectedFriends ? (
           <div className="error">{formik.errors.selectedFriends}</div>
         ) : null}
-        <div className="button-container">
-          <button type="submit">Invite Selected Friends</button>
-        </div>
-      </form>
+        <Button variant='contained' className='invite-button' type="submit">Invite Selected Friends</Button>
+        </form>
     </div>
   );
 }

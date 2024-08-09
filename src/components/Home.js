@@ -3,7 +3,7 @@ import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend } from '../apis/UserDataApi';
 import { formatLocalDateTime } from '../utils/DateUtils'; 
 import Button from '@mui/material/Button';
-import '../styles/eventpage.css';
+import '../styles/home.css';
 
 const Home = () => {
   const { user } = UserAuth();
@@ -97,10 +97,10 @@ const Home = () => {
                         <p>Info: {event.description}</p>
                         <p>Type: {event.event_type}</p>
                         <p>Image: {event.image_url}</p>
+                        <a href={`/EventPage/EventDetailPage/${event.event_id}`}>
+                          <Button variant="contained">Details</Button>
+                        </a>
                       </div>
-                      <a href={`/EventPage/EventDetailPage/${event.event_id}`}>
-                        <Button variant="contained">Details</Button>
-                      </a>
                     </div>
                   </div>
                 </li>

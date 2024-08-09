@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend } from '../apis/UserDataApi';
 import { formatLocalDateTime } from '../utils/DateUtils';
+import { Button } from '@mui/material';
 import '../styles/calendar.css'; 
 
 const Calendar = () => {
@@ -117,9 +118,9 @@ const Calendar = () => {
         })}
       </div>
       <div className='calendar-navigation'>
-        <button className='date-button' onClick={handlePrevMonth}>&lt;</button>
-        <button className='date-button' onClick={handleToday}>Today</button>
-        <button className='date-button' onClick={handleNextMonth}>&gt;</button>
+        <Button variant='contained' className='date-button' onClick={handlePrevMonth}>&lt;</Button>
+        <Button variant='contained' onClick={handleToday}>Today</Button>
+        <Button variant='contained' onClick={handleNextMonth}>&gt;</Button>
       </div>
     </div>
   );

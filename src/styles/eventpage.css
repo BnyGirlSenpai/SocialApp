@@ -25,23 +25,6 @@
   background-color: #f9f9f9;
 }
 
-.add-event-button {
-  display: block;
-  margin: 20px auto;
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  text-decoration: none;
-  a {
-    color: white;
-    text-decoration: underline;
-  }
-}
-
-/* CSS for Event Cards */
 .event-card {
   background-color: #f9f9f9;
   border: 1px solid #ddd;
@@ -53,12 +36,12 @@
 
 .card-info {
   display: flex;
-  justify-content: space-between; /* Align buttons to the right */
-  align-items: center; /* Center vertically */
+  justify-content: space-between; 
+  align-items: center; 
 }
 
 .event-info {
-  flex: 1; /* Take remaining space */
+  flex: 1; 
   margin-bottom: 10px;
 }
 
@@ -72,27 +55,3 @@
   color: #007bff;
 }
 
-.button-container {
-  display: flex;
-}
-
-.button-container button {
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 10px 20px;
-  margin-left: 10px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.button-container button:hover {
-  background-color: #0056b3;
-}
-
-.disabled-button {
-  background-color: #ccc; 
-  color: #666; 
-  cursor: not-allowed; 
-}

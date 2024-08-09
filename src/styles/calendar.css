@@ -55,26 +55,3 @@
 	justify-content: space-evenly;	
 }
 
-button {
-	background: none;
-	border: none;
-	font-size: 1.5rem;
-	cursor: pointer;
-	color: #007bff;
-}
-
-.date-button {
-	background-color: #007bff;
-	color: white;
-	border: none;
-	padding: 10px 20px;
-	cursor: pointer;
-	font-size: 1rem;
-	border-radius: 5px;
-	margin-bottom: 10px;
-	transition: background-color 0.3s;
-}
-
-.date-button:hover {
-	background-color: #0056b3;
-}

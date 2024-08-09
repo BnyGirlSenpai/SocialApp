@@ -5,6 +5,8 @@ import { formatLocalDateTime } from '../utils/DateUtils';
 import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { Button } from '@mui/material';
+import '../styles/profilesettings.css';
 
 const ProfileSettings = () => {
     const { user } = UserAuth();
@@ -189,12 +191,12 @@ const ProfileSettings = () => {
                             </div>
                         </div>
                         <div className="mt-5 text-center">
-                            <button
+                            <Button variant='contained'
                                 className={`btn ${formik.isSubmitting ? 'btn-success' : 'btn-primary'} profile-button`}
                                 type="submit"
                                 disabled={formik.isSubmitting}>
                                 {formik.isSubmitting ? 'Saving...' : 'Save Profile'}
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

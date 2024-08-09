@@ -3,6 +3,7 @@ import { UserAuth } from '../context/AuthContext';
 import { getDataFromBackend } from '../apis/UserDataApi';
 import FriendDropDown from './FriendDropDown';
 import { formatLocalDateTime } from '../utils/DateUtils';
+import { Button } from '@mui/material';
 import '../styles/eventpage.css'; 
 
 const OwnEventList = () => {
@@ -93,7 +94,7 @@ const OwnEventList = () => {
       <div className="event-container">
         <div className="column">
           <h2>My Events</h2>
-          <button className="add-event-button"><a href="/EventFormpage">Add Own Event</a></button>
+          <a href="/EventFormpage"><Button variant='contained' className="add-event-button">Add Own Event</Button></a>
           {ownEvents.length > 0 ? (
             <ul className="events" id="manage-events">
               {ownEvents.map((event, index) => (
@@ -116,21 +117,13 @@ const OwnEventList = () => {
                     </div>
                   </div>
                   <div className="button-container">                   
-                    <a href={`/EditEventFormPage/${event.event_id}`}><button>Edit Event</button></a>                   
-                    <button 
-                      onClick={() => handleInviteClick(event.event_id)}
+                    <a href={`/EditEventFormPage/${event.event_id}`}><Button variant='contained'>Edit Event</Button></a>                   
+                    <Button variant='contained' onClick={() => handleInviteClick(event.event_id)}
                       disabled={event.current_guests_count >= event.max_guests_count}
-                      style={{
-                        backgroundColor: event.current_guests_count >= event.max_guests_count ? '#ccc' : '', 
-                        color: event.current_guests_count >= event.max_guests_count ? '#666' : '', 
-                        cursor: event.current_guests_count >= event.max_guests_count ? 'not-allowed' : 'pointer', 
-                        border: '1px solid #ddd', 
-                        padding: '10px', 
-                      }}
                     >
                       Invite Friends
-                    </button>
-                    <a href={`/EditItemListFormPage/${event.event_id}`}><button>Edit Item List</button></a> 
+                    </Button>
+                    <a href={`/EditItemListFormPage/${event.event_id}`}><Button variant='contained'>Edit Item List</Button></a> 
                   </div>
                   {friendDropDownVisible[event.event_id] && <FriendDropDown event_id={event.event_id} onInvite={() => hideFriendDropDown(event.event_id)} />}
                 </li>

@@ -5,6 +5,7 @@ import { UserAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Formik, Field, Form, ErrorMessage, FieldArray } from 'formik';
 import * as Yup from 'yup';
+import Button from '@mui/material/Button';
 import '../styles/itemlist.css';
 
 const EditItemList = () => {
@@ -104,7 +105,7 @@ const EditItemList = () => {
                                             <div className="col">
                                                 <label>Count</label>
                                                 <div>
-                                                    <button
+                                                    <Button variant='contained'
                                                         type="button"
                                                         onClick={() => {
                                                             const newCount = Math.max(item.count - 1,0);
@@ -112,9 +113,9 @@ const EditItemList = () => {
                                                         }}
                                                     >
                                                         -
-                                                    </button>
+                                                    </Button>
                                                     <span>{item.count}</span>
-                                                    <button
+                                                    <Button variant='contained'
                                                         type="button"
                                                         onClick={() => {
                                                             const newCount = Math.min(item.count + 1, item.max_count);
@@ -122,7 +123,7 @@ const EditItemList = () => {
                                                         }}
                                                     >
                                                         +
-                                                    </button>
+                                                    </Button>
                                                 </div>
                                                 <ErrorMessage
                                                     name={`items.${index}.count`}
@@ -157,7 +158,7 @@ const EditItemList = () => {
                                                 />
                                             </div>
                                             <div className="col">
-                                                <button
+                                                <Button variant='contained'
                                                     type="button"
                                                     className="secondary"
                                                     onClick={() => { 
@@ -166,11 +167,11 @@ const EditItemList = () => {
                                                     }}
                                                 >
                                                     X
-                                                </button>
+                                                </Button>
                                             </div>
                                         </div>
                                     ))}
-                                <button
+                                <Button variant='contained'
                                     type="button"
                                     className="secondary"
                                     onClick={() =>
@@ -178,11 +179,11 @@ const EditItemList = () => {
                                     }
                                 >
                                     Add Item
-                                </button>
+                                </Button>
                             </div>
                         )}
                     </FieldArray>
-                    <button type="submit">Save</button>
+                    <Button variant='contained' type="submit">Save</Button>
                 </Form>
             )}
         </Formik>
